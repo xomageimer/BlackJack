@@ -1,3 +1,3 @@
 UML: 
 
-![BLACKJACK](https://github.com/xomageimer/BlackJack/blob/master/doc/gitimages/blackjack.png)
+![BLACKJACK](https://github.com/xomageimer/BlackJack/blob/Blackjack_Core/doc/gitimages/blackjack.png)
