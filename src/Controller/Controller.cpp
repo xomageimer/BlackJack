@@ -63,14 +63,14 @@ void RelationshipController::HandleEvent(const Event &event) {
 }
 
 void RelationshipController::SubscribePlayer(const std::string &player_nickname, std::shared_ptr<Actors::IActor> new_player) {
-    players.emplace(std::piecewise_construct_t(), std::forward_as_tuple(player_nickname), std::forward_as_tuple(new_player));
+//    players.emplace(std::piecewise_construct_t(), std::forward_as_tuple(player_nickname), std::forward_as_tuple(new_player));
 }
 
 void RelationshipController::SubscribeDealer(std::shared_ptr<Actors::IDealer> new_dealer) {
     dealer = std::move(new_dealer);
 }
 
-void RelationshipController::UnSubscribePlayer(const std::string &player_nickname, std::shared_ptr<Actors::IActor> player) {
+void RelationshipController::UnSubscribePlayer(const std::string &player_nickname) {
     players.erase(player_nickname);
 }
 

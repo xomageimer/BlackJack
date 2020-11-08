@@ -1,89 +1,133 @@
 #include "Dealer.h"
 
+#include <cassert>
 #include <utility>
 
-void Actors::SimpleDealer::RefreshStack() {
-    m_stack->GenNewStacks();
+#include "Controller.h"
+
+const int BLACKJACK = 21;
+const int WinFactor = 1.5;
+const int DEALERBORDER = 17;
+
+Actors::IDealer::IDealer(std::shared_ptr<IController> cntr) {
+    controller = std::move(cntr);
+}
+
+Actors::SimpleDealer::SimpleDealer(std::shared_ptr<IController> cntr) : IDealer(cntr){
+    m_stack = std::make_shared<GameCard::CardStack>();
 }
 
 void Actors::SimpleDealer::Hit(const GameCard::Cards & card) {
-    handler->Hit(std::shared_ptr<IActor>(this), card);
-}
-
-void Actors::SimpleDealer::DoubleDown(const GameCard::Cards &, const GameCard::Cards &) {
-    throw std::bad_exception();
-}
-
-void Actors::SimpleDealer::GetResult(double points) {
-    handler->GetResult(std::shared_ptr<IActor>(this, points));
-}
-
-void Actors::SimpleDealer::BlackJackCheck() {
-    handler->BlackJackCheck(std::shared_ptr<IActor>(this));
-}
-
-void Actors::SimpleDealer::GiveCard() {
-    handler->GiveCard(std::shared_ptr<IDealer>(this));
-}
-
-void Actors::SimpleDealer::SwapPlayer() {
-    handler->SwapPlayer(std::shared_ptr<IDealer>(this));
-}
-
-void Actors::SimpleDealer::PlayOut() {
-    handler->PlayOut(std::shared_ptr<IDealer>(this));
-}
-
-void Actors::SimpleDealer::NewRound() {
-    handler->NewRound(std::shared_ptr<IDealer>(this));
-}
-
-void Actors::SimpleDealer::TakeBet(double bet) {
-    handler->TakeBet(std::shared_ptr<IDealer>(this, bet));
-}
-
-void Actors::SimpleDealer::GiveDoubleDown() {
-    handler->GiveDoubleDown(std::shared_ptr<IDealer>(this));
-}
-
-
-void Actors::SimpleDealer::SetCard(const GameCard::Cards & card) {
-    this->m_hand.SetNewCard(card);
-}
-
-void Actors::SimpleDealer::SetPoints(double fract) {
-    this->bank += fract;
+    if (this->ShowHand() < DEALERBORDER){
+        this->SetCard(card);
+        Event hit(Event::Type::HIT, std::string("Dealer take new card!"));
+        controller->HandleEvent(hit);
+    } else {
+        Event stand(Event::Type::STAND, std::string("Dealer pack ready!"));
+        controller->HandleEvent(stand);
+    }
 }
 
 const GameCard::Hand &Actors::SimpleDealer::ShowHand() const {
-    return this->m_hand;
+    return m_hand;
 }
 
 double Actors::SimpleDealer::GetPlayerCost() const {
-    return this->bank;
+    return bank;
 }
 
-const GameCard::Hand &Actors::SimpleDealer::GetPlayerHand() const {
-    return this->current_player_hand;
+void Actors::SimpleDealer::GiveCard() {
+    auto card = this->GetCard();
+    Event sender (Event::Type::GIVECARD, card);
+    controller->HandleEvent(sender);
+    if (this->GetPlayerHand() > BLACKJACK) {
+        Event result(Event::Type::LOSE, this->GetBet());
+        this->GetCasinoWin() += this->GetBet();
+        controller->HandleEvent(result);
+        SwapPlayer();
+    } else if (this->GetPlayerHand() == BLACKJACK){
+        SwapPlayer();
+    }
 }
 
-void Actors::SimpleDealer::ConfigPlayerHand(GameCard::Cards &card) {
-    this->current_player_hand.SetNewCard(card);
+void Actors::SimpleDealer::SwapPlayer() {
+    this->ClearCurPlayerHand();
+    this->SetBet(0);
+    Event next(Event::Type::SWAPPLAYER, std::string("Change player"));
+    controller->HandleEvent(next);
+    NewRound();
 }
 
-GameCard::Cards Actors::SimpleDealer::GetCard() {
-    return this->m_stack->GetCard();
+void Actors::SimpleDealer::PlayOut() {
+    if (this->ShowHand() == BLACKJACK && this->GetPlayerHand() != BLACKJACK){
+        Event lose(Event::Type::LOSE, this->GetBet());
+        this->GetCasinoWin() += this->GetBet();
+        controller->HandleEvent(lose);
+    }else if (this->GetPlayerHand() == BLACKJACK){
+        auto bet = this->GetBet() + WinFactor * this->GetBet();
+        Event won(Event::Type::WIN, bet);
+        this->GetCasinoWin() -= bet;
+        controller->HandleEvent(won);
+    }else if (this->GetPlayerHand() > this->ShowHand()){
+        Event won(Event::Type::WIN, this->GetBet());
+        this->GetCasinoWin() -= this->GetBet();
+        controller->HandleEvent(won);
+    } else if (this->GetPlayerHand() < this->ShowHand()){
+        Event lose(Event::Type::LOSE, this->GetBet());
+        this->GetCasinoWin() += this->GetBet();
+        controller->HandleEvent(lose);
+    } else if (this->GetPlayerHand() == this->ShowHand()) {
+        Event draw(Event::Type::DRAW, this->GetBet());
+        controller->HandleEvent(draw);
+    }
+    Event next(Event::Type::SWAPPLAYER, std::string("Change player"));
+    controller->HandleEvent(next);
 }
 
-void Actors::SimpleDealer::ClearCurPlayerHand() {
-    this->current_player_hand.Clear();
+void Actors::SimpleDealer::NewRound() {
+    assert(this->GetPlayerHand().LookAtCards().empty());
+    Event Start (Event::Type::NEWROUND, std::string("Round Started for next player"));
+    controller->HandleEvent(Start);
+}
+
+void Actors::SimpleDealer::TakeBet(double bet) {
+    if (bet > static_cast<int>(this->max)){
+        Event event(Event::Type::WARN, std::string("Too high bet, maximum is " + std::to_string(static_cast<int>(this->max))));
+        controller->HandleEvent(event);
+    }
+    Event to_bet(Event::Type::MAKEBET, bet);
+    controller->HandleEvent(to_bet);
+}
+
+void Actors::SimpleDealer::GiveDoubleDown() {
+    if (this->GetPlayerHand().GetSize() > 2)
+    {
+        Event denied(Event::Type::WARN, std::string("You cant make an doubledown!"));
+        controller->HandleEvent(denied);
+    }
+    else{
+        this->SetBet(this->GetBet() * 2);
+        GiveCard();
+    }
+}
+
+bool Actors::SimpleDealer::BlackJackCheck() const {
+    if (this->ShowHand() == BLACKJACK)
+    {
+        Event end(Event::Type::PLAYOUT, std::string("BlackJack for this!"));
+        controller->HandleEvent(end);
+    }
+}
+
+void Actors::SimpleDealer::RefreshStack() {
+    m_stack->GenNewStacks();
 }
 
 void Actors::SimpleDealer::SetBet(double d) {
     this->current_bet = d;
 }
 
-double Actors::SimpleDealer::GetBet() const{
+double Actors::SimpleDealer::GetBet() const {
     return this->current_bet;
 }
 
@@ -95,11 +139,18 @@ void Actors::SimpleDealer::SetPlayerHand(GameCard::Hand & hand) {
     this->m_hand = hand;
 }
 
-Actors::IDealer::IDealer(std::shared_ptr<IController> cntr) {
-    m_stack = std::make_shared<GameCard::CardStack>();
-    controller = std::move(cntr);
+const GameCard::Hand &Actors::SimpleDealer::GetPlayerHand() const {
+    return this->current_player_hand;;
 }
 
-std::shared_ptr<IController> Actors::IDealer::GetController() {
-    return controller;
+void Actors::SimpleDealer::ClearCurPlayerHand() {
+    this->current_player_hand.Clear();
+}
+
+void Actors::SimpleDealer::ConfigPlayerHand(GameCard::Cards &card) {
+    this->current_player_hand.SetNewCard(card);
+}
+
+GameCard::Cards Actors::SimpleDealer::GetCard() {
+    return this->m_stack->GetCard();
 }

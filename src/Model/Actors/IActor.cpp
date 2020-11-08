@@ -1,12 +1,14 @@
 #include "IActor.h"
 
+const int BLACKJACK = 21;
+
 void Actors::OfflinePlayer::Hit(const GameCard::Cards & card) {
-    m_hand.SetNewCard(card);
+    SetCard(card);
 }
 
 void Actors::OfflinePlayer::DoubleDown(const GameCard::Cards & card1, const GameCard::Cards & card2) {
-    m_hand.SetNewCard(card1);
-    m_hand.SetNewCard(card2);
+    SetCard(card1);
+    SetCard(card2);
 }
 
 void Actors::OfflinePlayer::GetResult(double fract) {
@@ -19,4 +21,12 @@ const GameCard::Hand & Actors::OfflinePlayer::ShowHand() const {
 
 double Actors::OfflinePlayer::GetPlayerCost() const {
     return bank;
+}
+
+bool Actors::OfflinePlayer::BlackJackCheck() const {
+    return m_hand == BLACKJACK;
+}
+
+void Actors::IActor::SetCard(const GameCard::Cards & card) {
+    m_hand.SetNewCard(card);
 }

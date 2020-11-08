@@ -5,9 +5,6 @@
 #include <memory>
 
 #include "Actors/Dealer.h"
-#include "Actors/IActor.h"
-#include "Actors/Events.h"
-#include "Cards/CardStack.h"
 #include "OutputManager.h"
 
 struct IController {
@@ -34,7 +31,7 @@ public:
     void SubscribePlayer(const std::string & player_nickname, std::shared_ptr<Actors::IActor> new_player);
     void SubscribeDealer(std::shared_ptr<Actors::IDealer> new_dealer);
 
-    void UnSubscribePlayer(const std::string & player_nickname, std::shared_ptr<Actors::IActor> player);
+    void UnSubscribePlayer(const std::string & player_nickname);
 
     void RequestCard();
     void RequestStop();

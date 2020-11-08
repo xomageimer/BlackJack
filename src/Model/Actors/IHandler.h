@@ -4,9 +4,14 @@
 #include <memory>
 #include <cassert>
 
-#include "Controller.h"
-#include "IActor.h"
-#include "Dealer.h"
+#include "Events.h"
+#include "Cards/CardStack.h"
+
+namespace Actors {
+    struct IDealer;
+    struct IActor;
+}
+struct IController;
 
 // TODO чекать ход!
 
@@ -15,28 +20,45 @@ namespace DealerHandler {
     protected:
         std::shared_ptr<IController> controller;
     public:
+        virtual ~IHandler() = default;
 
         virtual void SetController(std::shared_ptr<IController>);
 
-        virtual void GiveCard(std::shared_ptr<Actors::IDealer>) = 0;
+        virtual void GiveCard(std::shared_ptr<Actors::IDealer>){
+            throw std::logic_error("");
+        }
 
-        virtual void SwapPlayer(std::shared_ptr<Actors::IDealer>) = 0;
+        virtual void SwapPlayer(std::shared_ptr<Actors::IDealer>){
+            throw std::logic_error("");
+        }
 
-        virtual void PlayOut(std::shared_ptr<Actors::IDealer>, std::shared_ptr<Actors::IActor> player_dealer) = 0;
+        virtual void PlayOut(std::shared_ptr<Actors::IDealer>, std::shared_ptr<Actors::IActor> player_dealer){
+            throw std::logic_error("");
+        }
 
-        virtual void NewRound(std::shared_ptr<Actors::IDealer>) = 0;
+        virtual void NewRound(std::shared_ptr<Actors::IDealer>){
+            throw std::logic_error("");
+        }
 
-        virtual void TakeBet(std::shared_ptr<Actors::IDealer>, double) = 0;
+        virtual void BlackJackCheck(std::shared_ptr<Actors::IActor>){
+            throw std::logic_error("");
+        }
 
-        virtual void GiveDoubleDown(std::shared_ptr<Actors::IDealer>) = 0;
+        virtual void TakeBet(std::shared_ptr<Actors::IDealer>, double) {
+            throw std::logic_error("");
+        }
 
-        virtual void BlackJackCheck(std::shared_ptr<Actors::IActor>) = 0;
+        virtual void GiveDoubleDown(std::shared_ptr<Actors::IDealer>) {
+            throw std::logic_error("");
+        }
 
-        virtual void Hit(std::shared_ptr<Actors::IActor>, const GameCard::Cards & card) = 0;
+        virtual void Hit(std::shared_ptr<Actors::IActor>, const GameCard::Cards & card) {
+            throw std::logic_error("");
+        }
 
-        virtual void DoubleDown(std::shared_ptr<Actors::IActor>) = 0;
-
-        virtual void GetResult(std::shared_ptr<Actors::IActor>) = 0;
+        virtual void ShowHand(std::shared_ptr<Actors::IActor>){
+            throw std::logic_error("");
+        }
 
     };
 
@@ -54,106 +76,33 @@ namespace DealerHandler {
         void TakeBet(std::shared_ptr<Actors::IDealer>, double) override;
 
         void GiveDoubleDown(std::shared_ptr<Actors::IDealer>) override;
-
-        void BlackJackCheck(std::shared_ptr<Actors::IActor>) override{
-            throw std::bad_exception();
-        }
-
-        void Hit(std::shared_ptr<Actors::IActor>, const GameCard::Cards & card) override{
-            throw std::bad_exception();
-        }
-
-        void DoubleDown(std::shared_ptr<Actors::IActor>) override{
-            throw std::bad_exception();
-        }
-
-        void GetResult(std::shared_ptr<Actors::IActor>) override{
-            throw std::bad_exception();
-        }
-
     };
 
     struct BetableHandler : public IHandler {
     public:
-        void GiveCard(std::shared_ptr<Actors::IDealer>) override{
-            Event event(Event::Type::WARN, std::string("You have not placed a bet!"));
-            controller->HandleEvent(event);
-        }
-
+        void GiveCard(std::shared_ptr<Actors::IDealer>) override;
         void SwapPlayer(std::shared_ptr<Actors::IDealer>) override;
-
-        void PlayOut(std::shared_ptr<Actors::IDealer>, std::shared_ptr<Actors::IActor> player_dealer) override{
-            Event event(Event::Type::WARN, std::string("You have not placed a bet!"));
-            controller->HandleEvent(event);
-        }
-
-        void NewRound(std::shared_ptr<Actors::IDealer>) override{
-            Event event(Event::Type::WARN, std::string("You have not placed a bet!"));
-            controller->HandleEvent(event);
-        }
 
         void TakeBet(std::shared_ptr<Actors::IDealer>, double) override;
 
-        void BlackJackCheck(std::shared_ptr<Actors::IActor>) override{
-            throw std::bad_exception();
-        }
-
-        void GiveDoubleDown(std::shared_ptr<Actors::IDealer>) override{
-            Event event(Event::Type::WARN, std::string("You have not placed a bet!"));
-            controller->HandleEvent(event);
-        }
-
-        void Hit(std::shared_ptr<Actors::IActor>, const GameCard::Cards & card) override{
-            throw std::bad_exception();
-        }
-
-        void DoubleDown(std::shared_ptr<Actors::IActor>) override{
-            throw std::bad_exception();
-        }
-
-        void GetResult(std::shared_ptr<Actors::IActor>) override{
-            throw std::bad_exception();
-        }
-
+        void GiveDoubleDown(std::shared_ptr<Actors::IDealer>) override;
     };
 
     struct PlayableHandler : public IHandler{
     public:
-        void GiveCard(std::shared_ptr<Actors::IDealer>) override{
-            throw std::bad_exception();
-        }
+        void PlayOut(std::shared_ptr<Actors::IDealer>, std::shared_ptr<Actors::IActor> player_dealer) override;
 
-        void SwapPlayer(std::shared_ptr<Actors::IDealer>) override{
-            throw std::bad_exception();
-        }
+        void SwapPlayer(std::shared_ptr<Actors::IDealer>) override;
 
-        void PlayOut(std::shared_ptr<Actors::IDealer>, std::shared_ptr<Actors::IActor> player_dealer) override{
-            throw std::bad_exception();
-        }
-
-        void NewRound(std::shared_ptr<Actors::IDealer>) override{
-            throw std::bad_exception();
-        }
+        void NewRound(std::shared_ptr<Actors::IDealer>) override;
 
         void BlackJackCheck(std::shared_ptr<Actors::IActor>) override;
 
-        void TakeBet(std::shared_ptr<Actors::IDealer>, double) override{
-            throw std::bad_exception();
-        }
-
-        void GiveDoubleDown(std::shared_ptr<Actors::IDealer>) override{
-            throw std::bad_exception();
-        }
-
         void Hit(std::shared_ptr<Actors::IActor>, const GameCard::Cards & card) override;
+    };
 
-        void DoubleDown(std::shared_ptr<Actors::IActor>) override{
-            throw std::bad_exception();
-        }
-
-        void GetResult(std::shared_ptr<Actors::IActor>) override{
-            throw std::bad_exception();
-        }
+    // Состояние злопамятного диллера
+    struct RevengefulHandler : public DealerableHandler {
 
     };
 }
