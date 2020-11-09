@@ -62,8 +62,8 @@ void RelationshipController::HandleEvent(const Event &event) {
            Output();
            break;
        case Event::Type::NEWROUND :
-           GiveCards(event);
-           GiveCards(event);
+           RequestCard();
+           RequestCard();
            Output();
            break;
        default:
@@ -216,8 +216,9 @@ void RelationshipController::NextHandler() {
     switch (current_logic) {
         case DealerHandler::DealerLogic::BETABLE :
             current_logic = DealerHandler::DealerLogic::DEALERABLE;
-      //      dealer->SwapPlayer();
-       //     dealer->NewRound();
+            dealer->SetHandler(Control_Logic.at(current_logic));
+            dealer->SwapPlayer();
+            dealer->NewRound();
             break;
         case DealerHandler::DealerLogic::DEALERABLE :
             current_logic = DealerHandler::DealerLogic::PLAYABLE;
@@ -229,8 +230,4 @@ void RelationshipController::NextHandler() {
             current_logic = DealerHandler::DealerLogic::BETABLE;
             break;
     }
-    dealer->SetHandler(Control_Logic.at(current_logic));
 }
-
-
-
