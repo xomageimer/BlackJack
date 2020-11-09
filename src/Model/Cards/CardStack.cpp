@@ -22,21 +22,24 @@ std::ostream& operator<<(std::ostream& os, const std::list<GameCard::Cards>& lis
 void GameCard::CardStack::GenNewStacks() {
     m_CardShoe.splice(m_CardShoe.begin(), m_goneCards);
 
-    auto it = prev(m_CardShoe.end());
-    auto sec_it = std::next(m_CardShoe.begin(), _gen->seed(m_CardShoe.size()));
-    auto sec_tmp = sec_it;
 
-    for (size_t i = 0; i < m_CardShoe.size(); i++) {
-        sec_tmp = std::next(it);
+    for (size_t j = 0; j < card_stack_count; j++) {
+        auto it = prev(m_CardShoe.end());
+        auto sec_it = std::next(m_CardShoe.begin(), _gen->seed(m_CardShoe.size()));
+        auto sec_tmp = sec_it;
 
-        m_CardShoe.splice(it, m_CardShoe, sec_it);
-        m_CardShoe.splice(sec_tmp, m_CardShoe, it);
+        for (size_t i = 0; i < m_CardShoe.size(); i++) {
+            sec_tmp = std::next(it);
 
-        sec_it = std::next(m_CardShoe.begin(), _gen->seed(m_CardShoe.size()));
-        it = std::prev(prev(m_CardShoe.end()), i);
+            m_CardShoe.splice(it, m_CardShoe, sec_it);
+            m_CardShoe.splice(sec_tmp, m_CardShoe, it);
+
+            sec_it = std::next(m_CardShoe.begin(), _gen->seed(m_CardShoe.size()));
+            it = std::prev(prev(m_CardShoe.end()), i);
+        }
     }
 
-  //   std::cout << "m_CardShoe: " << m_CardShoe << "\n";
+     std::cout << "m_CardShoe: " << m_CardShoe << "\n";
 }
 
 GameCard::Cards::CardPrice& operator++(GameCard::Cards::CardPrice & cp){
