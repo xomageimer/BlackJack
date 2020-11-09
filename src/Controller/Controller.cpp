@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <algorithm>
+#include <Actors/IHandler.h>
 
 // TODO тут не должно быть рекурсии, он должен вызывать определенные сеттеры у плеера и диллера
 
@@ -28,9 +29,11 @@ void RelationshipController::HandleEvent(const Event &event) {
            break;
        case Event::Type::MAKEBET:
            MakeBet(event);
+           Output();
            break;
        case Event::Type::WARN :
            OutWarn(event);
+           Output();
            break;
        case Event::Type::HIT :
            RequestCard();
@@ -103,25 +106,8 @@ void RelationshipController::RequestCard() {
     dealer->GiveCard();
 }
 
-void RelationshipController::RestartGame() {
-    current_number = 0;
-    current_player = player_dealer;
-    dealer->NewRound();
-    for (auto &current : players) {
-        current_player = current.second.first;
-        current_bet = &current.second.second;
-        dealer->NewRound();
-    }
-}
-
 void RelationshipController::RequestStop() {
     dealer->SwapPlayer();
-}
-
-void RelationshipController::GiveCards(const Event & event) {
-    current_player->Hit(event.GetData<GameCard::Cards>());
-    om->notify("Player took a card: ");
-    om->notify(event.GetData<GameCard::Cards>());
 }
 
 void RelationshipController::RequestBet(const Event & event) {
@@ -132,6 +118,19 @@ void RelationshipController::RequestDoubleCard() {
     dealer->GiveDoubleDown();
 }
 
+///// TODO научить диллера менять хендлер
+
+void RelationshipController::RestartGame() {
+    current_number = 0;
+    dealer->SetHandler(Control_Logic.at(current_logic));
+}
+
+void RelationshipController::GiveCards(const Event & event) {
+    current_player->Hit(event.GetData<GameCard::Cards>());
+    om->notify("Player took a card: ");
+    om->notify(event.GetData<GameCard::Cards>());
+}
+
 void RelationshipController::OutWarn(const Event & event) {
     // для логов
     om->notify(event.GetData<std::string>());
@@ -139,16 +138,24 @@ void RelationshipController::OutWarn(const Event & event) {
 
 void RelationshipController::MakeBet(const Event & event) {
     // тут можно интегрировать бд
-    players.at(queue[current_number]).second = event.GetData<double>();
+    *current_bet = event.GetData<double>();
     om->notify("Player made a bet: " + std::to_string(event.GetData<double>()));
 }
 
 void RelationshipController::ChangePlayer(const Event & event) {
-    auto cur = (current_number == queue.size()) ? players.at(queue[0]) : players.at(queue[current_number++]);
+    auto cur = (current_number == queue.size()) ? std::pair(player_dealer, player_dealer->GetPlayerCost()) : players.at(queue[current_number++]);
     current_player = cur.first;
     current_bet = &cur.second;
-    om->notify(event.GetData<std::string>());
-    om->notify("Player number " +  std::to_string(current_number - 1) + "'s turn");
+    if (current_logic != DealerHandler::DealerLogic::PLAYABLE && current_player == player_dealer){
+        current_number = 0;
+        NextHandler();
+    } else if (current_logic == DealerHandler::DealerLogic::PLAYABLE && current_player == player_dealer){
+        current_number = 0;
+        RequestCard();
+    } else {
+        om->notify(event.GetData<std::string>());
+        om->notify("Player number " + std::to_string(current_number) + "'s turn");
+    }
 }
 
 void RelationshipController::Result() {
@@ -176,6 +183,7 @@ void RelationshipController::SetResult(const Event & event) {
 }
 
 void RelationshipController::Output() {
+    // показывать все карты
     om->drop();
 }
 
@@ -184,6 +192,29 @@ void RelationshipController::SetViewManager(std::shared_ptr<ILogger> man) {
 }
 
 RelationshipController::RelationshipController() : om(std::make_shared<OutputManager>()) {}
+
+void RelationshipController::SubscribeHandlers(const DealerHandler::DealerLogic &logic,
+                                               std::shared_ptr<DealerHandler::IHandler> handler) {
+    Control_Logic.emplace(std::piecewise_construct, std::forward_as_tuple(logic), std::forward_as_tuple(handler));
+}
+
+void RelationshipController::NextHandler() {
+    switch (current_logic) {
+        case DealerHandler::DealerLogic::BETABLE :
+            current_logic = DealerHandler::DealerLogic::DEALERABLE;
+            break;
+        case DealerHandler::DealerLogic::DEALERABLE :
+            current_logic = DealerHandler::DealerLogic::PLAYABLE;
+            break;
+        case DealerHandler::DealerLogic::PLAYABLE :
+            current_logic = DealerHandler::DealerLogic::BETABLE;
+            break;
+        default:
+            current_logic = DealerHandler::DealerLogic::BETABLE;
+            break;
+    }
+    dealer->SetHandler(Control_Logic.at(current_logic));
+}
 
 
 

@@ -8,6 +8,10 @@
 #include "Events.h"
 #include "Cards/CardStack.h"
 
+namespace DealerHandler {
+    struct IHandler;
+}
+
 struct IController;
 
 // pattern template method
@@ -19,6 +23,8 @@ namespace Actors {
 
         explicit IDealer(std::shared_ptr<IController> cntr);
         virtual ~IDealer() = default;
+
+        virtual void SetHandler(std::shared_ptr<DealerHandler::IHandler> new_handler);
 
         virtual void TimeToShuffle() = 0;
 
@@ -44,6 +50,7 @@ namespace Actors {
 
     protected:
         std::shared_ptr<IController> controller;
+        std::shared_ptr<DealerHandler::IHandler> handler;
     };
 
     struct SimpleDealer : public IActor, public IDealer {
@@ -51,7 +58,7 @@ namespace Actors {
         std::shared_ptr<GameCard::CardStack> m_stack;
         GameCard::Hand current_player_hand;
         double current_bet = 0;
-        double casino_win = 0;
+        double casino_win = 1'000.f;
         GameCard::Hand m_hand;
         double m_bank;
     public:

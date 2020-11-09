@@ -3,6 +3,7 @@
 
 // TODO функция которая будет вечно ожидать ввод для обработки в контроллер
 
+#include <Actors/IHandler.h>
 #include "Actors/Dealer.h"
 #include "Actors/IActor.h"
 #include "Controller.h"
@@ -22,6 +23,9 @@ public:
     template <typename T>
     void SetDealer(std::shared_ptr<T> concrete_dealer){
         game_controller->SubscribeDealer(concrete_dealer);
+        game_controller->SubscribeHandlers(DealerHandler::DealerLogic::PLAYABLE, std::make_shared<DealerHandler::PlayableHandler>());
+        game_controller->SubscribeHandlers(DealerHandler::DealerLogic::BETABLE, std::make_shared<DealerHandler::BetableHandler>());
+        game_controller->SubscribeHandlers(DealerHandler::DealerLogic::DEALERABLE, std::make_shared<DealerHandler::DealerableHandler>());
     }
 
     bool PlayerConnect(const std::string & nick_name, std::shared_ptr<Actors::IActor> player);

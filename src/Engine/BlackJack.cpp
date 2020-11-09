@@ -19,6 +19,8 @@ bool BlackJack::PlayerDisconnect(const std::string &nick_name) {
 void BlackJack::Run(std::istream &input, std::ostream &output) {
     game_controller->SetViewManager(std::make_shared<ConsoleLogger>(output));
 
+    game_controller->RestartGame();
+
     std::string word;
     double bet = 0;
     while (true){

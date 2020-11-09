@@ -2,8 +2,10 @@
 #define BLACKJACK_CONTROLLER_H
 
 #include <map>
+#include <unordered_map>
 #include <memory>
 #include <typeinfo>
+#include <Actors/IHandler.h>
 
 #include "Actors/IActor.h"
 #include "Actors/Dealer.h"
@@ -23,9 +25,12 @@ private:
 
     std::map<std::string, std::pair<std::shared_ptr<Actors::IActor>, double>> players;
 
+    std::unordered_map<DealerHandler::DealerLogic, std::shared_ptr<DealerHandler::IHandler>> Control_Logic;
+
     std::vector<size_t> vacancy {};
     std::vector<std::string> queue {};
 
+    DealerHandler::DealerLogic current_logic;
     size_t current_number = 0;
     std::shared_ptr<Actors::IActor> current_player;
     double * current_bet;
@@ -33,6 +38,10 @@ public:
     RelationshipController();
 
     void HandleEvent(const Event & event) override;
+
+    void NextHandler();
+
+    void SubscribeHandlers(const DealerHandler::DealerLogic & logic, std::shared_ptr<DealerHandler::IHandler>);
 
     void SetViewManager(std::shared_ptr<ILogger>);
 
@@ -46,6 +55,7 @@ public:
         ){
         dealer = new_dealer;
         player_dealer = new_dealer;
+        RestartGame();
     }
     template <typename T>
     inline constexpr void SubscribeDealer(T new_dealer){

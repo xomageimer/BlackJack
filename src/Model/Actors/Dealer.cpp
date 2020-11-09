@@ -1,136 +1,66 @@
 #include "Dealer.h"
 
+#include <iostream>
 #include <cassert>
 #include <utility>
 
+#include "IHandler.h"
 #include "Controller.h"
-#include <iostream>
 
 
 const int BLACKJACK = 21;
 const double WinFactor = 1.5f;
 const int DEALERBORDER = 17;
 
+void Actors::SimpleDealer::RefreshStack() {
+    m_stack->GenNewStacks();
+}
+
+void Actors::SimpleDealer::Hit(const GameCard::Cards & card) {
+    handler->Hit(std::shared_ptr<Actors::IActor>(this), card);
+}
+
+bool Actors::SimpleDealer::BlackJackCheck() const {
+    return m_hand == BLACKJACK;
+}
+
+void Actors::SimpleDealer::GiveCard() {
+    handler->GiveCard(std::shared_ptr<IDealer>(this));
+}
+
+void Actors::SimpleDealer::SwapPlayer() {
+    handler->SwapPlayer(std::shared_ptr<IDealer>(this));
+}
+
+void Actors::SimpleDealer::PlayOut() {
+    handler->PlayOut(std::shared_ptr<IDealer>(this), std::shared_ptr<IActor>(this));
+}
+
+void Actors::SimpleDealer::NewRound() {
+    handler->NewRound(std::shared_ptr<IDealer>(this));
+}
+
+void Actors::SimpleDealer::TakeBet(double bet) {
+    handler->TakeBet(std::shared_ptr<IDealer>(this), bet);
+}
+
+void Actors::SimpleDealer::GiveDoubleDown() {
+    handler->GiveDoubleDown(std::shared_ptr<IDealer>(this));
+}
+
 Actors::IDealer::IDealer(std::shared_ptr<IController> cntr) {
     controller = std::move(cntr);
+}
+
+void Actors::IDealer::SetHandler(std::shared_ptr<DealerHandler::IHandler> new_handler) {
+    handler = std::move(new_handler);
+    handler->SetController(controller);
 }
 
 Actors::SimpleDealer::SimpleDealer(std::shared_ptr<IController> cntr, double bank) : IDealer(cntr), m_bank(bank){
     m_stack = std::make_shared<GameCard::CardStack>(std::make_shared<GameCard::Mersenne_Generator>());
     m_stack->GenNewStacks();
     std::cerr << "Ready \n";
-}
-
-void Actors::SimpleDealer::Hit(const GameCard::Cards & card) {
-    if (this->ShowHand() < DEALERBORDER){
-        this->SetCard(card);
-        Event hit(Event::Type::HIT, std::string("Dealer take new card!"));
-        controller->HandleEvent(hit);
-    } else {
-        Event stand(Event::Type::STAND, std::string("Dealer pack ready!"));
-        controller->HandleEvent(stand);
-    }
-}
-
-const GameCard::Hand &Actors::SimpleDealer::ShowHand() const {
-    return m_hand;
-}
-
-double Actors::SimpleDealer::GetPlayerCost() const {
-    return m_bank;
-}
-
-void Actors::SimpleDealer::GiveCard() {
-    auto card = this->GetCard();
-    Event sender (Event::Type::GIVECARD, card);
-    controller->HandleEvent(sender);
-    if (this->GetPlayerHand() > BLACKJACK) {
-        Event result(Event::Type::LOSE, this->GetBet());
-        this->GetCasinoWin() += this->GetBet();
-        controller->HandleEvent(result);
-        SwapPlayer();
-    } else if (this->GetPlayerHand() == BLACKJACK){
-        SwapPlayer();
-    }
-}
-
-void Actors::SimpleDealer::SwapPlayer() {
-    this->ClearCurPlayerHand();
-    this->SetBet(0);
-    Event next(Event::Type::SWAPPLAYER, std::string("Change player"));
-    controller->HandleEvent(next);
-}
-
-void Actors::SimpleDealer::PlayOut() {
-    if (this->ShowHand() == BLACKJACK && this->GetPlayerHand() != BLACKJACK){
-        Event lose(Event::Type::LOSE, this->GetBet());
-        this->GetCasinoWin() += this->GetBet();
-        controller->HandleEvent(lose);
-    }else if (this->GetPlayerHand() == BLACKJACK){
-        auto bet = this->GetBet() + WinFactor * this->GetBet();
-        Event won(Event::Type::WIN, bet);
-        this->GetCasinoWin() -= bet;
-        controller->HandleEvent(won);
-    }else if (this->GetPlayerHand() > this->ShowHand()){
-        Event won(Event::Type::WIN, this->GetBet());
-        this->GetCasinoWin() -= this->GetBet();
-        controller->HandleEvent(won);
-    } else if (this->GetPlayerHand() < this->ShowHand()){
-        Event lose(Event::Type::LOSE, this->GetBet());
-        this->GetCasinoWin() += this->GetBet();
-        controller->HandleEvent(lose);
-    } else if (this->GetPlayerHand() == this->ShowHand()) {
-        Event draw(Event::Type::DRAW, this->GetBet());
-        controller->HandleEvent(draw);
-    }
-    Event next(Event::Type::SWAPPLAYER, std::string("Change player"));
-    controller->HandleEvent(next);
-}
-
-void Actors::SimpleDealer::NewRound() {
-    assert(this->GetPlayerHand().LookAtCards().empty());
-    Event Start (Event::Type::NEWROUND, std::string("Round Started for next player"));
-    controller->HandleEvent(Start);
-}
-
-void Actors::SimpleDealer::TakeBet(double bet) {
-    if (bet > static_cast<int>(this->max)) {
-        Event event(Event::Type::WARN,
-                    std::string("Too high bet, maximum is " + std::to_string(static_cast<int>(this->max))));
-        controller->HandleEvent(event);
-    } else if (bet < static_cast<int>(this->min)) {
-        Event event(Event::Type::WARN,
-                    std::string("Too low bet, minimum is " + std::to_string(static_cast<int>(this->min))));
-        controller->HandleEvent(event);
-    } else {
-        Event to_bet(Event::Type::MAKEBET, bet);
-        controller->HandleEvent(to_bet);
-        SwapPlayer();
-    }
-}
-
-void Actors::SimpleDealer::GiveDoubleDown() {
-    if (this->GetPlayerHand().GetSize() > 2)
-    {
-        Event denied(Event::Type::WARN, std::string("You cant make an doubledown!"));
-        controller->HandleEvent(denied);
-    }
-    else{
-        this->SetBet(this->GetBet() * 2);
-        GiveCard();
-    }
-}
-
-bool Actors::SimpleDealer::BlackJackCheck() const {
-    if (this->ShowHand() == BLACKJACK)
-    {
-        Event end(Event::Type::PLAYOUT, std::string("BlackJack for this!"));
-        controller->HandleEvent(end);
-    }
-}
-
-void Actors::SimpleDealer::RefreshStack() {
-    m_stack->GenNewStacks();
 }
 
 void Actors::SimpleDealer::SetBet(double d) {
@@ -172,4 +102,12 @@ void Actors::SimpleDealer::TimeToShuffle() {
 
 void Actors::SimpleDealer::SetCard(const GameCard::Cards & card) {
     m_hand.SetNewCard(card);
+}
+
+const GameCard::Hand &Actors::SimpleDealer::ShowHand() const {
+    return m_hand;
+}
+
+double Actors::SimpleDealer::GetPlayerCost() const {
+    return casino_win;
 }
