@@ -4,17 +4,21 @@
 #include <utility>
 
 #include "Controller.h"
+#include <iostream>
+
 
 const int BLACKJACK = 21;
-const int WinFactor = 1.5;
+const double WinFactor = 1.5f;
 const int DEALERBORDER = 17;
 
 Actors::IDealer::IDealer(std::shared_ptr<IController> cntr) {
     controller = std::move(cntr);
 }
 
-Actors::SimpleDealer::SimpleDealer(std::shared_ptr<IController> cntr) : IDealer(cntr){
-    m_stack = std::make_shared<GameCard::CardStack>();
+Actors::SimpleDealer::SimpleDealer(std::shared_ptr<IController> cntr, double bank) : IDealer(cntr), m_bank(bank){
+    m_stack = std::make_shared<GameCard::CardStack>(std::make_shared<GameCard::Mersenne_Generator>());
+    m_stack->GenNewStacks();
+    std::cerr << "Ready \n";
 }
 
 void Actors::SimpleDealer::Hit(const GameCard::Cards & card) {
@@ -33,7 +37,7 @@ const GameCard::Hand &Actors::SimpleDealer::ShowHand() const {
 }
 
 double Actors::SimpleDealer::GetPlayerCost() const {
-    return bank;
+    return m_bank;
 }
 
 void Actors::SimpleDealer::GiveCard() {
@@ -55,7 +59,6 @@ void Actors::SimpleDealer::SwapPlayer() {
     this->SetBet(0);
     Event next(Event::Type::SWAPPLAYER, std::string("Change player"));
     controller->HandleEvent(next);
-    NewRound();
 }
 
 void Actors::SimpleDealer::PlayOut() {
@@ -91,12 +94,19 @@ void Actors::SimpleDealer::NewRound() {
 }
 
 void Actors::SimpleDealer::TakeBet(double bet) {
-    if (bet > static_cast<int>(this->max)){
-        Event event(Event::Type::WARN, std::string("Too high bet, maximum is " + std::to_string(static_cast<int>(this->max))));
+    if (bet > static_cast<int>(this->max)) {
+        Event event(Event::Type::WARN,
+                    std::string("Too high bet, maximum is " + std::to_string(static_cast<int>(this->max))));
         controller->HandleEvent(event);
+    } else if (bet < static_cast<int>(this->min)) {
+        Event event(Event::Type::WARN,
+                    std::string("Too low bet, minimum is " + std::to_string(static_cast<int>(this->min))));
+        controller->HandleEvent(event);
+    } else {
+        Event to_bet(Event::Type::MAKEBET, bet);
+        controller->HandleEvent(to_bet);
+        SwapPlayer();
     }
-    Event to_bet(Event::Type::MAKEBET, bet);
-    controller->HandleEvent(to_bet);
 }
 
 void Actors::SimpleDealer::GiveDoubleDown() {
@@ -153,4 +163,13 @@ void Actors::SimpleDealer::ConfigPlayerHand(GameCard::Cards &card) {
 
 GameCard::Cards Actors::SimpleDealer::GetCard() {
     return this->m_stack->GetCard();
+}
+
+void Actors::SimpleDealer::TimeToShuffle() {
+    if ((2 * (m_stack->CardShoeSize() + m_stack->GoneCardsSize()) / 3) <= m_stack->GoneCardsSize())
+        m_stack->GenNewStacks();
+}
+
+void Actors::SimpleDealer::SetCard(const GameCard::Cards & card) {
+    m_hand.SetNewCard(card);
 }

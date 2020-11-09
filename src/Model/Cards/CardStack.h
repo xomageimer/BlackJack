@@ -29,9 +29,14 @@ namespace GameCard {
         size_t card_stack_count;
         std::shared_ptr<Generator> _gen;
     public:
-        explicit CardStack(size_t count_of_card_stacks = 4, std::shared_ptr<Generator> gen = std::make_shared<Mersenne_Generator>());
+        explicit CardStack(std::shared_ptr<Generator> gen, size_t count_of_card_stacks = 4);
 
         friend void GenerateCardPack(CardStack &);
+
+        [[nodiscard]] size_t GoneCardsSize() const;
+        [[nodiscard]] size_t CardShoeSize() const;
+
+        void TimeToShuffle();
 
         void GenNewStacks();
 
@@ -52,7 +57,7 @@ namespace GameCard {
 
         void SetNewCard(struct Cards);
 
-        size_t GetSize() const;
+        [[nodiscard]] size_t GetSize() const;
 
         friend bool operator>(const Hand&, const Hand &);
         friend bool operator<(const Hand&, const Hand &);
@@ -85,22 +90,25 @@ namespace GameCard {
             TEN,
             JACK,
             QUEEN,
-            KING
+            KING,
+
+
+            STOPPER
         };
 
         enum class CardSuit : int {
-            SPADES,
+            SPADES = 0,
             CLUBS,
             DIAMONDS,
-            HEARTS
+            HEARTS,
+
+            STOPPER
         };
 
         CardPrice price;
         CardSuit suit;
     };
 
-    Cards::CardPrice& operator++(Cards::CardPrice & cp);
-    Cards::CardSuit& operator++(Cards::CardSuit & cp);
 
 }
 

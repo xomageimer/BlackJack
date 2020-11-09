@@ -3,7 +3,9 @@
 
 #include <map>
 #include <memory>
+#include <typeinfo>
 
+#include "Actors/IActor.h"
 #include "Actors/Dealer.h"
 #include "OutputManager.h"
 
@@ -21,17 +23,37 @@ private:
 
     std::map<std::string, std::pair<std::shared_ptr<Actors::IActor>, double>> players;
 
+    std::vector<size_t> vacancy {};
+    std::vector<std::string> queue {};
+
+    size_t current_number = 0;
     std::shared_ptr<Actors::IActor> current_player;
-    double & current_bet;
+    double * current_bet;
 public:
-    RelationshipController() = default;
+    RelationshipController();
 
     void HandleEvent(const Event & event) override;
 
-    void SubscribePlayer(const std::string & player_nickname, std::shared_ptr<Actors::IActor> new_player);
-    void SubscribeDealer(std::shared_ptr<Actors::IDealer> new_dealer);
+    void SetViewManager(std::shared_ptr<ILogger>);
 
-    void UnSubscribePlayer(const std::string & player_nickname);
+    bool SubscribePlayer(std::string player_nickname, std::shared_ptr<Actors::IActor> new_player);
+    template <typename T>
+    inline constexpr auto SubscribeDealer(std::shared_ptr<T> new_dealer) noexcept ->
+        decltype (
+                std::declval<T>().GiveCard(),
+                std::declval<T>().ShowHand(),
+                void()
+        ){
+        dealer = new_dealer;
+        player_dealer = new_dealer;
+    }
+    template <typename T>
+    inline constexpr void SubscribeDealer(T new_dealer){
+        throw std::logic_error("\nERROR; FROM SUBSCRIBE DEALER METHOD; FILE: " + std::string(__FILE__) + "; ON LINE: " + std::to_string(__LINE__ - 1) + ";\nARGUMENT IS NOT INHERITED FROM IDealer AND/OR IActor;");
+    }
+
+
+    bool UnSubscribePlayer(const std::string & player_nickname);
 
     void RequestCard();
     void RequestStop();
@@ -45,17 +67,17 @@ public:
     void GiveCards(const Event &);
     void Result();
     void SetResult(const Event &);
-    void RestartGame(const Event &);
+    void RestartGame();
 
     void Output();
 };
 
-struct ViewController : public IController {
-public:
-    void HandleEvent(const Event & event) override;
-
-    void ActionWrite();
-};
+//struct ViewController : public IController {
+//public:
+//    void HandleEvent(const Event & event) override;
+//
+//    void ActionWrite();
+//};
 
 
 #endif //BLACKJACK_CONTROLLER_H

@@ -8,20 +8,19 @@
 #include "Events.h"
 #include "Cards/CardStack.h"
 
-namespace DealerHandler{
-    struct IHandler;
-}
-
 struct IController;
 
 // pattern template method
 namespace Actors {
     struct IDealer {
     public:
-        enum class MaxBet { VALUE = 100 } max;
+        static inline const int max = 600;
+        static inline const int min = 10;
 
         explicit IDealer(std::shared_ptr<IController> cntr);
         virtual ~IDealer() = default;
+
+        virtual void TimeToShuffle() = 0;
 
         virtual void TakeBet(double bet) = 0;
         virtual void GiveCard() = 0;
@@ -45,24 +44,25 @@ namespace Actors {
 
     protected:
         std::shared_ptr<IController> controller;
-        std::shared_ptr<DealerHandler::IHandler> handler;
     };
 
     struct SimpleDealer : public IActor, public IDealer {
     protected:
         std::shared_ptr<GameCard::CardStack> m_stack;
         GameCard::Hand current_player_hand;
-        double current_bet;
+        double current_bet = 0;
         double casino_win = 0;
         GameCard::Hand m_hand;
-        double bank;
+        double m_bank;
     public:
-        explicit SimpleDealer(std::shared_ptr<IController>);
+        explicit SimpleDealer(std::shared_ptr<IController>, double bank);
 
         void Hit(const GameCard::Cards &) override;
 
         [[nodiscard]] const GameCard::Hand & ShowHand() const override;
         [[nodiscard]] double GetPlayerCost() const override;
+
+        void TimeToShuffle() override;
 
         void GiveCard() override;
         void SwapPlayer() override;
@@ -83,6 +83,8 @@ namespace Actors {
         void ConfigPlayerHand(GameCard::Cards& card) override;
 
         GameCard::Cards GetCard() override;
+
+        void SetCard(const GameCard::Cards &) override;
 
     protected:
         double & GetCasinoWin() override;

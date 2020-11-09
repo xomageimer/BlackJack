@@ -1,12 +1,13 @@
 #include "CardStack.h"
 
 #include <iostream>
+#include <utility>
 
 // TODO туз должен быть 1 или 11
 
 std::ostream& operator<<(std::ostream& os, const GameCard::Cards& sc)
 {
-    os << static_cast<int>(sc.price) << ' ' << static_cast<int>(sc.suit);
+    os << static_cast<int>(sc.price) << ' ' << static_cast<int>(sc.suit) << ';';
     return os;
 }
 
@@ -21,29 +22,36 @@ std::ostream& operator<<(std::ostream& os, const std::list<GameCard::Cards>& lis
 void GameCard::CardStack::GenNewStacks() {
     m_CardShoe.splice(m_CardShoe.begin(), m_goneCards);
 
-    auto it = m_CardShoe.begin();
+    auto it = prev(m_CardShoe.end());
+    auto sec_it = std::next(m_CardShoe.begin(), _gen->seed(m_CardShoe.size()));
+    auto sec_tmp = sec_it;
 
     for (size_t i = 0; i < m_CardShoe.size(); i++) {
-        m_CardShoe.splice(m_CardShoe.begin()++, m_CardShoe, (std::advance(it, _gen->seed(card_stack_count)), it));
-        auto it = m_CardShoe.begin();
+        sec_tmp = std::next(it);
+
+        m_CardShoe.splice(it, m_CardShoe, sec_it);
+        m_CardShoe.splice(sec_tmp, m_CardShoe, it);
+
+        sec_it = std::next(m_CardShoe.begin(), _gen->seed(m_CardShoe.size()));
+        it = std::prev(prev(m_CardShoe.end()), i);
     }
 
-     std::cout << "m_CardShoe: " << m_CardShoe << "\n";
+  //   std::cout << "m_CardShoe: " << m_CardShoe << "\n";
 }
 
 GameCard::Cards::CardPrice& operator++(GameCard::Cards::CardPrice & cp){
     using Cards = GameCard::Cards::CardPrice;
-    return (cp == Cards::KING) ? cp = Cards::ACE : cp = static_cast<Cards>(static_cast<int>(cp) + 1);
+    return (cp == Cards::KING) ? cp = Cards::STOPPER : cp = static_cast<Cards>(static_cast<int>(cp) + 1);
 }
 
 GameCard::Cards::CardSuit& operator++(GameCard::Cards::CardSuit & cp){
     using Cards = GameCard::Cards::CardSuit;
-    return (cp == Cards::HEARTS) ? cp = Cards::SPADES : cp = static_cast<Cards>(static_cast<int>(cp) + 1);
+    return (cp == Cards::HEARTS) ? cp = Cards::STOPPER : cp = static_cast<Cards>(static_cast<int>(cp) + 1);
 }
 
 void GameCard::GenerateCardPack(GameCard::CardStack & cs) {
-    for (auto i = GameCard::Cards::CardSuit::SPADES; i <= GameCard::Cards::CardSuit::HEARTS; ++i){
-        for (auto j = GameCard::Cards::CardPrice::ACE; j <= GameCard::Cards::CardPrice::KING; ++j){
+    for (auto i = GameCard::Cards::CardSuit::SPADES; i != GameCard::Cards::CardSuit::STOPPER; ++i){
+        for (auto j = GameCard::Cards::CardPrice::ACE; j != GameCard::Cards::CardPrice::STOPPER; ++j){
             cs.m_CardShoe.emplace_back(GameCard::Cards{j, i});
         }
     }
@@ -57,10 +65,23 @@ GameCard::Cards GameCard::CardStack::GetCard() {
     return tmp;
 }
 
-GameCard::CardStack::CardStack(size_t count_of_card_stacks, std::shared_ptr<Generator> gen) : card_stack_count(count_of_card_stacks), _gen(gen) {
+GameCard::CardStack::CardStack(std::shared_ptr<Generator> gen, size_t count_of_card_stacks) : card_stack_count(count_of_card_stacks), _gen(std::move(gen)) {
     for (size_t i = 0; i < count_of_card_stacks; i++){
         GenerateCardPack(*this);
     }
+}
+
+void GameCard::CardStack::TimeToShuffle() {
+    if ((2 * (m_CardShoe.size() + m_goneCards.size()) / 3) <= m_goneCards.size())
+        GenNewStacks();
+}
+
+size_t GameCard::CardStack::GoneCardsSize() const {
+    return m_goneCards.size();
+}
+
+size_t GameCard::CardStack::CardShoeSize() const {
+    return m_CardShoe.size();
 }
 
 GameCard::Hand::Hand(size_t max_card_per_hand) : m_Cards (max_card_per_hand), is_open(max_card_per_hand, true){}
@@ -145,9 +166,9 @@ void GameCard::Hand::UnSecret(size_t i) {
     is_open[i] = true;
 }
 
-
 GameCard::Mersenne_Generator::Mersenne_Generator() : mersenne(std::random_device()()) {}
 
 size_t GameCard::Mersenne_Generator::seed(size_t seed_) {
-    return mersenne() % (seed_ - 1);
+    auto rand = mersenne() % (seed_ - 1);
+    return rand;
 }

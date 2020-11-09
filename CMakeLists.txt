@@ -13,9 +13,11 @@ add_executable(${PROJECT_NAME}
         src/View/OutputManager.cpp
 
         src/Controller/Controller.cpp
+
+        src/Engine/BlackJack.cpp
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE src/Controller src/Model src/View)
+target_include_directories(${PROJECT_NAME} PRIVATE src/Controller src/Model src/View src/Engine)
 
 add_executable(tests test/simple_tests.cpp)
 

@@ -12,7 +12,7 @@ void Actors::OfflinePlayer::DoubleDown(const GameCard::Cards & card1, const Game
 }
 
 void Actors::OfflinePlayer::GetResult(double fract) {
-    bank += fract;
+    m_bank += fract;
 }
 
 const GameCard::Hand & Actors::OfflinePlayer::ShowHand() const {
@@ -20,13 +20,15 @@ const GameCard::Hand & Actors::OfflinePlayer::ShowHand() const {
 }
 
 double Actors::OfflinePlayer::GetPlayerCost() const {
-    return bank;
+    return m_bank;
 }
 
 bool Actors::OfflinePlayer::BlackJackCheck() const {
     return m_hand == BLACKJACK;
 }
 
-void Actors::IActor::SetCard(const GameCard::Cards & card) {
+void Actors::OfflinePlayer::SetCard(const GameCard::Cards & card) {
     m_hand.SetNewCard(card);
 }
+
+Actors::OfflinePlayer::OfflinePlayer(double bank) : m_bank(bank) {}
