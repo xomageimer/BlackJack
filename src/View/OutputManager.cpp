@@ -1,5 +1,7 @@
 #include "OutputManager.h"
 
+#include <iostream>
+
 void OutputManager::subscribe(const std::string &name_listener, std::shared_ptr<struct ILogger> new_listener) {
     subscribers.emplace(std::piecewise_construct, std::forward_as_tuple(name_listener), std::forward_as_tuple(new_listener));
 }
@@ -32,7 +34,7 @@ void OutputManager::drop() {
 
 void ConsoleLogger::output() {
     for (auto & i : buffer){
-        out << i + '\n';
+        out << i << '\n';
     }
     buffer.clear();
 }

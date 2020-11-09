@@ -17,7 +17,7 @@ void Actors::SimpleDealer::RefreshStack() {
 }
 
 void Actors::SimpleDealer::Hit(const GameCard::Cards & card) {
-    handler->Hit(std::shared_ptr<Actors::IActor>(this), card);
+    handler->Hit(this, card);
 }
 
 bool Actors::SimpleDealer::BlackJackCheck() const {
@@ -25,42 +25,37 @@ bool Actors::SimpleDealer::BlackJackCheck() const {
 }
 
 void Actors::SimpleDealer::GiveCard() {
-    handler->GiveCard(std::shared_ptr<IDealer>(this));
+    handler->GiveCard(this);
 }
 
 void Actors::SimpleDealer::SwapPlayer() {
-    handler->SwapPlayer(std::shared_ptr<IDealer>(this));
+    handler->SwapPlayer(this);
 }
 
 void Actors::SimpleDealer::PlayOut() {
-    handler->PlayOut(std::shared_ptr<IDealer>(this), std::shared_ptr<IActor>(this));
+    handler->PlayOut(this, this);
 }
 
 void Actors::SimpleDealer::NewRound() {
-    handler->NewRound(std::shared_ptr<IDealer>(this));
+    handler->NewRound(this);
 }
 
 void Actors::SimpleDealer::TakeBet(double bet) {
-    handler->TakeBet(std::shared_ptr<IDealer>(this), bet);
+    handler->TakeBet(this, bet);
 }
 
 void Actors::SimpleDealer::GiveDoubleDown() {
-    handler->GiveDoubleDown(std::shared_ptr<IDealer>(this));
-}
-
-Actors::IDealer::IDealer(std::shared_ptr<IController> cntr) {
-    controller = std::move(cntr);
+    handler->GiveDoubleDown(this);
 }
 
 void Actors::IDealer::SetHandler(std::shared_ptr<DealerHandler::IHandler> new_handler) {
     handler = std::move(new_handler);
-    handler->SetController(controller);
 }
 
-Actors::SimpleDealer::SimpleDealer(std::shared_ptr<IController> cntr, double bank) : IDealer(cntr), m_bank(bank){
+Actors::SimpleDealer::SimpleDealer(double bank) : m_bank(bank){
     m_stack = std::make_shared<GameCard::CardStack>(std::make_shared<GameCard::Mersenne_Generator>());
     m_stack->GenNewStacks();
-    std::cerr << "Ready \n";
+    std::cout << "Ready \n";
 }
 
 void Actors::SimpleDealer::SetBet(double d) {

@@ -28,35 +28,35 @@ namespace DealerHandler {
 
         virtual void SetController(std::shared_ptr<IController>);
 
-        virtual void GiveCard(std::shared_ptr<Actors::IDealer>){
+        virtual void GiveCard([[maybe_unused]] Actors::IDealer *){
             throw std::logic_error("");
         }
 
-        virtual void SwapPlayer(std::shared_ptr<Actors::IDealer>){
+        virtual void SwapPlayer([[maybe_unused]] Actors::IDealer *){
             throw std::logic_error("");
         }
 
-        virtual void PlayOut(std::shared_ptr<Actors::IDealer>, std::shared_ptr<Actors::IActor> player_dealer){
+        virtual void PlayOut([[maybe_unused]] Actors::IDealer *, [[maybe_unused]] Actors::IActor * player_dealer){
             throw std::logic_error("");
         }
 
-        virtual void NewRound(std::shared_ptr<Actors::IDealer>){
+        virtual void NewRound([[maybe_unused]] Actors::IDealer *){
             throw std::logic_error("");
         }
 
-        virtual void TakeBet(std::shared_ptr<Actors::IDealer>, double) {
+        virtual void TakeBet([[maybe_unused]] Actors::IDealer *, double) {
             throw std::logic_error("");
         }
 
-        virtual void GiveDoubleDown(std::shared_ptr<Actors::IDealer>) {
+        virtual void GiveDoubleDown([[maybe_unused]] Actors::IDealer *) {
             throw std::logic_error("");
         }
 
-        virtual void Hit(std::shared_ptr<Actors::IActor>, const GameCard::Cards & card) {
+        virtual void Hit([[maybe_unused]] Actors::IActor *, [[maybe_unused]] const GameCard::Cards & card) {
             throw std::logic_error("");
         }
 
-        virtual void ShowHand(std::shared_ptr<Actors::IActor>){
+        virtual void ShowHand([[maybe_unused]] Actors::IActor *){
             throw std::logic_error("");
         }
 
@@ -65,35 +65,35 @@ namespace DealerHandler {
     // TODO тут должен быть ответный запрос в контроллер
     struct DealerableHandler : public IHandler {
     public:
-        void GiveCard(std::shared_ptr<Actors::IDealer>) override;
+        void GiveCard(Actors::IDealer *) override;
 
-        void SwapPlayer(std::shared_ptr<Actors::IDealer>) override;
+        void SwapPlayer(Actors::IDealer *) override;
 
-        void PlayOut(std::shared_ptr<Actors::IDealer>, std::shared_ptr<Actors::IActor> player_dealer) override;
+        void PlayOut(Actors::IDealer *, Actors::IActor * player_dealer) override;
 
-        void NewRound(std::shared_ptr<Actors::IDealer>) override;
+        void NewRound(Actors::IDealer *) override;
 
-        void TakeBet(std::shared_ptr<Actors::IDealer>, double) override;
+        void TakeBet([[maybe_unused]] Actors::IDealer *, [[maybe_unused]] double) override;
 
-        void GiveDoubleDown(std::shared_ptr<Actors::IDealer>) override;
+        void GiveDoubleDown(Actors::IDealer *) override;
     };
 
     struct BetableHandler : public IHandler {
     public:
-        void GiveCard(std::shared_ptr<Actors::IDealer>) override;
+        void GiveCard([[maybe_unused]] Actors::IDealer *) override;
 
-        void SwapPlayer(std::shared_ptr<Actors::IDealer>) override;
+        void SwapPlayer([[maybe_unused]] Actors::IDealer *) override;
 
-        void TakeBet(std::shared_ptr<Actors::IDealer>, double) override;
+        void TakeBet([[maybe_unused]] Actors::IDealer *, double) override;
 
-        void GiveDoubleDown(std::shared_ptr<Actors::IDealer>) override;
+        void GiveDoubleDown([[maybe_unused]] Actors::IDealer *) override;
     };
 
     struct PlayableHandler : public IHandler{
     public:
-        void SwapPlayer(std::shared_ptr<Actors::IDealer>) override;
+        void SwapPlayer(Actors::IDealer *) override;
 
-        void Hit(std::shared_ptr<Actors::IActor>, const GameCard::Cards & card) override;
+        void Hit(Actors::IActor *, const GameCard::Cards & card) override;
     };
 
     // Состояние злопамятного диллера

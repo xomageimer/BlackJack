@@ -118,11 +118,15 @@ void RelationshipController::RequestDoubleCard() {
     dealer->GiveDoubleDown();
 }
 
-///// TODO научить диллера менять хендлер
+// TODO научить диллера менять хендлер
+// TODO можно добавить состояние New_State кт будет давать следующее состояние
+// TODO ПОЧЕМУ-ТО НЕТ В ДИЛЕРАБЛ И ПЛЕЕБЛ КОНТРОЛЛЕРА
 
 void RelationshipController::RestartGame() {
-    current_number = 0;
+    current_logic = DealerHandler::DealerLogic::BETABLE;
     dealer->SetHandler(Control_Logic.at(current_logic));
+    current_number = 0;
+    dealer->SwapPlayer();
 }
 
 void RelationshipController::GiveCards(const Event & event) {
@@ -143,15 +147,12 @@ void RelationshipController::MakeBet(const Event & event) {
 }
 
 void RelationshipController::ChangePlayer(const Event & event) {
-    auto cur = (current_number == queue.size()) ? std::pair(player_dealer, player_dealer->GetPlayerCost()) : players.at(queue[current_number++]);
+    auto cur = (current_number == queue.size()) ? std::pair(player_dealer, double(0.f)) : players.at(queue[current_number++]);
     current_player = cur.first;
     current_bet = &cur.second;
-    if (current_logic != DealerHandler::DealerLogic::PLAYABLE && current_player == player_dealer){
+    if (current_player == player_dealer){
         current_number = 0;
         NextHandler();
-    } else if (current_logic == DealerHandler::DealerLogic::PLAYABLE && current_player == player_dealer){
-        current_number = 0;
-        RequestCard();
     } else {
         om->notify(event.GetData<std::string>());
         om->notify("Player number " + std::to_string(current_number) + "'s turn");
@@ -184,6 +185,18 @@ void RelationshipController::SetResult(const Event & event) {
 
 void RelationshipController::Output() {
     // показывать все карты
+    if (current_logic != DealerHandler::DealerLogic::BETABLE) {
+        size_t number = 1;
+        std::string message = "";
+        for (auto &i : players) {
+            message += std::to_string(number++) + "'st Player hand: ";
+            for (GameCard::Cards j : i.second.first->ShowHand().LookAtCards()) {
+                message += j.operator std::string() + ' ';
+            }
+            om->notify(message);
+            message.clear();
+        }
+    }
     om->drop();
 }
 
@@ -195,13 +208,16 @@ RelationshipController::RelationshipController() : om(std::make_shared<OutputMan
 
 void RelationshipController::SubscribeHandlers(const DealerHandler::DealerLogic &logic,
                                                std::shared_ptr<DealerHandler::IHandler> handler) {
-    Control_Logic.emplace(std::piecewise_construct, std::forward_as_tuple(logic), std::forward_as_tuple(handler));
+    auto it = Control_Logic.emplace(std::piecewise_construct, std::forward_as_tuple(logic), std::forward_as_tuple(handler));
+    it.first->second->SetController(std::shared_ptr<RelationshipController>(this));
 }
 
 void RelationshipController::NextHandler() {
     switch (current_logic) {
         case DealerHandler::DealerLogic::BETABLE :
             current_logic = DealerHandler::DealerLogic::DEALERABLE;
+      //      dealer->SwapPlayer();
+       //     dealer->NewRound();
             break;
         case DealerHandler::DealerLogic::DEALERABLE :
             current_logic = DealerHandler::DealerLogic::PLAYABLE;

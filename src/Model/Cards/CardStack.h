@@ -1,6 +1,7 @@
 #ifndef BLACKJACK_CARDSTACK_H
 #define BLACKJACK_CARDSTACK_H
 
+#include <map>
 #include <list>
 #include <vector>
 #include <random>
@@ -19,6 +20,7 @@ namespace GameCard {
         Mersenne_Generator();
         size_t seed(size_t seed_) override;
     };
+
 
     struct CardStack {
     private:
@@ -42,6 +44,8 @@ namespace GameCard {
 
         struct Cards GetCard();
     };
+
+    void GenerateCardPack(CardStack &);
 
     struct Hand {
     private:
@@ -76,6 +80,18 @@ namespace GameCard {
         [[nodiscard]] int total() const;
     };
 
+    bool operator>(const Hand&, const Hand &);
+    bool operator<(const Hand&, const Hand &);
+
+    bool operator>(const Hand&, int);
+    bool operator<(const Hand&, int);
+
+    bool operator==(const Hand&, const Hand &);
+    bool operator==(const Hand&, int);
+
+    bool operator!=(const Hand&, const Hand &);
+    bool operator!=(const Hand&, int);
+
     struct Cards {
         enum class CardPrice : int {
             ACE = 1,
@@ -105,8 +121,24 @@ namespace GameCard {
             STOPPER
         };
 
+        static inline std::map<GameCard::Cards::CardPrice, std::string> m_value{
+                {GameCard::Cards::CardPrice::ACE, "A"},
+                {GameCard::Cards::CardPrice::KING, "K"},
+                {GameCard::Cards::CardPrice::QUEEN, "Q"},
+                {GameCard::Cards::CardPrice::JACK, "J"}
+
+        };
+        static inline std::map<GameCard::Cards::CardSuit, std::string> m_suit{
+                {GameCard::Cards::CardSuit::HEARTS, "♥"},
+                {GameCard::Cards::CardSuit::SPADES, "♠"},
+                {GameCard::Cards::CardSuit::DIAMONDS, "♦"},
+                {GameCard::Cards::CardSuit::CLUBS, "♣"}
+        };
+
         CardPrice price;
         CardSuit suit;
+
+        explicit operator std::string();
     };
 
 

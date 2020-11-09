@@ -12,8 +12,6 @@ namespace DealerHandler {
     struct IHandler;
 }
 
-struct IController;
-
 // pattern template method
 namespace Actors {
     struct IDealer {
@@ -21,7 +19,7 @@ namespace Actors {
         static inline const int max = 600;
         static inline const int min = 10;
 
-        explicit IDealer(std::shared_ptr<IController> cntr);
+        explicit IDealer() = default;
         virtual ~IDealer() = default;
 
         virtual void SetHandler(std::shared_ptr<DealerHandler::IHandler> new_handler);
@@ -49,7 +47,6 @@ namespace Actors {
         virtual void RefreshStack() = 0;
 
     protected:
-        std::shared_ptr<IController> controller;
         std::shared_ptr<DealerHandler::IHandler> handler;
     };
 
@@ -62,7 +59,7 @@ namespace Actors {
         GameCard::Hand m_hand;
         double m_bank;
     public:
-        explicit SimpleDealer(std::shared_ptr<IController>, double bank);
+        explicit SimpleDealer(double bank);
 
         void Hit(const GameCard::Cards &) override;
 

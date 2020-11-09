@@ -33,7 +33,7 @@ private:
     DealerHandler::DealerLogic current_logic;
     size_t current_number = 0;
     std::shared_ptr<Actors::IActor> current_player;
-    double * current_bet;
+    double * current_bet = nullptr;
 public:
     RelationshipController();
 
@@ -55,7 +55,6 @@ public:
         ){
         dealer = new_dealer;
         player_dealer = new_dealer;
-        RestartGame();
     }
     template <typename T>
     inline constexpr void SubscribeDealer(T new_dealer){
