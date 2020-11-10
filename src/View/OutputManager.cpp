@@ -36,6 +36,7 @@ void ConsoleLogger::output() {
     for (auto & i : buffer){
         out << i << '\n';
     }
+    out << "---------------------------" << std::endl;
     buffer.clear();
 }
 

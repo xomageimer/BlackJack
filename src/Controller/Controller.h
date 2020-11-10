@@ -23,7 +23,8 @@ private:
     std::shared_ptr<Actors::IDealer> dealer;
     std::shared_ptr<Actors::IActor> player_dealer;
 
-    std::map<std::string, std::pair<std::shared_ptr<Actors::IActor>, double>> players;
+    std::map<std::string, std::shared_ptr<Actors::IActor>> players;
+    std::vector<double> bets;
 
     std::unordered_map<DealerHandler::DealerLogic, std::shared_ptr<DealerHandler::IHandler>> Control_Logic;
 
@@ -33,7 +34,7 @@ private:
     DealerHandler::DealerLogic current_logic;
     size_t current_number = 0;
     std::shared_ptr<Actors::IActor> current_player;
-    double * current_bet = nullptr;
+   // double * current_bet = nullptr;
 public:
     RelationshipController();
 

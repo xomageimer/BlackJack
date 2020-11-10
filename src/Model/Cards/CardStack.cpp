@@ -123,7 +123,7 @@ int GameCard::Hand::total() const {
 
     for (auto & i : LookAtCards()){
         if (i.price != Cards::CardPrice::ACE)
-            h_price += (i.price > Cards::CardPrice::TEN) ? static_cast<int>(i.price) : 10;
+            h_price += (i.price <= Cards::CardPrice::TEN) ? static_cast<int>(i.price) : 10;
         else
             h_price += 11;
     }

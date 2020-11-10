@@ -38,10 +38,10 @@ namespace Actors {
 
         virtual double & GetCasinoWin() = 0;
 
-        virtual void SetPlayerHand(GameCard::Hand &) = 0;
+        virtual void SetPlayerHand(const GameCard::Hand &) = 0;
         [[nodiscard]] virtual const GameCard::Hand & GetPlayerHand() const = 0;
         virtual void ClearCurPlayerHand() = 0;
-        virtual void ConfigPlayerHand(GameCard::Cards& card) = 0;
+//        virtual void ConfigPlayerHand(GameCard::Cards& card) = 0;
         virtual GameCard::Cards GetCard() = 0;
 
         virtual void RefreshStack() = 0;
@@ -53,7 +53,7 @@ namespace Actors {
     struct SimpleDealer : public IActor, public IDealer {
     protected:
         std::shared_ptr<GameCard::CardStack> m_stack;
-        GameCard::Hand current_player_hand;
+        const GameCard::Hand * current_player_hand;
         double current_bet = 0;
         double casino_win = 1'000.f;
         GameCard::Hand m_hand;
@@ -81,10 +81,10 @@ namespace Actors {
         void SetBet(double) override;
         [[nodiscard]] double GetBet() const override;
 
-        void SetPlayerHand(GameCard::Hand &) override;
+        void SetPlayerHand(const GameCard::Hand &) override;
         [[nodiscard]] const GameCard::Hand & GetPlayerHand() const override;
         void ClearCurPlayerHand() override;
-        void ConfigPlayerHand(GameCard::Cards& card) override;
+//        void ConfigPlayerHand(GameCard::Cards& card) override;
 
         GameCard::Cards GetCard() override;
 

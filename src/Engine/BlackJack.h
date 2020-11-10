@@ -26,6 +26,7 @@ public:
         game_controller->SubscribeHandlers(DealerHandler::DealerLogic::PLAYABLE, std::make_shared<DealerHandler::PlayableHandler>());
         game_controller->SubscribeHandlers(DealerHandler::DealerLogic::BETABLE, std::make_shared<DealerHandler::BetableHandler>());
         game_controller->SubscribeHandlers(DealerHandler::DealerLogic::DEALERABLE, std::make_shared<DealerHandler::DealerableHandler>());
+        game_controller->SubscribeHandlers(DealerHandler::DealerLogic::DISTRIB, std::make_shared<DealerHandler::DistributionHandler>());
     }
 
     bool PlayerConnect(const std::string & nick_name, std::shared_ptr<Actors::IActor> player);

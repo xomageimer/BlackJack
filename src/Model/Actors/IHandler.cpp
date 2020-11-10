@@ -23,8 +23,7 @@ void DealerHandler::DealerableHandler::GiveCard(Actors::IDealer * dealer) {
 }
 
 void DealerHandler::DealerableHandler::SwapPlayer(Actors::IDealer * dealer) {
-    dealer->ClearCurPlayerHand();
-    dealer->SetBet(0);
+   // dealer->ClearCurPlayerHand();
     Event next(Event::Type::SWAPPLAYER, std::string("Change player"));
     controller->HandleEvent(next);
 }
@@ -56,7 +55,7 @@ void DealerHandler::DealerableHandler::PlayOut(Actors::IDealer * dealer, Actors:
 }
 
 void DealerHandler::DealerableHandler::NewRound(Actors::IDealer * dealer) {
-    assert(dealer->GetPlayerHand().LookAtCards().empty());
+    //assert(dealer->GetPlayerHand().LookAtCards().empty());
     Event Start (Event::Type::NEWROUND, std::string("Round Started for next player"));
     controller->HandleEvent(Start);
     SwapPlayer(dealer);
@@ -76,7 +75,10 @@ void DealerHandler::DealerableHandler::GiveDoubleDown(Actors::IDealer * dealer) 
     else
     {
         dealer->SetBet(dealer->GetBet() * 2);
+        Event to_bet(Event::Type::MAKEBET, dealer->GetBet());
+        controller->HandleEvent(to_bet);
         GiveCard(dealer);
+        SwapPlayer(dealer);
     }
 }
 
@@ -128,7 +130,60 @@ void DealerHandler::PlayableHandler::SwapPlayer(Actors::IDealer *) {
     controller->HandleEvent(next);
 }
 
+void DealerHandler::PlayableHandler::GiveCard(Actors::IDealer * dealer) {
+    auto card = dealer->GetCard();
+    Event sender (Event::Type::GIVECARD, card);
+    controller->HandleEvent(sender);
+}
+
+void DealerHandler::PlayableHandler::PlayOut(Actors::IDealer * dealer, Actors::IActor *player_dealer) {
+    if (player_dealer->ShowHand() == BLACKJACK && dealer->GetPlayerHand() != BLACKJACK){
+        Event lose(Event::Type::LOSE, dealer->GetBet());
+        dealer->GetCasinoWin() += dealer->GetBet();
+        controller->HandleEvent(lose);
+    }else if (dealer->GetPlayerHand() == BLACKJACK){
+        auto bet = dealer->GetBet() + WinFactor * dealer->GetBet();
+        Event won(Event::Type::WIN, bet);
+        dealer->GetCasinoWin() -= bet;
+        controller->HandleEvent(won);
+    }else if (dealer->GetPlayerHand() > player_dealer->ShowHand()){
+        Event won(Event::Type::WIN, dealer->GetBet());
+        dealer->GetCasinoWin() -= dealer->GetBet();
+        controller->HandleEvent(won);
+    } else if (dealer->GetPlayerHand() < player_dealer->ShowHand()){
+        Event lose(Event::Type::LOSE, dealer->GetBet());
+        dealer->GetCasinoWin() += dealer->GetBet();
+        controller->HandleEvent(lose);
+    } else if (dealer->GetPlayerHand() == player_dealer->ShowHand()) {
+        Event draw(Event::Type::DRAW, dealer->GetBet());
+        controller->HandleEvent(draw);
+    }
+    Event next(Event::Type::SWAPPLAYER, std::string("Change player"));
+    controller->HandleEvent(next);
+}
+
 
 void DealerHandler::IHandler::SetController(std::shared_ptr<IController> cntr) {
     controller = std::move(cntr);
+}
+
+void DealerHandler::DistributionHandler::NewRound(Actors::IDealer * dealer) {
+    Event Start (Event::Type::NEWROUND, std::string("Round Started for next player"));
+    controller->HandleEvent(Start);
+    SwapPlayer(dealer);
+}
+
+void DealerHandler::DistributionHandler::SwapPlayer(Actors::IDealer *) {
+    Event next(Event::Type::SWAPPLAYER, std::string("Change player"));
+    controller->HandleEvent(next);
+}
+
+void DealerHandler::DistributionHandler::GiveCard(Actors::IDealer * dealer) {
+    auto card = dealer->GetCard();
+    Event sender (Event::Type::GIVECARD, card);
+    controller->HandleEvent(sender);
+}
+
+void DealerHandler::DistributionHandler::Hit(Actors::IActor * dealer, const GameCard::Cards &card) {
+    dealer->SetCard(card);
 }

@@ -70,21 +70,17 @@ double &Actors::SimpleDealer::GetCasinoWin() {
     return this->casino_win;
 }
 
-void Actors::SimpleDealer::SetPlayerHand(GameCard::Hand & hand) {
-    this->m_hand = hand;
-}
-
 const GameCard::Hand &Actors::SimpleDealer::GetPlayerHand() const {
-    return this->current_player_hand;;
+    return *this->current_player_hand;;
 }
 
 void Actors::SimpleDealer::ClearCurPlayerHand() {
-    this->current_player_hand.Clear();
+    this->current_player_hand = nullptr;
 }
-
-void Actors::SimpleDealer::ConfigPlayerHand(GameCard::Cards &card) {
-    this->current_player_hand.SetNewCard(card);
-}
+//
+//void Actors::SimpleDealer::ConfigPlayerHand(GameCard::Cards &card) {
+//    this->current_player_hand.SetNewCard(card);
+//}
 
 GameCard::Cards Actors::SimpleDealer::GetCard() {
     return this->m_stack->GetCard();
@@ -105,4 +101,8 @@ const GameCard::Hand &Actors::SimpleDealer::ShowHand() const {
 
 double Actors::SimpleDealer::GetPlayerCost() const {
     return casino_win;
+}
+
+void Actors::SimpleDealer::SetPlayerHand(const GameCard::Hand & hand) {
+    this->current_player_hand = &hand;
 }

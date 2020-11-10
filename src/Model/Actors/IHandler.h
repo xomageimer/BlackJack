@@ -17,7 +17,8 @@ namespace DealerHandler {
     enum class DealerLogic : int {
         BETABLE,
         DEALERABLE,
-        PLAYABLE
+        PLAYABLE,
+        DISTRIB
     };
 
     struct IHandler {
@@ -91,9 +92,23 @@ namespace DealerHandler {
 
     struct PlayableHandler : public IHandler{
     public:
+        void PlayOut(Actors::IDealer *, Actors::IActor * player_dealer) override;
+
         void SwapPlayer(Actors::IDealer *) override;
 
+        void GiveCard(Actors::IDealer *) override;
+
         void Hit(Actors::IActor *, const GameCard::Cards & card) override;
+    };
+
+    struct DistributionHandler : public IHandler {
+        void Hit(Actors::IActor *, const GameCard::Cards & card) override;
+
+        void NewRound(Actors::IDealer *) override;
+
+        void GiveCard(Actors::IDealer *) override;
+
+        void SwapPlayer(Actors::IDealer *) override;
     };
 
     // Состояние злопамятного диллера
