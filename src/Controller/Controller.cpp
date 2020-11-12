@@ -186,4 +186,33 @@ void RelationshipController::SetViewManager(std::shared_ptr<ILogger> man) {
 RelationshipController::RelationshipController() : om(std::make_shared<OutputManager>()) {}
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+IController::IController(GameGround * grnd) : m_facade(grnd) {}
+
+void IController::NextState(const IController::DealerLogic & logic) {
+    m_facade->SetState(logic);
+}
+
+void BetableController::HandleEvent(const Event &event) {
+    switch (event.type){
+        case Event::Type::BET:
+            m_facade->IssuingBet(event);
+            break;
+        case Event::Type::MAKEBET:
+            m_facade->MakeBet(event);
+            m_facade->Output();
+            break;
+        case Event::Type::SWAPPLAYER:
+
+            break;
+        case Event::Type::WARN :
+        default:
+            m_facade->OutWarn(event);
+    }
+}
+
+void DistributionController::HandleEvent(const Event &event) {
+
+}
 

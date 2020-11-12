@@ -9,6 +9,7 @@ add_executable(${PROJECT_NAME}
         src/Model/Actors/Dealer.cpp
         src/Model/Actors/IActor.cpp
         src/Model/Cards/CardStack.cpp
+        src/Model/Actors/GameGround.cpp
 
         src/View/OutputManager.cpp
 

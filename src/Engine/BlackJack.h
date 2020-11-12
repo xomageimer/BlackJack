@@ -2,10 +2,9 @@
 #define BLACKJACK_BLACKJACK_H
 
 // TODO функция которая будет вечно ожидать ввод для обработки в контроллер
+#include <unordered_map>
 
-#include "Actors/Dealer.h"
-#include "Actors/IActor.h"
-#include "Controller.h"
+#include "Actors/GameGround.h"
 #include "Cards/CardStack.h"
 #include "Actors/Events.h"
 #include "OutputManager.h"
@@ -17,11 +16,9 @@ public:
         return jack_black;
     }
 
-    void SetController(std::shared_ptr<RelationshipController> contr);
-
     template <typename T>
     void SetDealer(std::shared_ptr<T> concrete_dealer){
-        game_controller->SubscribeDealer(concrete_dealer);
+        _grounds->SubscribeDealer(concrete_dealer);
     }
 
     bool PlayerConnect(const std::string & nick_name, std::shared_ptr<Actors::IActor> player);
@@ -31,7 +28,7 @@ public:
 
 private:
     BlackJack() = default;
-    std::shared_ptr<RelationshipController> game_controller;
+    std::shared_ptr<GameGround> _grounds;
 
     std::map<std::string, Event::Type> commands{
             {"BET", Event::Type::BET},

@@ -5,19 +5,15 @@
 
 
 bool BlackJack::PlayerConnect(const std::string &nick_name, std::shared_ptr<Actors::IActor> player) {
-    return game_controller->SubscribePlayer(nick_name, std::move(player));
-}
-
-void BlackJack::SetController(std::shared_ptr<RelationshipController> contr) {
-    game_controller = contr;
+    return _grounds->SubscribePlayer(nick_name, std::move(player));
 }
 
 bool BlackJack::PlayerDisconnect(const std::string &nick_name) {
-    return game_controller->UnSubscribePlayer(nick_name);
+    return _grounds->UnSubscribePlayer(nick_name);
 }
 
 void BlackJack::Run(std::istream &input, std::ostream &output) {
-    game_controller->SetViewManager(std::make_shared<ConsoleLogger>(output));
+    _grounds->SetViewManager(std::make_shared<ConsoleLogger>(output));
 
     std::string word;
     double bet = 0;
@@ -28,7 +24,7 @@ void BlackJack::Run(std::istream &input, std::ostream &output) {
                 input >> bet;
             }
             Event request(commands[word], bet);
-            game_controller->HandleEvent(request);
+            _grounds->GetState()->HandleEvent(request);
         }else if (word == "EXIT")
             break;
         else{

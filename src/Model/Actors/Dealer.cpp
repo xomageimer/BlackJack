@@ -11,11 +11,8 @@ const int BLACKJACK = 21;
 const double WinFactor = 1.5f;
 const int DEALERBORDER = 17;
 
-Actors::IDealer::IDealer(std::shared_ptr<IController> cntr) {
-    controller = std::move(cntr);
-}
 
-Actors::SimpleDealer::SimpleDealer(std::shared_ptr<IController> cntr, double bank) : IDealer(cntr), m_bank(bank){
+Actors::SimpleDealer::SimpleDealer(int bank) : m_bank(bank){
     m_stack = std::make_shared<GameCard::CardStack>(std::make_shared<GameCard::Mersenne_Generator>());
     m_stack->GenNewStacks();
     std::cerr << "Ready \n";
@@ -36,7 +33,7 @@ const GameCard::Hand &Actors::SimpleDealer::ShowHand() const {
     return m_hand;
 }
 
-double Actors::SimpleDealer::GetPlayerCost() const {
+int Actors::SimpleDealer::GetPlayerCost() const {
     return m_bank;
 }
 
@@ -55,7 +52,6 @@ void Actors::SimpleDealer::GiveCard() {
 }
 
 void Actors::SimpleDealer::SwapPlayer() {
-    this->ClearCurPlayerHand();
     this->SetBet(0);
     Event next(Event::Type::SWAPPLAYER, std::string("Change player"));
     controller->HandleEvent(next);
@@ -91,9 +87,10 @@ void Actors::SimpleDealer::NewRound() {
     assert(this->GetPlayerHand().LookAtCards().empty());
     Event Start (Event::Type::NEWROUND, std::string("Round Started for next player"));
     controller->HandleEvent(Start);
+    SwapPlayer();
 }
 
-void Actors::SimpleDealer::TakeBet(double bet) {
+void Actors::SimpleDealer::TakeBet(int bet) {
     if (bet > static_cast<int>(this->max)) {
         Event event(Event::Type::WARN,
                     std::string("Too high bet, maximum is " + std::to_string(static_cast<int>(this->max))));
@@ -126,22 +123,24 @@ bool Actors::SimpleDealer::BlackJackCheck() const {
     {
         Event end(Event::Type::PLAYOUT, std::string("BlackJack for this!"));
         controller->HandleEvent(end);
+        return true;
     }
+    return false;
 }
 
 void Actors::SimpleDealer::RefreshStack() {
     m_stack->GenNewStacks();
 }
 
-void Actors::SimpleDealer::SetBet(double d) {
+void Actors::SimpleDealer::SetBet(int d) {
     this->current_bet = d;
 }
 
-double Actors::SimpleDealer::GetBet() const {
+int Actors::SimpleDealer::GetBet() const {
     return this->current_bet;
 }
 
-double &Actors::SimpleDealer::GetCasinoWin() {
+int &Actors::SimpleDealer::GetCasinoWin() {
     return this->casino_win;
 }
 
@@ -150,15 +149,7 @@ void Actors::SimpleDealer::SetPlayerHand(GameCard::Hand & hand) {
 }
 
 const GameCard::Hand &Actors::SimpleDealer::GetPlayerHand() const {
-    return this->current_player_hand;;
-}
-
-void Actors::SimpleDealer::ClearCurPlayerHand() {
-    this->current_player_hand.Clear();
-}
-
-void Actors::SimpleDealer::ConfigPlayerHand(GameCard::Cards &card) {
-    this->current_player_hand.SetNewCard(card);
+    return *this->current_player_hand;;
 }
 
 GameCard::Cards Actors::SimpleDealer::GetCard() {
@@ -172,4 +163,8 @@ void Actors::SimpleDealer::TimeToShuffle() {
 
 void Actors::SimpleDealer::SetCard(const GameCard::Cards & card) {
     m_hand.SetNewCard(card);
+}
+
+void Actors::IDealer::SetController(std::shared_ptr<IController> cntr) {
+    controller = std::move(cntr);
 }

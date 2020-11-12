@@ -6,7 +6,7 @@
 
 #include "Cards/CardStack.h"
 
-using DataType = std::variant<double, GameCard::Cards, GameCard::Hand, std::string>;
+using DataType = std::variant<int, GameCard::Cards, GameCard::Hand, std::string>;
 // , std::pair<GameCard::Cards, GameCard::Cards>
 
 struct Event {

@@ -39,7 +39,7 @@ void GameCard::CardStack::GenNewStacks() {
         }
     }
 
-     std::cout << "m_CardShoe: " << m_CardShoe << "\n";
+    // std::cout << "m_CardShoe: " << m_CardShoe << "\n";
 }
 
 GameCard::Cards::CardPrice& operator++(GameCard::Cards::CardPrice & cp){
@@ -87,7 +87,7 @@ size_t GameCard::CardStack::CardShoeSize() const {
     return m_CardShoe.size();
 }
 
-GameCard::Hand::Hand(size_t max_card_per_hand) : m_Cards (max_card_per_hand), is_open(max_card_per_hand, true){}
+GameCard::Hand::Hand(size_t max_card_per_hand) : is_open(max_card_per_hand, true) {m_Cards.reserve(max_card_per_hand);}
 
 const std::vector<GameCard::Cards> &GameCard::Hand::LookAtCards() const {
     return this->m_Cards;
@@ -123,7 +123,7 @@ int GameCard::Hand::total() const {
 
     for (auto & i : LookAtCards()){
         if (i.price != Cards::CardPrice::ACE)
-            h_price += (i.price > Cards::CardPrice::TEN) ? static_cast<int>(i.price) : 10;
+            h_price += (i.price <= Cards::CardPrice::TEN) ? static_cast<int>(i.price) : 10;
         else
             h_price += 11;
     }
@@ -174,4 +174,13 @@ GameCard::Mersenne_Generator::Mersenne_Generator() : mersenne(std::random_device
 size_t GameCard::Mersenne_Generator::seed(size_t seed_) {
     auto rand = mersenne() % (seed_ - 1);
     return rand;
+}
+
+GameCard::Cards::operator std::string() {
+    auto o_value = m_value.find(this->price);
+    auto o_suit = m_suit.find(this->suit);
+    std::string out = (((o_value == m_value.end())
+                          ? std::to_string(static_cast<int>(this->price))
+                          : o_value->second) + o_suit->second);
+    return out;
 }

@@ -11,7 +11,7 @@ void Actors::OfflinePlayer::DoubleDown(const GameCard::Cards & card1, const Game
     SetCard(card2);
 }
 
-void Actors::OfflinePlayer::GetResult(double fract) {
+void Actors::OfflinePlayer::GetResult(int fract) {
     m_bank += fract;
 }
 
@@ -19,7 +19,7 @@ const GameCard::Hand & Actors::OfflinePlayer::ShowHand() const {
     return m_hand;
 }
 
-double Actors::OfflinePlayer::GetPlayerCost() const {
+int Actors::OfflinePlayer::GetPlayerCost() const {
     return m_bank;
 }
 
@@ -31,4 +31,4 @@ void Actors::OfflinePlayer::SetCard(const GameCard::Cards & card) {
     m_hand.SetNewCard(card);
 }
 
-Actors::OfflinePlayer::OfflinePlayer(double bank) : m_bank(bank) {}
+Actors::OfflinePlayer::OfflinePlayer(int bank) : m_bank(bank) {}
