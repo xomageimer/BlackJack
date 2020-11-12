@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <iostream>
 #include <memory>
 
 #include "Cards/CardStack.h"

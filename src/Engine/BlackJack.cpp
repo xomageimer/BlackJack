@@ -3,7 +3,6 @@
 
 #include "BlackJack.h"
 
-
 bool BlackJack::PlayerConnect(const std::string &nick_name, std::shared_ptr<Actors::IActor> player) {
     return _grounds->SubscribePlayer(nick_name, std::move(player));
 }

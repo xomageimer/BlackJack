@@ -81,20 +81,19 @@ void GameGround::Output() {
 }
 
 void GameGround::ChangePlayer(const Event & event) {
-    current_number = (current_number == queue.size()) ? (current_player = player_dealer, queue.size())
+    current_number = (current_number == queue.size()) ? (current_player = player_dealer, 0)
                                                       : (current_player = players.at(queue.at(current_number)),
                                                               current_number + 1);
     if (current_player != player_dealer) {
-        om->notify(event.GetData<std::string>() + "Player turn number " + std::to_string(current_number));
+        om->notify(event.GetData<std::string>() + "\nPlayer turn number " + std::to_string(current_number++));
     } else {
-        om->notify(event.GetData<std::string>() + "Dealer turn");
+        om->notify(event.GetData<std::string>() + "\nDealer turn");
     }
 }
 
 void GameGround::SetState(const IController::DealerLogic & logic) {
     cur_controller = controllerrs.at(logic);
     dealer->SetController(controllerrs.at(logic));
-    dealer->SwapPlayer();
 }
 
 std::shared_ptr<IController> GameGround::GetState() {

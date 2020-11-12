@@ -40,6 +40,7 @@ void ConsoleLogger::output() {
     for (auto & i : buffer){
         out << i + '\n';
     }
+    out << std::flush;
     buffer.clear();
 }
 

@@ -51,7 +51,7 @@ namespace Actors {
         // TODO хранить руку (мб указатель на нее) и ставку в паре
         std::shared_ptr<GameCard::CardStack> m_stack;
 
-        GameCard::Hand * current_player_hand;
+        GameCard::Hand * current_player_hand = nullptr;
         int current_bet = 0;
 
         int casino_win = 0;

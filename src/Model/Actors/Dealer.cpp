@@ -6,11 +6,9 @@
 #include "Controller.h"
 #include <iostream>
 
-
 const int BLACKJACK = 21;
 const double WinFactor = 1.5f;
 const int DEALERBORDER = 17;
-
 
 Actors::SimpleDealer::SimpleDealer(int bank) : m_bank(bank){
     m_stack = std::make_shared<GameCard::CardStack>(std::make_shared<GameCard::Mersenne_Generator>());

@@ -23,7 +23,7 @@ public:
 protected:
     GameGround * m_facade;
 public:
-    IController (GameGround * grnd);
+    explicit IController (GameGround * grnd);
 
     virtual ~IController() = default;
 
@@ -32,19 +32,21 @@ public:
 };
 
 struct BetableController : public IController {
-    BetableController(GameGround *pGround) : IController(pGround) {}
+    explicit BetableController(GameGround *pGround) : IController(pGround) {}
+
+    void NextState(const DealerLogic &) override;
 
     void HandleEvent(const Event & event) override;
 };
 
 struct DistributionController : public IController {
-    DistributionController(GameGround *pGround) : IController(pGround) {}
+    explicit DistributionController(GameGround *pGround) : IController(pGround) {}
 
     void HandleEvent(const Event & event) override;
 };
 
 struct DealerableController : public IController {
-    DealerableController(GameGround *pGround) : IController(pGround) {}
+    explicit DealerableController(GameGround *pGround) : IController(pGround) {}
 
     void HandleEvent(const Event & event) override;
 };
@@ -53,7 +55,7 @@ struct PlayeableController : public IController {
 private:
     int count = 0;
 public:
-    PlayeableController(GameGround *pGround) : IController(pGround) {}
+    explicit PlayeableController(GameGround *pGround) : IController(pGround) {}
 
     void HandleEvent(const Event & event) override;
 };

@@ -1,7 +1,6 @@
 #include "Controller.h"
 #include "Actors/GameGround.h"
 
-
 IController::IController(GameGround * grnd) : m_facade(grnd) {}
 
 void IController::NextState(const IController::DealerLogic & logic) {
@@ -18,19 +17,26 @@ void BetableController::HandleEvent(const Event &event) {
             m_facade->Output();
             break;
         case Event::Type::SWAPPLAYER:
-            m_facade->ChangePlayer(event);
-            m_facade->Output();
-            // TODO обнулить таймер
             if (m_facade->is_around()) {
-                NextState(IController::DealerLogic::DISTRIB);
                 m_facade->Destroy();
+                NextState(IController::DealerLogic::DISTRIB);
+            } else {
+                // TODO обнулить таймер
+                m_facade->ChangePlayer(event);
+                m_facade->Output();
             }
             break;
         // TODO event (от таймера) отказ от участия если вовремя не получается ставка и перенос в AFK
         case Event::Type::WARN :
         default:
             m_facade->OutWarn(event);
+            m_facade->Output();
     }
+}
+
+void BetableController::NextState(const IController::DealerLogic & logic) {
+    m_facade->SetState(logic);
+    HandleEvent(Event(Event::Type::NEWROUND, std::string("start_new_state")));
 }
 
 void DistributionController::HandleEvent(const Event &event) {
@@ -42,8 +48,8 @@ void DistributionController::HandleEvent(const Event &event) {
                 m_facade->NewRound();
                 m_facade->Output();
             } else {
-                NextState(DealerLogic::DEALERABLE);
                 m_facade->Destroy();
+                NextState(DealerLogic::DEALERABLE);
             }
             break;
         case Event::Type::GIVECARD :
@@ -54,7 +60,7 @@ void DistributionController::HandleEvent(const Event &event) {
             m_facade->Output();
             break;
         default:
-            m_facade->Output();
+            break;
     }
 }
 
@@ -81,8 +87,8 @@ void DealerableController::HandleEvent(const Event &event) {
         case Event::Type::SWAPPLAYER :
             m_facade->ChangePlayer(event);
             if (m_facade->is_around()) {
-                NextState(IController::DealerLogic::PLAYABLE);
                 m_facade->Destroy();
+                NextState(IController::DealerLogic::PLAYABLE);
             }
             m_facade->Output();
             break;
@@ -98,6 +104,7 @@ void DealerableController::HandleEvent(const Event &event) {
         case Event::Type::WARN :
         default:
             m_facade->OutWarn(event);
+            m_facade->Output();
             break;
     }
 }
@@ -115,15 +122,13 @@ void PlayeableController::HandleEvent(const Event &event) {
                 m_facade->IssuingCards();
                 count = 0;
             }
-            m_facade->Destroy();
+            m_facade->Output();
             break;
         case Event::Type::GIVECARD :
             m_facade->GiveCards(event);
             m_facade->Output();
             break;
-        case Event::Type::WARN :
         default:
-            m_facade->OutWarn(event);
             break;
     }
 }
