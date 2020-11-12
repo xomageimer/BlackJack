@@ -30,6 +30,12 @@ void OutputManager::drop() {
     }
 }
 
+void OutputManager::destroy() {
+    for(auto & i : subscribers){
+        i.second->clear();
+    }
+}
+
 void ConsoleLogger::output() {
     for (auto & i : buffer){
         out << i + '\n';
@@ -39,4 +45,8 @@ void ConsoleLogger::output() {
 
 void ILogger::update(std::string str) {
     buffer.push_back(str);
+}
+
+void ILogger::clear() {
+    buffer.clear();
 }

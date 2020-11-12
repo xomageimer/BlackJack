@@ -61,6 +61,10 @@ void GameGround::IssuingStop() {
     dealer->SwapPlayer();
 }
 
+void GameGround::IssuingDoubleDown() {
+    dealer->GiveDoubleDown();
+}
+
 void GameGround::IssuingBet(const Event & event) {
     dealer->TakeBet(event.GetData<int>());
 }
@@ -70,8 +74,8 @@ void GameGround::MakeBet(const Event & event) {
     om->notify("Player " + std::to_string(current_number) + " made a bet: " + std::to_string(event.GetData<int>()));
 }
 
-void GameGround::OutWarn(const Event & event) {
-    om->notify(event.GetData<std::string>());
+void GameGround::OutWarn([[maybe_unused]]const Event & event) {
+    om->notify("You cant do it!");
 }
 
 void GameGround::Output() {
@@ -79,14 +83,66 @@ void GameGround::Output() {
 }
 
 void GameGround::ChangePlayer(const Event & event) {
-
+    current_number = (current_number == queue.size()) ? (current_player = player_dealer, queue.size())
+                                                      : (current_player = players.at(queue.at(current_number)),
+                                                              current_number + 1);
+    if (current_player != player_dealer) {
+        om->notify(event.GetData<std::string>() + "Player turn number " + std::to_string(current_number));
+    } else {
+        om->notify(event.GetData<std::string>() + "Dealer turn");
+    }
 }
 
 void GameGround::SetState(const IController::DealerLogic & logic) {
     cur_controller = controllerrs.at(logic);
     dealer->SetController(controllerrs.at(logic));
+    dealer->SwapPlayer();
 }
 
 std::shared_ptr<IController> GameGround::GetState() {
     return cur_controller;
+}
+
+bool GameGround::is_around() const {
+    return current_player == player_dealer;
+}
+
+void GameGround::Destroy() {
+    om->destroy();
+}
+
+void GameGround::NewRound() {
+    dealer->NewRound();
+}
+
+void GameGround::SetResult(const Event & event) {
+    if (event.type == Event::Type::WIN) {
+        current_player->GetResult(event.GetData<int>());
+        om->notify("Player won: " + std::to_string(event.GetData<int>()));
+    } else if (event.type == Event::Type::LOSE){
+        current_player->GetResult((-1) * event.GetData<int>());
+        om->notify("Player lost: " + std::to_string(event.GetData<int>()));
+
+        // TODO вырезать лузера из списка текущих игроков
+      //  queue.erase(current_number);
+     //   auto tmp = players.at(queue.at(current_number));
+        //AFK_players.emplace(
+    } else if (event.type == Event::Type::DRAW){
+        current_player->GetResult(event.GetData<int>());
+        om->notify("Draw, Player get back: " + std::to_string(event.GetData<int>()));
+    }
+}
+
+void GameGround::GiveCards(const Event & event) {
+    current_player->Hit(event.GetData<GameCard::Cards>());
+    om->notify("Player took a card: ");
+    om->notify(event.GetData<GameCard::Cards>());
+}
+
+void GameGround::Result() {
+    dealer->PlayOut();
+}
+
+void GameGround::TimeToShuffle() {
+    dealer->TimeToShuffle();
 }

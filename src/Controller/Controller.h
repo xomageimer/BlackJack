@@ -27,24 +27,13 @@ public:
 
     virtual void HandleEvent(const Event & event) = 0;
     virtual void NextState(const DealerLogic &);
-
-    // TODO раскинуть по разным контроллерам
-
-    void OutWarn(const Event &);
-
-    void MakeBet(const Event &);
-    void ChangePlayer(const Event &);
-    void GiveCards(const Event &);
-    void Result();
-    void SetResult(const Event &);
-    void RestartGame();
-
-    void Output();
 };
 
 
 struct BetableController : public IController {
     BetableController(GameGround *pGround) : IController(g) {}
+
+    void NextState(const DealerLogic &) override;
 
     void HandleEvent(const Event & event) override;
 };
@@ -62,6 +51,9 @@ struct DealerableController : public IController {
 };
 
 struct PlayeableController : public IController {
+private:
+    int count = 0;
+public:
     explicit PlayeableController(GameGround * g) : IController(g) {}
 
     void HandleEvent(const Event & event) override;

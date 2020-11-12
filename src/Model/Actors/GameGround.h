@@ -36,6 +36,8 @@ public:
     void SetState(const IController::DealerLogic &);
     std::shared_ptr<IController> GetState();
 
+    bool is_around() const;
+
     explicit GameGround (std::shared_ptr<OutputManager> output);
 
     void SetViewManager(std::shared_ptr<ILogger>);
@@ -58,20 +60,27 @@ public:
 
     bool UnSubscribePlayer(const std::string & player_nickname);
 
+    void TimeToShuffle();
+
     void IssuingCards();
     void IssuingStop();
     void IssuingBet(const Event &);
+    void IssuingDoubleDown();
 
     void OutWarn(const Event &);
 
     void MakeBet(const Event &);
     void ChangePlayer(const Event &);
+
+    void NewRound();
+
     void GiveCards(const Event &);
-    void Result();
     void SetResult(const Event &);
-    void RestartGame();
 
     void Output();
+    void Destroy();
+
+    void Result();
 
 };
 

@@ -34,6 +34,7 @@ public:
     void notify(const GameCard::Cards & new_info);
     void unsubscribe(const std::string & listener);
     void drop();
+    void destroy();
 };
 
 struct ILogger {
@@ -42,6 +43,7 @@ protected:
 public:
     virtual void update(std::string);
     virtual void output() = 0;
+    virtual void clear();
 };
 
 struct ConsoleLogger : public ILogger {

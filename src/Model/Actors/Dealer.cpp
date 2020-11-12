@@ -42,9 +42,9 @@ void Actors::SimpleDealer::GiveCard() {
     Event sender (Event::Type::GIVECARD, card);
     controller->HandleEvent(sender);
     if (this->GetPlayerHand() > BLACKJACK) {
-        Event result(Event::Type::LOSE, this->GetBet());
-        this->GetCasinoWin() += this->GetBet();
-        controller->HandleEvent(result);
+//        Event result(Event::Type::LOSE, this->GetBet());
+//        this->GetCasinoWin() += this->GetBet();
+//        controller->HandleEvent(result);
         SwapPlayer();
     } else if (this->GetPlayerHand() == BLACKJACK){
         SwapPlayer();
@@ -85,7 +85,7 @@ void Actors::SimpleDealer::PlayOut() {
 
 void Actors::SimpleDealer::NewRound() {
     assert(this->GetPlayerHand().LookAtCards().empty());
-    Event Start (Event::Type::NEWROUND, std::string("Round Started for next player"));
+    Event Start (Event::Type::NEWROUND, std::string("Round Started for next"));
     controller->HandleEvent(Start);
     SwapPlayer();
 }
