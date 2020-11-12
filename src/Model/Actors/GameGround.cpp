@@ -11,8 +11,6 @@ GameGround::GameGround(std::shared_ptr<OutputManager> output) : om(std::move(out
                          std::forward_as_tuple(std::make_shared<DistributionController>(this)));
     controllerrs.emplace(std::piecewise_construct, std::forward_as_tuple(IController::DealerLogic::PLAYABLE),
                          std::forward_as_tuple(std::make_shared<PlayeableController>(this)));
-
-    cur_controller = controllerrs.at(IController::DealerLogic::BETABLE);
 }
 
 bool GameGround::SubscribePlayer(std::string player_nickname, std::shared_ptr<Actors::IActor> new_player) {

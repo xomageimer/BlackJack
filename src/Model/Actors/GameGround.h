@@ -6,8 +6,8 @@
 
 #include "Actors/IActor.h"
 #include "Actors/Dealer.h"
-#include "Controller.h"
 #include "OutputManager.h"
+#include "Controller.h"
 
 const size_t MAX_PLAYER_COUNT = 7;
 

@@ -14,9 +14,10 @@ bool BlackJack::PlayerDisconnect(const std::string &nick_name) {
 
 void BlackJack::Run(std::istream &input, std::ostream &output) {
     _grounds->SetViewManager(std::make_shared<ConsoleLogger>(output));
+    _grounds->SetState(IController::DealerLogic::BETABLE);
 
     std::string word;
-    double bet = 0;
+    int bet = 0;
     while (true){
         input >> word;
         if (commands.count(word)){
@@ -33,4 +34,8 @@ void BlackJack::Run(std::istream &input, std::ostream &output) {
             input.ignore(256, '\n');
         }
     }
+}
+
+BlackJack::BlackJack() {
+    _grounds = std::make_shared<GameGround>(std::make_shared<OutputManager>());
 }

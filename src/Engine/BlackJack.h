@@ -2,12 +2,7 @@
 #define BLACKJACK_BLACKJACK_H
 
 // TODO функция которая будет вечно ожидать ввод для обработки в контроллер
-#include <unordered_map>
-
 #include "Actors/GameGround.h"
-#include "Cards/CardStack.h"
-#include "Actors/Events.h"
-#include "OutputManager.h"
 
 struct BlackJack {
 public:
@@ -27,7 +22,7 @@ public:
     void Run(std::istream& input, std::ostream& output);
 
 private:
-    BlackJack() = default;
+    BlackJack();
     std::shared_ptr<GameGround> _grounds;
 
     std::map<std::string, Event::Type> commands{

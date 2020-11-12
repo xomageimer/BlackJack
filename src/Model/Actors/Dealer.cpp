@@ -63,7 +63,7 @@ void Actors::SimpleDealer::PlayOut() {
         this->GetCasinoWin() += this->GetBet();
         controller->HandleEvent(lose);
     }else if (this->GetPlayerHand() == BLACKJACK){
-        auto bet = this->GetBet() + WinFactor * this->GetBet();
+        int bet = this->GetBet() + WinFactor * static_cast<double>(this->GetBet());
         Event won(Event::Type::WIN, bet);
         this->GetCasinoWin() -= bet;
         controller->HandleEvent(won);
