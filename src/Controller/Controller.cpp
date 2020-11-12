@@ -42,6 +42,7 @@ void BetableController::NextState(const IController::DealerLogic & logic) {
 void DistributionController::HandleEvent(const Event &event) {
     switch (event.type){
         case Event::Type::NEWROUND :
+            m_facade->be_a_dealer();
             m_facade->IssuingCards();
             m_facade->IssuingCards();
             if (!m_facade->is_around()) {

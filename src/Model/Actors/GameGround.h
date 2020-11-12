@@ -52,11 +52,14 @@ public:
     ){
         dealer = new_dealer;
         player_dealer = new_dealer;
+        players.emplace(std::piecewise_construct, std::forward_as_tuple("dealer"), std::forward_as_tuple(player_dealer));
     }
     template <typename T>
     inline constexpr void SubscribeDealer(T new_dealer){
         throw std::logic_error("\nERROR; FROM SUBSCRIBE DEALER METHOD; FILE: " + std::string(__FILE__) + "; ON LINE: " + std::to_string(__LINE__ - 1) + ";\nARGUMENT IS NOT INHERITED FROM IDealer AND/OR IActor;");
     }
+
+    void be_a_dealer();
 
     bool UnSubscribePlayer(const std::string & player_nickname);
 
