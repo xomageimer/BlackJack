@@ -5,7 +5,7 @@
 // TODO мб стоит засунуть ground внутрь диллера и передавать shared_ptr на player
 
 Controller::IDealer::IDealer() {
-    cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::DEALERABLE),
+     cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::DEALERABLE),
                         std::forward_as_tuple(std::make_shared<DealerHandlers::DealerableHandler>()));
     cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::BETABLE),
                         std::forward_as_tuple(std::make_shared<DealerHandlers::BetableHandler>()));

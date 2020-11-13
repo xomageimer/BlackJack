@@ -39,7 +39,8 @@ namespace DealerHandlers {
     };
 
     struct DistributionHandler : public IDealerHandler{
-        void NewRound(Controller::IDealer *, Actors::IPlayer *) override;// в конце просто reset
+        void NewRound(Controller::IDealer *, Actors::IPlayer *) override;
+        void SwapPlayer(Controller::IDealer *, Actors::IPlayer *) override;
     };
 
     struct PlayableHandler : public IDealerHandler{

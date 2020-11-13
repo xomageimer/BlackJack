@@ -31,35 +31,36 @@ void DealerHandlers::BetableHandler::TakeBet(Controller::IDealer * dealer, Actor
         std::cout << "MAKE BET " + std::to_string(bet) << std::endl;
         dealer->MakeBet(bet);
         SwapPlayer(dealer, player);
-
-        if (dealer->IsPlayerDealer()) {
-            dealer->set_current(Controller::IDealer::states::DISTRIBUTION);
-            dealer->NewRound();
-        }
     }else {
         std::cout << "INVALID BET" << std::endl;
     }
 }
 
-void DealerHandlers::BetableHandler::SwapPlayer(Controller::IDealer * dealer, Actors::IPlayer * player) {
-    if (dealer->IsPlayerDealer())
-        dealer->Reset();
+void DealerHandlers::BetableHandler::SwapPlayer(Controller::IDealer * dealer, [[maybe_unused]] Actors::IPlayer * player) {
     dealer->Next();
+    if (dealer->IsPlayerDealer()) {
+        dealer->set_current(Controller::IDealer::states::DISTRIBUTION);
+        dealer->NewRound();
+    }
 }
 
-void DealerHandlers::DistributionHandler::NewRound(Controller::IDealer * dealer, Actors::IPlayer * player) {
+void DealerHandlers::DistributionHandler::NewRound(Controller::IDealer * dealer, [[maybe_unused]] Actors::IPlayer * player) {
     while (!dealer->IsPlayerDealer()){
         dealer->Next();
     }
     std::cout << "Dealer take x 2 card" << std::endl;
-    dealer->Reset();
-    dealer->Next();
+    SwapPlayer(dealer, player);
     while (!dealer->IsPlayerDealer()){
         std::cout << "GIVE CARD x 2" << std::endl;
         dealer->Next();
     }
     dealer->set_current(Controller::IDealer::states::DEALERABLE);
-    dealer->Reset();
+    SwapPlayer(dealer, player);
+}
+
+void DealerHandlers::DistributionHandler::SwapPlayer(Controller::IDealer * dealer, [[maybe_unused]] Actors::IPlayer * player) {
+    if (dealer->IsPlayerDealer())
+        dealer->Reset();
     dealer->Next();
 }
 
@@ -69,12 +70,11 @@ void DealerHandlers::PlayableHandler::GiveCard(Controller::IDealer * dealer, Act
     }
     std::cout << "Dealer take a card, becouse his xod!" << std::endl;
 
-    dealer->Reset();
-    dealer->Next();
+    SwapPlayer(dealer, player);
     PlayOut(dealer, player);
 }
 
-void DealerHandlers::PlayableHandler::SwapPlayer(Controller::IDealer * dealer, Actors::IPlayer * player) {
+void DealerHandlers::PlayableHandler::SwapPlayer(Controller::IDealer * dealer, [[maybe_unused]] Actors::IPlayer * player) {
     if (dealer->IsPlayerDealer())
         dealer->Reset();
     dealer->Next();
@@ -87,6 +87,6 @@ void DealerHandlers::PlayableHandler::PlayOut(Controller::IDealer * dealer, Acto
         SwapPlayer(dealer, player);
     }
     dealer->set_current(Controller::IDealer::states::BETABLE);
-    dealer->Reset();
-    dealer->Next();
+    dealer->TimeToShuffle();
+    SwapPlayer(dealer, player);
 }

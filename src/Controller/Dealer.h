@@ -63,7 +63,10 @@ namespace Controller {
         GameCard::Hand m_hand;
 
     public:
-        explicit SimpleDealer(int bank) : m_bank(bank) {};
+        explicit SimpleDealer(int bank) : m_bank(bank) {
+            m_stack = std::make_shared<GameCard::CardStack>(std::make_shared<GameCard::Mersenne_Generator>());
+            m_stack->GenNewStacks();
+        };
 
         void SetCard(const GameCard::Cards &) override;
         [[nodiscard]] bool BlackJackCheck() const override;
