@@ -41,6 +41,10 @@ void Controller::IDealer::MakeBet(int bet) {
     ground->TakeBet(bet);
 }
 
+GameCard::Cards Controller::IDealer::GetCard() {
+    return m_stack->GetCard();
+}
+
 void Controller::SimpleDealer::SetCard(const GameCard::Cards & card) {
     m_hand.SetNewCard(card);
 }
@@ -92,4 +96,8 @@ void Controller::SimpleDealer::NewRound() {
 
 void Controller::SimpleDealer::GiveDoubleDown() {
     cur_handler->GiveDoubleDown(this, current_player);
+}
+
+int Controller::SimpleDealer::GetBet() const {
+    return player_bet;
 }

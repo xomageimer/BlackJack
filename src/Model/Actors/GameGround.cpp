@@ -67,6 +67,47 @@ void GameGround::Reset() {
 }
 
 void GameGround::Display(const Event & event) {
+    switch (event.Response){
+        case Event::DealerResponse::WARN :
+            om->notify(event.GetData<std::string>());
+            Output();
+            break;
+        case Event::DealerResponse::MAKEBET :
+            om->notify(std::string("Player " + std::to_string(current_number) + " Made a Bet: " + std::to_string(event.GetData<int>())));
+            Output();
+            break;
+        case Event::DealerResponse::GIVECARD :
+            if (CheckPlayerEQDealer()){
+                om->notify(std::string("Dealer Take a Card: "));
+            } else {
+                om->notify(std::string("Player " + std::to_string(current_number) + " Take a Card: "));
+            }
+            om->notify(event.GetData<GameCard::Cards>());
+            Output();
+            break;
+        case Event::DealerResponse::DOUBLEDOWN :
+            om->notify(std::string("Player " + std::to_string(current_number) + " Doubled the Bet  : " + std::to_string(bets[current_number-1]) + " and Take Card: "));
+            om->notify(event.GetData<GameCard::Cards>());
+            Output();
+            break;
+        case Event::DealerResponse::SWAPPLAYER :
+            om->notify(std::string("Change Player"));
+            Output();
+            break;
+        case Event::DealerResponse::STATE :
+            om->notify(std::string("Change State"));
+            Output();
+            break;
+        case Event::DealerResponse::WIN :
+        case Event::DealerResponse::LOSE :
+        case Event::DealerResponse::DRAW :
+            om->notify(event.GetData<std::string>());
+            Output();
+            break;
+        default:
+            Destroy();
+            break;
+    }
     // свитчом бегать по евентам и выплевывать в om вывод
     // Если это специфичный евент можно вывести сразу, а можно накопить его и вывести потом
 }

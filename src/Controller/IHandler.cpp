@@ -3,7 +3,7 @@
 #include <iostream>
 
 void DealerHandlers::DealerableHandler::GiveCard(Controller::IDealer * dealer, Actors::IPlayer * player) {
-    if (player->ShowHand().total() > 21)
+    if (player->ShowHand().total() > BLACKJACK)
         SwapPlayer(dealer, player);
     else {
         std::cout << "GIVE CARD" << std::endl;
@@ -31,7 +31,7 @@ void DealerHandlers::BetableHandler::TakeBet(Controller::IDealer * dealer, Actor
         std::cout << "MAKE BET " + std::to_string(bet) << std::endl;
         dealer->MakeBet(bet);
         SwapPlayer(dealer, player);
-    }else {
+    } else {
         std::cout << "INVALID BET" << std::endl;
     }
 }
@@ -71,7 +71,7 @@ void DealerHandlers::PlayableHandler::GiveCard(Controller::IDealer * dealer, Act
     std::cout << "Dealer take a card, becouse his xod!" << std::endl;
 
     SwapPlayer(dealer, player);
-    PlayOut(dealer, player);
+    dealer->PlayOut();
 }
 
 void DealerHandlers::PlayableHandler::SwapPlayer(Controller::IDealer * dealer, [[maybe_unused]] Actors::IPlayer * player) {

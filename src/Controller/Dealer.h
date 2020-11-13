@@ -3,6 +3,10 @@
 
 #include "Actors/IPlayer.h"
 
+const int BLACKJACK = 21;
+const double WinFactor = 1.5f;
+const int DEALERBORDER = 17;
+
 struct GameGround;
 
 namespace DealerHandlers {
@@ -39,6 +43,9 @@ namespace Controller {
         void Reset();
         void MakeBet(int bet);
 
+        [[nodiscard]] virtual int GetBet() const = 0;
+        virtual GameCard::Cards GetCard();
+
         virtual void Next();
         virtual void SetPlayer(Actors::IPlayer *, int) = 0;
         virtual void TimeToShuffle() = 0;
@@ -71,6 +78,8 @@ namespace Controller {
         void SetCard(const GameCard::Cards &) override;
         [[nodiscard]] bool BlackJackCheck() const override;
         void GetRoundResult(int) override;
+
+        int GetBet() const override;
 
         [[nodiscard]] const GameCard::Hand &ShowHand() const override;
         [[nodiscard]] int GetPlayerCost() const override;
