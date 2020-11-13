@@ -1,8 +1,9 @@
 #include "GameGround.h"
 
 #include <algorithm>
+#include <utility>
 
-bool GameGround::SubscribePlayer(std::string player_nickname, std::shared_ptr<Actors::IActor> new_player) {
+bool GameGround::SubscribePlayer(std::string player_nickname, std::shared_ptr<Actors::IPlayer> new_player) {
     // TODO можно проверять хватает ли у плеера фишек
     if (queue.size() < MAX_PLAYER_COUNT) {
         queue.emplace_back(player_nickname);
@@ -43,55 +44,57 @@ bool GameGround::UnSubscribePlayer(const std::string &player_nickname) {
     return true;
 }
 
-//void GameGround::MakeBet(const Event & event) {
-//    bets[current_number] = event.GetData<int>();
-//    om->notify("Player " + std::to_string(current_number) + " made a bet: " + std::to_string(event.GetData<int>()));
-//}
-//
-//void GameGround::OutWarn([[maybe_unused]]const Event & event) {
-//    om->notify("You cant do it!");
-//}
-
 void GameGround::Output() {
     om->drop();
-}
-
-void GameGround::ChangePlayer(const Event & event) {
-    current_number = (current_number == queue.size()) ? 0 : current_number + 1;
-    current_player = players.at(queue.at(current_number));
-    om->notify(event.GetData<std::string>() + " on " + std::to_string(current_number));
 }
 
 void GameGround::Destroy() {
     om->destroy();
 }
 
-//void GameGround::SetResult(const Event & event) {
-//    if (event.type == Event::Type::WIN) {
-//        current_player->GetResult(event.GetData<int>());
-//        om->notify("Player won: " + std::to_string(event.GetData<int>()));
-//    } else if (event.type == Event::Type::LOSE){
-//        current_player->GetResult((-1) * event.GetData<int>());
-//        om->notify("Player lost: " + std::to_string(event.GetData<int>()));
-//
-//        // TODO вырезать лузера из списка текущих игроков
-//      //  queue.erase(current_number);
-//     //   auto tmp = players.at(queue.at(current_number));
-//        //AFK_players.emplace(
-//    } else if (event.type == Event::Type::DRAW){
-//        current_player->GetResult(event.GetData<int>());
-//        om->notify("Draw, Player get back: " + std::to_string(event.GetData<int>()));
-//    }
-//}
+GameGround::GameGround(std::shared_ptr<OutputManager> output) : om(std::move(output)) {}
 
-//void GameGround::GiveCards(const Event & event) {
-//    current_player->Hit(event.GetData<GameCard::Cards>());
-//    om->notify("Player took a card: ");
-//    om->notify(event.GetData<GameCard::Cards>());
-//}
-
-void GameGround::Result() {
-    dealer->PlayOut();
+// сначала change потом действие
+void GameGround::ChangePlayer() {
+    int current_bet;
+    current_player = (current_number == queue.size()) ? (current_bet = 0, player_dealer)
+            : (current_bet = bets[current_number], players.at(queue.at(current_number++)));
+    dealer->SetPlayer(current_player.get(), current_bet);
 }
 
-GameGround::GameGround(std::shared_ptr<OutputManager> output) : om(output) {}
+void GameGround::Reset() {
+    current_number = 0;
+}
+
+void GameGround::Display(const Event & event) {
+    // свитчом бегать по евентам и выплевывать в om вывод
+    // Если это специфичный евент можно вывести сразу, а можно накопить его и вывести потом
+}
+
+bool GameGround::CheckPlayerEQDealer() const {
+    return current_player == player_dealer;
+}
+
+void GameGround::TakeBet(int bet) {
+    bets[current_number - 1] = bet;
+}
+
+void GameGround::Listen(const Event & event) {
+    switch (event.Request) {
+        case Event::PlayerRequests::HIT :
+            dealer->GiveCard();
+            break;
+        case Event::PlayerRequests::BET :
+            dealer->TakeBet(event.GetData<int>());
+            break;
+        case Event::PlayerRequests::STAND :
+            dealer->SwapPlayer();
+            break;
+        case Event::PlayerRequests::DOUBLEDOWN :
+            dealer->GiveDoubleDown();
+            break;
+        default :
+            std::cout << "YOU CANT DO IT" << std::endl;
+    }
+}
+

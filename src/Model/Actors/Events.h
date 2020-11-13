@@ -11,22 +11,41 @@ using DataType = std::variant<int, GameCard::Cards, GameCard::Hand, std::string>
 
 struct Event {
 public:
-    enum class Type {
-        WARN,
-        DOUBLEDOWN,
+    enum class PlayerGameStatus : int {
         WIN,
         LOSE,
-        STAND,
         DRAW,
+    } GameStatus;
+    enum class PlayerRequests : int {
+        BET,
+        HIT,
+        STAND,
+        DOUBLEDOWN
+    } Request;
+    enum class DealerResponse : int {
+        WARN,
+        DOUBLEDOWN,
         MAKEBET,
         GIVECARD,
         SWAPPLAYER,
         STATE
-    } type;
+    } Response;
 
     template <typename T>
-    Event(const Type & new_type, const T & val){
-        type = new_type;
+    Event(const DealerResponse & new_type, const T & val){
+        Response = new_type;
+        data.emplace<T>(val);
+    }
+
+    template <typename T>
+    Event(const PlayerRequests & new_type, const T & val){
+        Request = new_type;
+        data.emplace<T>(val);
+    }
+
+    template <typename T>
+    Event(const PlayerGameStatus & new_type, const T & val){
+        GameStatus = new_type;
         data.emplace<T>(val);
     }
 

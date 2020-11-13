@@ -8,7 +8,7 @@ int main() {
 
     std::shared_ptr<Actors::OfflinePlayer> player1(new Actors::OfflinePlayer(1000));
     std::shared_ptr<Actors::OfflinePlayer> player2(new Actors::OfflinePlayer(1000));
-    std::shared_ptr<Actors::SimpleDealer> dealer(new Actors::SimpleDealer(1000));
+    std::shared_ptr<Controller::SimpleDealer> dealer(new Controller::SimpleDealer(1000));
 
     BlackJack::Instance().PlayerConnect("Player1", player1);
     BlackJack::Instance().PlayerConnect("Player2", player2);

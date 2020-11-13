@@ -7,18 +7,18 @@ add_executable(${PROJECT_NAME}
         src/main.cpp
 
         src/Controller/Dealer.cpp
-        src/Model/Actors/IActor.cpp
+        src/Controller/IHandler.cpp
+
+        src/Model/Actors/IPlayer.cpp
         src/Model/Cards/CardStack.cpp
         src/Model/Actors/GameGround.cpp
 
         src/View/OutputManager.cpp
 
-        src/Controller/IHandler.cpp
-
         src/Engine/BlackJack.cpp
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE src/Controller src/Model src/View src/Engine)
+target_include_directories(${PROJECT_NAME} PRIVATE src src/Model src/View src/Engine)
 
 add_executable(tests test/simple_tests.cpp)
 

@@ -1,16 +1,13 @@
 #ifndef BLACKJACK_IPLAYER_H
 #define BLACKJACK_IPLAYER_H
 
+#include "Events.h"
+#include "Cards/CardStack.h"
+
 namespace Actors {
+    const int BLACKJACK = 21;
     struct IPlayer {
     public:
-        enum class PlayerCommands : int {
-            BET,
-            HIT,
-            STAND,
-            DOUBLEDOWN
-        };
-
         virtual ~IPlayer() = default;
         IPlayer() = default;
 
@@ -22,7 +19,7 @@ namespace Actors {
         [[nodiscard]] virtual int GetPlayerCost() const = 0;
     };
 
-    struct OfflinePlayer : public IPlyaer{
+    struct OfflinePlayer : public IPlayer{
     protected:
         GameCard::Hand m_hand;
         int m_bank;
@@ -30,12 +27,11 @@ namespace Actors {
         explicit OfflinePlayer(int bank) : m_bank(bank) {}
 
         void SetCard(const GameCard::Cards &) override;
-        [[nodiscard]] virtual bool BlackJackCheck() const override;
-        void GetRoundResult(int) = 0;
+        [[nodiscard]] bool BlackJackCheck() const override;
+        void GetRoundResult(int) override;
 
         [[nodiscard]] const GameCard::Hand &ShowHand() const override;
         [[nodiscard]] int GetPlayerCost() const override;
-
     };
 
 

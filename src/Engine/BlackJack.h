@@ -16,7 +16,7 @@ public:
         _grounds->SubscribeDealer(concrete_dealer);
     }
 
-    bool PlayerConnect(const std::string & nick_name, std::shared_ptr<Actors::IActor> player);
+    bool PlayerConnect(const std::string & nick_name, std::shared_ptr<Actors::IPlayer> player);
     bool PlayerDisconnect(const std::string & nick_name);
 
     void Run(std::istream& input, std::ostream& output);
@@ -25,11 +25,11 @@ private:
     BlackJack();
     std::shared_ptr<GameGround> _grounds;
 
-    std::map<std::string, Event::Type> commands{
-            {"BET", Event::Type::BET},
-            {"HIT", Event::Type::HIT},
-            {"STAND", Event::Type::STAND},
-            {"DOUBLEDOWN", Event::Type::DOUBLEDOWN}
+    std::map<std::string, Event::PlayerRequests> commands{
+            {"BET", Event::PlayerRequests::BET},
+            {"HIT", Event::PlayerRequests::HIT},
+            {"STAND", Event::PlayerRequests::STAND},
+            {"DOUBLEDOWN", Event::PlayerRequests::DOUBLEDOWN}
     };
 };
 
