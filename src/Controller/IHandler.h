@@ -19,7 +19,7 @@ namespace DealerHandlers {
         virtual void TakeBet(Controller::IDealer *, Actors::IPlayer *, [[maybe_unused]] int bet) DEFAULT;
         virtual void GiveCard(Controller::IDealer *, Actors::IPlayer *) DEFAULT;
         virtual void SwapPlayer(Controller::IDealer *, Actors::IPlayer *) DEFAULT;
-        virtual void PlayOut(Controller::IDealer *, Actors::IPlayer *) DEFAULT;
+        virtual void PlayOut(Controller::IDealer *, Actors::IPlayer *, int) DEFAULT;
         virtual void NewRound(Controller::IDealer *, Actors::IPlayer *) DEFAULT;
         virtual void GiveDoubleDown(Controller::IDealer *, Actors::IPlayer *) DEFAULT;
     };
@@ -47,7 +47,7 @@ namespace DealerHandlers {
         void GiveCard(Controller::IDealer *, Actors::IPlayer *) override;
         void SwapPlayer(Controller::IDealer *, Actors::IPlayer *) override;
 
-        void PlayOut(Controller::IDealer *, Actors::IPlayer *) override;
+        void PlayOut(Controller::IDealer *, Actors::IPlayer *, int) override;
     };
 }
 

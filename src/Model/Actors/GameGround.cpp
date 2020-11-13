@@ -56,10 +56,22 @@ GameGround::GameGround(std::shared_ptr<OutputManager> output) : om(std::move(out
 
 // сначала change потом действие
 void GameGround::ChangePlayer() {
-    int current_bet;
-    current_player = (current_number == queue.size()) ? (current_bet = 0, player_dealer)
-            : (current_bet = bets[current_number], players.at(queue.at(current_number++)));
-    dealer->SetPlayer(current_player.get(), current_bet);
+    if (!players.empty()) {
+        if (current_number != queue.size()) {
+            while (AFK_players.count(queue.at(current_number))) {
+                ++current_number;
+            }
+        }
+        int current_bet;
+        current_player = (current_number == queue.size()) ? (current_bet = 0, player_dealer)
+                                                          : (current_bet = bets[current_number], players.at(
+                        queue.at(current_number++)));
+        dealer->SetPlayer(current_player.get(), current_bet);
+    } else {
+        current_player = player_dealer;
+        dealer->SetPlayer(current_player.get(), 0);
+        dealer->ExtraEnd();
+    }
 }
 
 void GameGround::Reset() {
@@ -67,17 +79,18 @@ void GameGround::Reset() {
 }
 
 void GameGround::Display(const Event & event) {
-    switch (event.Response){
+    switch (event.Response) {
         case Event::DealerResponse::WARN :
             om->notify(event.GetData<std::string>());
             Output();
             break;
         case Event::DealerResponse::MAKEBET :
-            om->notify(std::string("Player " + std::to_string(current_number) + " Made a Bet: " + std::to_string(event.GetData<int>())));
+            om->notify(std::string("Player " + std::to_string(current_number) + " Made a Bet: " +
+                                   std::to_string(event.GetData<int>())));
             Output();
             break;
         case Event::DealerResponse::GIVECARD :
-            if (CheckPlayerEQDealer()){
+            if (CheckPlayerEQDealer()) {
                 om->notify(std::string("Dealer Take a Card: "));
             } else {
                 om->notify(std::string("Player " + std::to_string(current_number) + " Take a Card: "));
@@ -86,7 +99,8 @@ void GameGround::Display(const Event & event) {
             Output();
             break;
         case Event::DealerResponse::DOUBLEDOWN :
-            om->notify(std::string("Player " + std::to_string(current_number) + " Doubled the Bet  : " + std::to_string(bets[current_number-1]) + " and Take Card: "));
+            om->notify(std::string("Player " + std::to_string(current_number) + " Doubled the Bet  : " +
+                                   std::to_string(bets[current_number - 1]) + " and Take Card: "));
             om->notify(event.GetData<GameCard::Cards>());
             Output();
             break;
@@ -98,12 +112,30 @@ void GameGround::Display(const Event & event) {
             om->notify(std::string("Change State"));
             Output();
             break;
+        case Event::DealerResponse::LOSE : {
+            // вот так вот
+            auto tmp = players.extract(queue.at(current_number - 1));
+            AFK_players.insert(std::move(tmp));
+        }
         case Event::DealerResponse::WIN :
-        case Event::DealerResponse::LOSE :
         case Event::DealerResponse::DRAW :
             om->notify(event.GetData<std::string>());
+            player_dealer->GetRoundResult((-1) * bets[current_number - 1]);
+            current_player->GetRoundResult(bets[current_number - 1]);
+            current_player->ClearHand();
             Output();
             break;
+        case Event::DealerResponse::RESTART : {
+            player_dealer->ClearHand();
+            current_number = 0;
+            while (!AFK_players.empty()) {
+                auto tmp = AFK_players.extract(queue.at(current_number++));
+                players.insert(std::move(tmp));
+            }
+            om->notify(std::string("New Round: "));
+            Output();
+            break;
+        }
         default:
             Destroy();
             break;

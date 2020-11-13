@@ -86,8 +86,8 @@ void Controller::SimpleDealer::SwapPlayer() {
     cur_handler->SwapPlayer(this, current_player);
 }
 
-void Controller::SimpleDealer::PlayOut() {
-    cur_handler->PlayOut(this, current_player);
+void Controller::SimpleDealer::PlayOut(int smth) {
+    cur_handler->PlayOut(this, current_player, smth);
 }
 
 void Controller::SimpleDealer::NewRound() {
@@ -100,4 +100,13 @@ void Controller::SimpleDealer::GiveDoubleDown() {
 
 int Controller::SimpleDealer::GetBet() const {
     return player_bet;
+}
+
+void Controller::SimpleDealer::ExtraEnd() {
+    cur_handler = cmd_handles.at(states::PLAYABLE);
+    PlayOut(21);
+}
+
+void Controller::SimpleDealer::ClearHand() {
+    m_hand.Clear();
 }

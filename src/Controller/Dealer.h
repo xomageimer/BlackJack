@@ -52,9 +52,11 @@ namespace Controller {
         virtual void TakeBet(int bet) = 0;
         virtual void GiveCard() = 0;
         virtual void SwapPlayer() = 0;
-        virtual void PlayOut() = 0;
+        virtual void PlayOut(int) = 0;
         virtual void NewRound() = 0;
         virtual void GiveDoubleDown() = 0;
+
+        virtual void ExtraEnd() = 0;
 
     protected:
         std::shared_ptr<GameCard::CardStack> m_stack;
@@ -79,7 +81,9 @@ namespace Controller {
         [[nodiscard]] bool BlackJackCheck() const override;
         void GetRoundResult(int) override;
 
-        int GetBet() const override;
+        void ClearHand() override;
+
+        [[nodiscard]] int GetBet() const override;
 
         [[nodiscard]] const GameCard::Hand &ShowHand() const override;
         [[nodiscard]] int GetPlayerCost() const override;
@@ -89,9 +93,11 @@ namespace Controller {
         void TakeBet(int bet) override;
         void GiveCard() override;
         void SwapPlayer() override;
-        void PlayOut() override;
+        void PlayOut(int) override;
         void NewRound() override;
         void GiveDoubleDown() override;
+
+        void ExtraEnd() override;
     };
 
 }

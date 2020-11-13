@@ -27,6 +27,7 @@ public:
         WIN,
         LOSE,
         DRAW,
+        RESTART
     } Response;
 
     template <typename T>

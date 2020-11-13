@@ -15,6 +15,8 @@ namespace Actors {
         [[nodiscard]] virtual bool BlackJackCheck() const = 0;
         virtual void GetRoundResult(int) = 0;
 
+        virtual void ClearHand() = 0;
+
         [[nodiscard]] virtual const GameCard::Hand &ShowHand() const = 0;
         [[nodiscard]] virtual int GetPlayerCost() const = 0;
     };
@@ -29,6 +31,8 @@ namespace Actors {
         void SetCard(const GameCard::Cards &) override;
         [[nodiscard]] bool BlackJackCheck() const override;
         void GetRoundResult(int) override;
+
+        void ClearHand() override;
 
         [[nodiscard]] const GameCard::Hand &ShowHand() const override;
         [[nodiscard]] int GetPlayerCost() const override;

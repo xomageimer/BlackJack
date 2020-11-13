@@ -19,3 +19,7 @@ const GameCard::Hand &Actors::OfflinePlayer::ShowHand() const {
 int Actors::OfflinePlayer::GetPlayerCost() const {
     return m_bank;
 }
+
+void Actors::OfflinePlayer::ClearHand() {
+    m_hand.Clear();
+}
