@@ -176,7 +176,7 @@ size_t GameCard::Mersenne_Generator::seed(size_t seed_) {
     return rand;
 }
 
-GameCard::Cards::operator std::string() {
+GameCard::Cards::operator std::string() const {
     auto o_value = m_value.find(this->price);
     auto o_suit = m_suit.find(this->suit);
     std::string out = (((o_value == m_value.end())

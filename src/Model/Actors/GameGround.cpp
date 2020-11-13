@@ -45,6 +45,15 @@ bool GameGround::UnSubscribePlayer(const std::string &player_nickname) {
 }
 
 void GameGround::Output() {
+    std::string cur_hand;
+    for (auto & i : current_player->ShowHand().LookAtCards()){
+        cur_hand += std::string(i) + " ";
+    }
+    if (current_player == player_dealer){
+        om->notify(std::string("Dealer hand: " + cur_hand));
+    } else {
+        om->notify(std::string("Player " + std::to_string(current_number) + " hand: " + cur_hand));
+    }
     om->drop();
 }
 
@@ -122,6 +131,7 @@ void GameGround::Display(const Event & event) {
             om->notify(event.GetData<std::string>());
             player_dealer->GetRoundResult((-1) * bets[current_number - 1]);
             current_player->GetRoundResult(bets[current_number - 1]);
+            bets[current_number] = 0;
             current_player->ClearHand();
             Output();
             break;
@@ -165,6 +175,10 @@ void GameGround::Listen(const Event & event) {
             break;
         case Event::PlayerRequests::DOUBLEDOWN :
             dealer->GiveDoubleDown();
+            break;
+        case Event::PlayerRequests::BANK:
+            om->notify(std::string("Player " + std::to_string(current_number) + " bank: " + std::to_string(current_player->GetPlayerCost())));
+            Output();
             break;
         default :
             std::cout << "YOU CANT DO IT" << std::endl;

@@ -29,7 +29,8 @@ private:
             {"BET", Event::PlayerRequests::BET},
             {"HIT", Event::PlayerRequests::HIT},
             {"STAND", Event::PlayerRequests::STAND},
-            {"DOUBLEDOWN", Event::PlayerRequests::DOUBLEDOWN}
+            {"DOUBLEDOWN", Event::PlayerRequests::DOUBLEDOWN},
+            {"BANK", Event::PlayerRequests::BANK}
     };
 };
 

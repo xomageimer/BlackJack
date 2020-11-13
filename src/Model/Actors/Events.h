@@ -15,7 +15,8 @@ public:
         BET,
         HIT,
         STAND,
-        DOUBLEDOWN
+        DOUBLEDOWN,
+        BANK
     } Request;
     enum class DealerResponse : int {
         WARN,

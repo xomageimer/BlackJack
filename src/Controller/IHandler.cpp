@@ -31,15 +31,19 @@ void DealerHandlers::DealerableHandler::SwapPlayer(Controller::IDealer * dealer,
 }
 
 void DealerHandlers::DealerableHandler::GiveDoubleDown(Controller::IDealer * dealer, Actors::IPlayer * player) {
+    std::cout << player->ShowHand().GetSize() << std::endl;
     if (player->ShowHand().GetSize() == 2) {
+
         dealer->MakeBet(dealer->GetBet() * 2);
         dealer->SetPlayer(player, dealer->GetBet() * 2);
         Event bet(Event::DealerResponse::MAKEBET, dealer->GetBet());
         dealer->HandleEvent(bet);
+
         auto card = dealer->GetCard();
         player->SetCard(card);
         Event new_card(Event::DealerResponse::GIVECARD, card);
         dealer->HandleEvent(new_card);
+
         if (player->ShowHand().total() > BLACKJACK) {
             Event lose(Event::DealerResponse::LOSE, std::string("You Lose: " + std::to_string(dealer->GetBet())));
             dealer->MakeBet((-1) * dealer->GetBet());
@@ -79,6 +83,17 @@ void DealerHandlers::DistributionHandler::NewRound(Controller::IDealer * dealer,
     while (!dealer->IsPlayerDealer()){
         dealer->Next();
     }
+
+    auto card1 = dealer->GetCard();
+    player->SetCard(card1);
+    Event new_card1(Event::DealerResponse::GIVECARD, card1);
+    dealer->HandleEvent(new_card1);
+
+    auto card2 = dealer->GetCard();
+    player->SetCard(card2);
+    Event new_card2(Event::DealerResponse::GIVECARD, card2);
+    dealer->HandleEvent(new_card2);
+
     SwapPlayer(dealer, player);
     while (!dealer->IsPlayerDealer()){
 
@@ -144,7 +159,7 @@ void DealerHandlers::PlayableHandler::PlayOut(Controller::IDealer * dealer, Acto
             dealer->HandleEvent(win);
         } else {
             Event win(Event::DealerResponse::LOSE, std::string("You lose: " + std::to_string(dealer->GetBet())));
-            dealer->MakeBet(dealer->GetBet());
+            dealer->MakeBet((-1) * dealer->GetBet());
             dealer->HandleEvent(win);
         }
         SwapPlayer(dealer, player);
@@ -155,5 +170,5 @@ void DealerHandlers::PlayableHandler::PlayOut(Controller::IDealer * dealer, Acto
     Event restart(Event::DealerResponse::RESTART, std::string("restart"));
     dealer->HandleEvent(restart);
 
-    SwapPlayer(dealer, player);
+    dealer->SwapPlayer();
 }

@@ -139,7 +139,7 @@ namespace GameCard {
         CardPrice price;
         CardSuit suit;
 
-        explicit operator std::string();
+        explicit operator std::string() const;
     };
 
 
