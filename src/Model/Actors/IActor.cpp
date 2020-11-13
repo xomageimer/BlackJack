@@ -6,11 +6,6 @@ void Actors::OfflinePlayer::Hit(const GameCard::Cards & card) {
     SetCard(card);
 }
 
-void Actors::OfflinePlayer::DoubleDown(const GameCard::Cards & card1, const GameCard::Cards & card2) {
-    SetCard(card1);
-    SetCard(card2);
-}
-
 void Actors::OfflinePlayer::GetResult(int fract) {
     m_bank += fract;
 }

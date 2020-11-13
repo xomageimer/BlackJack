@@ -12,19 +12,16 @@ using DataType = std::variant<int, GameCard::Cards, GameCard::Hand, std::string>
 struct Event {
 public:
     enum class Type {
-        BET,
         WARN,
-        HIT,
-        STAND,
         DOUBLEDOWN,
         WIN,
         LOSE,
+        STAND,
         DRAW,
         MAKEBET,
         GIVECARD,
         SWAPPLAYER,
-        PLAYOUT,
-        NEWROUND
+        STATE
     } type;
 
     template <typename T>

@@ -4,25 +4,44 @@
 #include <memory>
 #include <stdexcept>
 
-#include "IActor.h"
-#include "Events.h"
+#include "Actors/IActor.h"
+#include "Actors/Events.h"
 #include "Cards/CardStack.h"
 
-struct IController;
+struct GameGround;
+
+namespace DealerHandler {
+    struct IHandler;
+}
 
 // pattern template method
 namespace Actors {
     struct IDealer {
     public:
+        enum class states : int {
+            DEALERABLE,
+            DISTRIBUTION,
+            PLAYABLE,
+            BETABLE
+        };
+
+        std::map<states, std::shared_ptr<DealerHandler::IHandler>> cmd_handles;
+
+        void SetFacade(GameGround * );
+
         static inline const int max = 600;
         static inline const int min = 10;
 
-        explicit IDealer() = default;
+        explicit IDealer();
         virtual ~IDealer() = default;
 
         virtual void TimeToShuffle() = 0;
 
-        virtual void SetController(std::shared_ptr<IController> cntr);
+        virtual void set_current(states state) {
+            cur_handler = cmd_handles[state];
+        }
+
+        virtual void HandleEvent(const Event &);
 
         virtual void TakeBet(int bet) = 0;
         virtual void GiveCard() = 0;
@@ -31,19 +50,23 @@ namespace Actors {
         virtual void NewRound() = 0;
         virtual void GiveDoubleDown() = 0;
 
+        virtual void SetPlayer(std::shared_ptr<IActor>) = 0;
+        [[nodiscard]] virtual const GameCard::Hand & GetPlayerHand() const = 0;
+        virtual void ClearCurPlayerHand() = 0;
+        virtual GameCard::Cards GetCard() = 0;
+
         virtual void SetBet(int) = 0;
         [[nodiscard]] virtual int GetBet() const = 0;
 
         virtual int & GetCasinoWin() = 0;
 
-        virtual void SetPlayerHand(GameCard::Hand &) = 0;
-        virtual const GameCard::Hand & GetPlayerHand() const = 0;
-        virtual GameCard::Cards GetCard() = 0;
+        bool NextPlayer();
 
         virtual void RefreshStack() = 0;
 
     protected:
-        std::shared_ptr<IController> controller = nullptr;
+        std::shared_ptr<DealerHandler::IHandler> cur_handler;
+        GameGround * ground{};
     };
 
     struct SimpleDealer : public IActor, public IDealer {
@@ -51,10 +74,10 @@ namespace Actors {
         // TODO хранить руку (мб указатель на нее) и ставку в паре
         std::shared_ptr<GameCard::CardStack> m_stack;
 
-        GameCard::Hand * current_player_hand = nullptr;
-        int current_bet = 0;
+        std::shared_ptr<IActor> current_player;
 
-        int casino_win = 0;
+        int player_bet = 0;
+
         int m_bank = 1'000'000;
         GameCard::Hand m_hand;
     public:
@@ -75,22 +98,18 @@ namespace Actors {
         void GiveDoubleDown() override;
         [[nodiscard]] bool BlackJackCheck() const override;
 
+        void SetPlayer(std::shared_ptr<IActor>) override;
+        [[nodiscard]] const GameCard::Hand & GetPlayerHand() const override;
+        GameCard::Cards GetCard() override;
+
         void RefreshStack() override;
 
         void SetBet(int) override;
         [[nodiscard]] int GetBet() const override;
 
-        void SetPlayerHand(GameCard::Hand &) override;
-        [[nodiscard]] const GameCard::Hand & GetPlayerHand() const override;
-        GameCard::Cards GetCard() override;
-
         void SetCard(const GameCard::Cards &) override;
 
     protected:
-        int & GetCasinoWin() override;
-        void DoubleDown(const GameCard::Cards &, const GameCard::Cards &) override{
-            throw std::logic_error("");
-        }
         void GetResult(int) override{
             throw std::logic_error("");
         }

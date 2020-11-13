@@ -5,9 +5,8 @@
 //  а также контроллеры
 
 #include "Actors/IActor.h"
-#include "Actors/Dealer.h"
+#include "Dealer.h"
 #include "OutputManager.h"
-#include "Controller.h"
 
 const size_t MAX_PLAYER_COUNT = 7;
 
@@ -18,11 +17,8 @@ private:
     std::shared_ptr<Actors::IDealer> dealer;
     std::shared_ptr<Actors::IActor> player_dealer;
 
-    std::map<IController::DealerLogic, std::shared_ptr<IController>> controllerrs;
-    std::shared_ptr<IController> cur_controller;
-
     std::map<std::string, std::shared_ptr<Actors::IActor>> players;
-    std::vector<double> bets;
+    std::vector<int> bets;
 
     std::map<std::string, std::shared_ptr<Actors::IActor>> AFK_players;
 
@@ -33,11 +29,6 @@ private:
     std::shared_ptr<Actors::IActor> current_player;
 
 public:
-    void SetState(const IController::DealerLogic &);
-    std::shared_ptr<IController> GetState();
-
-    bool is_around() const;
-
     explicit GameGround (std::shared_ptr<OutputManager> output);
 
     void SetViewManager(std::shared_ptr<ILogger>);
@@ -55,36 +46,20 @@ public:
         players.emplace(std::piecewise_construct, std::forward_as_tuple("dealer"), std::forward_as_tuple(player_dealer));
     }
     template <typename T>
-    inline constexpr void SubscribeDealer(T new_dealer){
+    inline constexpr void SubscribeDealer([[maybe_unused]] T new_dealer){
         throw std::logic_error("\nERROR; FROM SUBSCRIBE DEALER METHOD; FILE: " + std::string(__FILE__) + "; ON LINE: " + std::to_string(__LINE__ - 1) + ";\nARGUMENT IS NOT INHERITED FROM IDealer AND/OR IActor;");
     }
 
-    void be_a_dealer();
-
     bool UnSubscribePlayer(const std::string & player_nickname);
 
-    void TimeToShuffle();
+    void CurrentState(const Event &); // для графики
 
-    void IssuingCards();
-    void IssuingStop();
-    void IssuingBet(const Event &);
-    void IssuingDoubleDown();
-
-    void OutWarn(const Event &);
-
-    void MakeBet(const Event &);
     void ChangePlayer(const Event &);
-
-    void NewRound();
-
-    void GiveCards(const Event &);
-    void SetResult(const Event &);
 
     void Output();
     void Destroy();
 
     void Result();
-
 };
 
 

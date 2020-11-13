@@ -14,7 +14,6 @@ namespace Actors {
         // это сеттеры
         virtual void Hit(const GameCard::Cards &) = 0;
         virtual void SetCard(const GameCard::Cards &) = 0;
-        virtual void DoubleDown(const GameCard::Cards &, const GameCard::Cards &) = 0;
         virtual void GetResult(int) = 0;
         [[nodiscard]] virtual bool BlackJackCheck() const = 0;
 
@@ -29,10 +28,9 @@ namespace Actors {
         GameCard::Hand m_hand;
         int m_bank;
     public:
-        OfflinePlayer(int bank);
+        explicit OfflinePlayer(int bank);
 
         void Hit(const GameCard::Cards &) override;
-        void DoubleDown(const GameCard::Cards &, const GameCard::Cards &) override;
         void SetCard(const GameCard::Cards &) override;
         void GetResult(int) override;
         [[nodiscard]] bool BlackJackCheck() const override;
