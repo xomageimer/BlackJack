@@ -43,6 +43,11 @@ namespace Controller {
         void Reset();
         void MakeBet(int bet);
 
+        virtual GameCard::Hand GetDealerHand() const = 0;
+
+        virtual Actors::IPlayer * GetPlayer();
+        bool HasSomePlayer() const;
+
         [[nodiscard]] virtual int GetBet() const = 0;
         virtual GameCard::Cards GetCard();
 
@@ -52,7 +57,7 @@ namespace Controller {
         virtual void TakeBet(int bet) = 0;
         virtual void GiveCard() = 0;
         virtual void SwapPlayer() = 0;
-        virtual void PlayOut(int) = 0;
+        virtual void PlayOut() = 0;
         virtual void NewRound() = 0;
         virtual void GiveDoubleDown() = 0;
 
@@ -82,6 +87,7 @@ namespace Controller {
         void GetRoundResult(int) override;
 
         void ClearHand() override;
+        GameCard::Hand GetDealerHand() const override;
 
         [[nodiscard]] int GetBet() const override;
 
@@ -93,7 +99,7 @@ namespace Controller {
         void TakeBet(int bet) override;
         void GiveCard() override;
         void SwapPlayer() override;
-        void PlayOut(int) override;
+        void PlayOut() override;
         void NewRound() override;
         void GiveDoubleDown() override;
 

@@ -45,6 +45,14 @@ GameCard::Cards Controller::IDealer::GetCard() {
     return m_stack->GetCard();
 }
 
+Actors::IPlayer *Controller::IDealer::GetPlayer() {
+    return current_player;
+}
+
+bool Controller::IDealer::HasSomePlayer() const {
+    return ground->ActivePlayers();
+}
+
 void Controller::SimpleDealer::SetCard(const GameCard::Cards & card) {
     m_hand.SetNewCard(card);
 }
@@ -75,27 +83,27 @@ void Controller::SimpleDealer::TimeToShuffle() {
 }
 
 void Controller::SimpleDealer::TakeBet(int bet) {
-    cur_handler->TakeBet(this, current_player, bet);
+    cur_handler->TakeBet(this, bet);
 }
 
 void Controller::SimpleDealer::GiveCard() {
-    cur_handler->GiveCard(this, current_player);
+    cur_handler->GiveCard(this);
 }
 
 void Controller::SimpleDealer::SwapPlayer() {
-    cur_handler->SwapPlayer(this, current_player);
+    cur_handler->SwapPlayer(this);
 }
 
-void Controller::SimpleDealer::PlayOut(int smth) {
-    cur_handler->PlayOut(this, current_player, smth);
+void Controller::SimpleDealer::PlayOut() {
+    cur_handler->PlayOut(this);
 }
 
 void Controller::SimpleDealer::NewRound() {
-    cur_handler->NewRound(this, current_player);
+    cur_handler->NewRound(this);
 }
 
 void Controller::SimpleDealer::GiveDoubleDown() {
-    cur_handler->GiveDoubleDown(this, current_player);
+    cur_handler->GiveDoubleDown(this);
 }
 
 int Controller::SimpleDealer::GetBet() const {
@@ -103,10 +111,14 @@ int Controller::SimpleDealer::GetBet() const {
 }
 
 void Controller::SimpleDealer::ExtraEnd() {
-    cur_handler = cmd_handles.at(states::PLAYABLE);
-    PlayOut(21);
+    set_current(Controller::IDealer::states::PLAYABLE);
+    TimeToShuffle();
 }
 
 void Controller::SimpleDealer::ClearHand() {
     m_hand.Clear();
+}
+
+GameCard::Hand Controller::SimpleDealer::GetDealerHand() const {
+    return m_hand;
 }

@@ -53,6 +53,12 @@ public:
 
     void TakeBet(int bet);
 
+    void DisplayStat() const;
+
+    [[nodiscard]] bool ActivePlayers() const{
+        return !players.empty();
+    };
+
     void ChangePlayer();
     void Reset();
 

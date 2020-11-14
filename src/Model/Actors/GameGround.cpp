@@ -45,15 +45,6 @@ bool GameGround::UnSubscribePlayer(const std::string &player_nickname) {
 }
 
 void GameGround::Output() {
-    std::string cur_hand;
-    for (auto & i : current_player->ShowHand().LookAtCards()){
-        cur_hand += std::string(i) + " ";
-    }
-    if (current_player == player_dealer){
-        om->notify(std::string("Dealer hand: " + cur_hand));
-    } else {
-        om->notify(std::string("Player " + std::to_string(current_number) + " hand: " + cur_hand));
-    }
     om->drop();
 }
 
@@ -105,12 +96,14 @@ void GameGround::Display(const Event & event) {
                 om->notify(std::string("Player " + std::to_string(current_number) + " Take a Card: "));
             }
             om->notify(event.GetData<GameCard::Cards>());
+            DisplayStat();
             Output();
             break;
         case Event::DealerResponse::DOUBLEDOWN :
             om->notify(std::string("Player " + std::to_string(current_number) + " Doubled the Bet  : " +
                                    std::to_string(bets[current_number - 1]) + " and Take Card: "));
             om->notify(event.GetData<GameCard::Cards>());
+            DisplayStat();
             Output();
             break;
         case Event::DealerResponse::SWAPPLAYER :
@@ -122,11 +115,12 @@ void GameGround::Display(const Event & event) {
             Output();
             break;
         case Event::DealerResponse::LOSE : {
-            // вот так вот
             auto tmp = players.extract(queue.at(current_number - 1));
             AFK_players.insert(std::move(tmp));
         }
+            [[fallthrough]];
         case Event::DealerResponse::WIN :
+            [[fallthrough]];
         case Event::DealerResponse::DRAW :
             om->notify(event.GetData<std::string>());
             player_dealer->GetRoundResult((-1) * bets[current_number - 1]);
@@ -142,7 +136,11 @@ void GameGround::Display(const Event & event) {
                 auto tmp = AFK_players.extract(queue.at(current_number++));
                 players.insert(std::move(tmp));
             }
+            current_player = players.at(queue.at(0));
+            Destroy();
+            DisplayStat();
             om->notify(std::string("New Round: "));
+            ChangePlayer();
             Output();
             break;
         }
@@ -177,7 +175,7 @@ void GameGround::Listen(const Event & event) {
             dealer->GiveDoubleDown();
             break;
         case Event::PlayerRequests::BANK:
-            om->notify(std::string("Player " + std::to_string(current_number) + " bank: " + std::to_string(current_player->GetPlayerCost())));
+            om->notify(std::string("Player " + std::to_string(current_number) + " bank: " + std::to_string(players.at(queue.at(current_number - 1))->GetPlayerCost())));
             Output();
             break;
         default :
@@ -185,3 +183,15 @@ void GameGround::Listen(const Event & event) {
     }
 }
 
+void GameGround::DisplayStat() const {
+    std::string cur_hand;
+    for (auto & i : current_player->ShowHand().LookAtCards()){
+        cur_hand += std::string(i) + " ";
+    }
+    cur_hand += " = " + std::to_string(current_player->ShowHand().total());
+    if (current_player == player_dealer){
+        om->notify(std::string("Dealer hand: " + cur_hand));
+    } else {
+        om->notify(std::string("Player " + std::to_string(current_number) + " hand: " + cur_hand));
+    }
+}

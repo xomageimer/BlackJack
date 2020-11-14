@@ -16,38 +16,40 @@
 namespace DealerHandlers {
     struct IDealerHandler {
         virtual ~IDealerHandler() = default;
-        virtual void TakeBet(Controller::IDealer *, Actors::IPlayer *, [[maybe_unused]] int bet) DEFAULT;
-        virtual void GiveCard(Controller::IDealer *, Actors::IPlayer *) DEFAULT;
-        virtual void SwapPlayer(Controller::IDealer *, Actors::IPlayer *) DEFAULT;
-        virtual void PlayOut(Controller::IDealer *, Actors::IPlayer *, int) DEFAULT;
-        virtual void NewRound(Controller::IDealer *, Actors::IPlayer *) DEFAULT;
-        virtual void GiveDoubleDown(Controller::IDealer *, Actors::IPlayer *) DEFAULT;
+        virtual void TakeBet(Controller::IDealer *, [[maybe_unused]] int bet) DEFAULT;
+        virtual void GiveCard(Controller::IDealer *) DEFAULT;
+        virtual void SwapPlayer(Controller::IDealer *) DEFAULT;
+        virtual void PlayOut(Controller::IDealer *) DEFAULT;
+        virtual void NewRound(Controller::IDealer *) DEFAULT;
+        virtual void GiveDoubleDown(Controller::IDealer *) DEFAULT;
     };
 
     struct DealerableHandler : public IDealerHandler{
-        void GiveCard(Controller::IDealer *, Actors::IPlayer *) override;
-        void SwapPlayer(Controller::IDealer *, Actors::IPlayer *) override;
-        void GiveDoubleDown(Controller::IDealer *, Actors::IPlayer *) override;
+        void GiveCard(Controller::IDealer *) override;
+        void SwapPlayer(Controller::IDealer *) override;
+        void GiveDoubleDown(Controller::IDealer *) override;
+
+        void TakeBet(Controller::IDealer * dealer, [[maybe_unused]] int bet) override YOU_CANT_DO_IT;
     };
 
     struct BetableHandler : public IDealerHandler{
-        void TakeBet(Controller::IDealer *, Actors::IPlayer *, int bet) override;
-        void SwapPlayer(Controller::IDealer *, Actors::IPlayer *) override;
+        void TakeBet(Controller::IDealer *, int bet) override;
+        void SwapPlayer(Controller::IDealer *) override;
 
-        void GiveCard(Controller::IDealer * dealer, [[maybe_unused]]Actors::IPlayer *) override YOU_CANT_DO_IT;
-        void GiveDoubleDown(Controller::IDealer * dealer, [[maybe_unused]]Actors::IPlayer *) override YOU_CANT_DO_IT;
+        void GiveCard(Controller::IDealer * dealer) override YOU_CANT_DO_IT;
+        void GiveDoubleDown(Controller::IDealer * dealer) override YOU_CANT_DO_IT;
     };
 
     struct DistributionHandler : public IDealerHandler{
-        void NewRound(Controller::IDealer *, Actors::IPlayer *) override;
-        void SwapPlayer(Controller::IDealer *, Actors::IPlayer *) override;
+        void NewRound(Controller::IDealer *) override;
+        void SwapPlayer(Controller::IDealer *) override;
     };
 
     struct PlayableHandler : public IDealerHandler{
-        void GiveCard(Controller::IDealer *, Actors::IPlayer *) override;
-        void SwapPlayer(Controller::IDealer *, Actors::IPlayer *) override;
+        void GiveCard(Controller::IDealer *) override;
+        void SwapPlayer(Controller::IDealer *) override;
 
-        void PlayOut(Controller::IDealer *, Actors::IPlayer *, int) override;
+        void PlayOut(Controller::IDealer *) override;
     };
 }
 
