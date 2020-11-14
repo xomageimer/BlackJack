@@ -16,6 +16,8 @@ public:
         HIT,
         STAND,
         DOUBLEDOWN,
+        YES,
+        NO,
         BANK
     } Request;
     enum class DealerResponse : int {
@@ -28,7 +30,8 @@ public:
         WIN,
         LOSE,
         DRAW,
-        RESTART
+        RESTART,
+        YES
     } Response;
 
     template <typename T>

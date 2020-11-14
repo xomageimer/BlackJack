@@ -5,120 +5,85 @@
 // TODO мб стоит засунуть ground внутрь диллера и передавать shared_ptr на player
 
 Controller::IDealer::IDealer() {
-     cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::DEALERABLE),
-                        std::forward_as_tuple(std::make_shared<DealerHandlers::DealerableHandler>()));
-    cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::BETABLE),
-                        std::forward_as_tuple(std::make_shared<DealerHandlers::BetableHandler>()));
-    cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::DISTRIBUTION),
-                        std::forward_as_tuple(std::make_shared<DealerHandlers::DistributionHandler>()));
-    cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::PLAYABLE),
-                        std::forward_as_tuple(std::make_shared<DealerHandlers::PlayableHandler>()));
+     cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::BET_SERVANT),
+                        std::forward_as_tuple(std::make_shared<DealerHandlers::BetHandler>()));
+    cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::MOVE_SERVANT),
+                        std::forward_as_tuple(std::make_shared<DealerHandlers::MoveHandler>()));
+    cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::PLAYOUT_SERVANT),
+                        std::forward_as_tuple(std::make_shared<DealerHandlers::PlayoutHandler>()));
+    cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::ROUND_SERVANT),
+                        std::forward_as_tuple(std::make_shared<DealerHandlers::RoundHandler>()));
+    cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::YOURSELF_SERVANT),
+                        std::forward_as_tuple(std::make_shared<DealerHandlers::PlayingHandler>()));
+    cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::DEAL_SERVANT),
+                        std::forward_as_tuple(std::make_shared<DealerHandlers::DealHandler>()));
 
-    cur_handler = cmd_handles.at(states::BETABLE);
+
+    cur_state = states::BET_SERVANT;
+    cur_handler = cmd_handles.at(cur_state);
 }
 
-void Controller::IDealer::SetBase(GameGround * new_ground) {
-    ground = new_ground;
+void Controller::IDealer::SetPlayer(std::shared_ptr<Actors::IPlayer> new_player) {
+    m_players.emplace_back(std::move(new_player), 0);
 }
 
-void Controller::IDealer::HandleEvent(const Event & event) {
-    ground->Display(event);
+std::pair<std::shared_ptr<Actors::IPlayer>, int> & Controller::IDealer::getPlayer() {
+    return m_players.at(cursor);
 }
 
-void Controller::IDealer::Next() {
-    ground->ChangePlayer();
+const std::vector<std::shared_ptr<Actors::IPlayer>> & Controller::IDealer::kickAFK() {
+    return AFK_players;
 }
 
-bool Controller::IDealer::IsPlayerDealer() const {
-    return ground->CheckPlayerEQDealer();
+std::shared_ptr<Actors::IPlayer> Controller::IDealer::getDealerPlayer() {
+    return player_dealer;
 }
 
-void Controller::IDealer::Reset() {
-    ground->Reset();
+void Controller::IDealer::AFKCurrentPlayer() {
+    AFK_players.push_back(m_players.at(cursor).first);
+    m_players.erase(m_players.begin() + cursor);
 }
 
-void Controller::IDealer::MakeBet(int bet) {
-    ground->TakeBet(bet);
+void Controller::SimpleDealer::ServeBet() {
+    cur_handler->serveBet(this);
 }
 
-GameCard::Cards Controller::IDealer::GetCard() {
-    return m_stack->GetCard();
+void Controller::SimpleDealer::ServeMove() {
+    cur_handler->serveMove(this);
 }
 
-Actors::IPlayer *Controller::IDealer::GetPlayer() {
-    return current_player;
+void Controller::SimpleDealer::ServeRound() {
+    cur_handler->serveRound(this);
 }
 
-bool Controller::IDealer::HasSomePlayer() const {
-    return ground->ActivePlayers();
+void Controller::SimpleDealer::ServePlayout() {
+    cur_handler->servePlayout(this);
 }
 
-void Controller::SimpleDealer::SetCard(const GameCard::Cards & card) {
-    m_hand.SetNewCard(card);
+void Controller::SimpleDealer::ServeYourself() {
+    cur_handler->serveYourself(this);
 }
 
-bool Controller::SimpleDealer::BlackJackCheck() const {
-    return m_bank == Actors::BLACKJACK;
-}
-
-void Controller::SimpleDealer::GetRoundResult(int b) {
-    m_bank += b;
-}
-
-const GameCard::Hand &Controller::SimpleDealer::ShowHand() const {
-    return m_hand;
-}
-
-int Controller::SimpleDealer::GetPlayerCost() const {
-    return m_bank;
-}
-
-void Controller::SimpleDealer::SetPlayer(Actors::IPlayer * next_player, int next_bet) {
-    current_player = next_player;
-    player_bet = next_bet;
-}
-
-void Controller::SimpleDealer::TimeToShuffle() {
-    m_stack->TimeToShuffle();
-}
-
-void Controller::SimpleDealer::TakeBet(int bet) {
-    cur_handler->TakeBet(this, bet);
-}
-
-void Controller::SimpleDealer::GiveCard() {
-    cur_handler->GiveCard(this);
-}
-
-void Controller::SimpleDealer::SwapPlayer() {
-    cur_handler->SwapPlayer(this);
-}
-
-void Controller::SimpleDealer::PlayOut() {
-    cur_handler->PlayOut(this);
-}
-
-void Controller::SimpleDealer::NewRound() {
-    cur_handler->NewRound(this);
-}
-
-void Controller::SimpleDealer::GiveDoubleDown() {
-    cur_handler->GiveDoubleDown(this);
-}
-
-int Controller::SimpleDealer::GetBet() const {
-    return player_bet;
-}
-
-void Controller::SimpleDealer::ExtraEnd() {
-    set_current(Controller::IDealer::states::PLAYABLE);
-    TimeToShuffle();
-}
-
-void Controller::SimpleDealer::ClearHand() {
-    m_hand.Clear();
-}
-
-GameCard::Hand Controller::SimpleDealer::GetDealerHand() const {
-    return m_hand;
+void Controller::SimpleDealer::Process() {
+    switch (cur_state) {
+        case IDealer::states::BET_SERVANT:
+            ServeBet();
+            break;
+        case IDealer::states::DEAL_SERVANT:
+        case IDealer::states::MOVE_SERVANT:
+            ServeMove();
+            break;
+        case IDealer::states::ROUND_SERVANT:
+            ServeRound();
+            break;
+        case IDealer::states::PLAYOUT_SERVANT:
+            ServePlayout();
+            break;
+        case IDealer::states::YOURSELF_SERVANT:
+            ServeYourself();
+            break;
+        default:
+            ServeBet();
+            break;
+    }
 }

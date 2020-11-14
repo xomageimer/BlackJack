@@ -11,63 +11,80 @@ struct GameGround;
 
 namespace DealerHandlers {
     struct IDealerHandler;
+    struct BetHandler;
+    struct MoveHandler;
+    struct PlayoutHandler;
+    struct PlayingHandler;
+    struct RoundHandler;
+    struct DealHandler;
 }
 
 namespace Controller {
     struct IDealer {
     public:
         enum class states : int {
-            DEALERABLE,
-            DISTRIBUTION,
-            PLAYABLE,
-            BETABLE
+            BET_SERVANT,
+            MOVE_SERVANT,
+            ROUND_SERVANT,
+            PLAYOUT_SERVANT,
+            YOURSELF_SERVANT,
+            DEAL_SERVANT
         };
     protected:
         std::map<states, std::shared_ptr<DealerHandlers::IDealerHandler>> cmd_handles;
         std::shared_ptr<DealerHandlers::IDealerHandler> cur_handler;
+        states cur_state;
+
+        friend DealerHandlers::IDealerHandler;
+        friend DealerHandlers::BetHandler;
+        friend DealerHandlers::MoveHandler;
+        friend DealerHandlers::PlayoutHandler;
+        friend DealerHandlers::PlayingHandler;
+        friend DealerHandlers::RoundHandler;
+        friend DealerHandlers::DealHandler;
+
+        virtual void set_current(states state) {
+            cur_handler = cmd_handles[state];
+        }
 
     public:
         explicit IDealer();
         virtual ~IDealer() = default;
 
-        virtual void set_current(states state) {
-            cur_handler = cmd_handles[state];
-        }
-        [[nodiscard]] bool IsPlayerDealer() const;
+        virtual void SetPlayer(std::shared_ptr<Actors::IPlayer>);
+
+        virtual void ServeBet() = 0;
+        virtual void ServeMove() = 0;
+        virtual void ServeRound() = 0;
+        virtual void ServePlayout() = 0;
+        virtual void ServeYourself() = 0;
+
+        virtual void Process() = 0;
+
+        virtual const std::vector<std::shared_ptr<Actors::IPlayer>> & kickAFK();
 
         static inline const int max = 600;
         static inline const int min = 10;
 
-        void SetBase(GameGround *);
-        virtual void HandleEvent(const Event &);
-        void Reset();
-        void MakeBet(int bet);
-
-        virtual GameCard::Hand GetDealerHand() const = 0;
-
-        virtual Actors::IPlayer * GetPlayer();
-        bool HasSomePlayer() const;
-
-        [[nodiscard]] virtual int GetBet() const = 0;
-        virtual GameCard::Cards GetCard();
-
-        virtual void Next();
-        virtual void SetPlayer(Actors::IPlayer *, int) = 0;
-        virtual void TimeToShuffle() = 0;
-        virtual void TakeBet(int bet) = 0;
-        virtual void GiveCard() = 0;
-        virtual void SwapPlayer() = 0;
-        virtual void PlayOut() = 0;
-        virtual void NewRound() = 0;
-        virtual void GiveDoubleDown() = 0;
-
-        virtual void ExtraEnd() = 0;
-
     protected:
-        std::shared_ptr<GameCard::CardStack> m_stack;
+        std::shared_ptr<OutputManager> general_view_manager;
 
-        Actors::IPlayer * current_player = nullptr;
-        GameGround * ground = nullptr;
+        std::shared_ptr<Actors::IPlayer> player_dealer;
+
+        std::shared_ptr<GameCard::CardStack> m_stack;
+        std::vector<std::pair<std::shared_ptr<Actors::IPlayer>, int>> m_players;
+        std::map<std::shared_ptr<Actors::IPlayer>, bool> insurances;
+
+        std::vector<std::shared_ptr<Actors::IPlayer>> AFK_players;
+
+        size_t cursor = 0;
+        // может быть бд, где ID плеера будет ключем для того, чтобы получить доступ
+        // к его ставке и фишкам
+
+        virtual void AFKCurrentPlayer();
+
+        virtual std::pair<std::shared_ptr<Actors::IPlayer>, int> & getPlayer();
+        virtual std::shared_ptr<Actors::IPlayer> getDealerPlayer();
     };
 
     struct SimpleDealer : public Actors::IPlayer, public IDealer {
@@ -82,28 +99,13 @@ namespace Controller {
             m_stack->GenNewStacks();
         };
 
-        void SetCard(const GameCard::Cards &) override;
-        [[nodiscard]] bool BlackJackCheck() const override;
-        void GetRoundResult(int) override;
+        void ServeBet() override;
+        void ServeMove() override;
+        void ServeRound() override;
+        void ServePlayout() override;
+        void ServeYourself() override;
 
-        void ClearHand() override;
-        [[nodiscard]] GameCard::Hand GetDealerHand() const override;
-
-        [[nodiscard]] int GetBet() const override;
-
-        [[nodiscard]] const GameCard::Hand &ShowHand() const override;
-        [[nodiscard]] int GetPlayerCost() const override;
-
-        void SetPlayer(Actors::IPlayer *, int) override;
-        void TimeToShuffle() override;
-        void TakeBet(int bet) override;
-        void GiveCard() override;
-        void SwapPlayer() override;
-        void PlayOut() override;
-        void NewRound() override;
-        void GiveDoubleDown() override;
-
-        void ExtraEnd() override;
+        void Process() override;
     };
 
 }

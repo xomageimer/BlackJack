@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "Cards/CardStack.h"
+#include "Actors/Events.h"
 
 struct OutputManager {
 private:

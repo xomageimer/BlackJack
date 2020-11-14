@@ -2,195 +2,259 @@
 
 #include <iostream>
 
-void DealerHandlers::DealerableHandler::GiveCard(Controller::IDealer * dealer) {
-    auto card = dealer->GetCard();
-    dealer->GetPlayer()->SetCard(card);
-    Event new_card(Event::DealerResponse::GIVECARD, card);
-    dealer->HandleEvent(new_card);
-    if (dealer->GetPlayer()->ShowHand().total() > BLACKJACK) {
-        Event lose(Event::DealerResponse::LOSE, std::string("\t\t\tYou lose: " + std::to_string(dealer->GetBet())));
-        dealer->MakeBet((-1) * dealer->GetBet());
-        dealer->HandleEvent(lose);
-        SwapPlayer(dealer);
-    } else if (dealer->GetPlayer()->ShowHand().total() == BLACKJACK) {
-        SwapPlayer(dealer);
+#define CURRENT_PLAYER dealer->getPlayer().first
+#define CURRENT_BET dealer->getPlayer().second
+#define CURRENT_DEALER dealer->getDealerPlayer()
+#define STACK dealer->m_stack
+
+using EVENT = Event::DealerResponse;
+using CONTROLLER = Controller::IDealer::states;
+
+void DealerHandlers::BetHandler::serveBet(Controller::IDealer * dealer) {
+    Event cur_state_for_player (EVENT::STATE, std::string("Current State is BET for " + std::to_string(dealer->cursor) + ""));
+    dealer->general_view_manager->notify(cur_state_for_player.GetData<std::string>()); // отобразить кнопки для текущего игрока
+
+    auto response = CURRENT_PLAYER->Bet(); // для графики он может проверять на клик по кнопке
+
+    if (response.Response == EVENT::MAKEBET){
+        CURRENT_BET = response.GetData<int>();
+        dealer->general_view_manager->notify(std::string("Player " + std::to_string(dealer->cursor) + " bet: " + std::to_string(response.GetData<int>())));
+
+        if (++dealer->cursor == dealer->m_players.size())
+            dealer->set_current(CONTROLLER::ROUND_SERVANT);
     }
 }
 
-void DealerHandlers::DealerableHandler::SwapPlayer(Controller::IDealer * dealer) {
-    dealer->Next();
-    while (dealer->GetPlayer()->ShowHand().total() == BLACKJACK)
-        dealer->Next();
-    if (dealer->IsPlayerDealer()) {
-        dealer->set_current(Controller::IDealer::states::PLAYABLE);
-        Event swap_state(Event::DealerResponse::STATE, std::string());
-        dealer->HandleEvent(swap_state);
-        dealer->GiveCard();
+void DealerHandlers::RoundHandler::serveRound(Controller::IDealer * dealer) {
+    Event cur_state(EVENT::STATE, std::string("Current State is ROUNDED for all"));
+    dealer->general_view_manager->notify(cur_state.GetData<std::string>());
+
+    auto card1 = STACK->GetCard();
+    CURRENT_DEALER->SetCard(card1);
+
+    // потом для графики можно будет подменить на полный Event
+    Event take_card1(EVENT::GIVECARD, std::string("Dealer take a card: " + std::string(card1)));
+    dealer->general_view_manager->notify(take_card1.GetData<std::string>());
+
+    auto card2 = STACK->GetCard();
+    CURRENT_DEALER->SetCard(card1);
+
+    CURRENT_DEALER->ShowHand().MakeSecret(1);
+
+    Event take_card2(EVENT::GIVECARD, std::string("Dealer take a card: " + std::string(card2)));
+    dealer->general_view_manager->notify(take_card2.GetData<std::string>());
+
+    size_t i = 0;
+    for (auto &[player, bet] : dealer->m_players) {
+        auto p_card1 = STACK->GetCard();
+        player->SetCard(p_card1);
+
+        Event take_p_card1(EVENT::GIVECARD,
+                           std::string("Player " + std::to_string(i) + " take a card: " + std::string(card1)));
+        dealer->general_view_manager->notify(take_p_card1.GetData<std::string>());
+
+        auto p_card2 = STACK->GetCard();
+        player->SetCard(p_card2);
+
+        Event take_p_card2(EVENT::GIVECARD,
+                           std::string("Player " + std::to_string(i) + " take a card: " + std::string(card2)));
+        dealer->general_view_manager->notify(take_p_card2.GetData<std::string>());
+        i++;
+    }
+
+    if (CURRENT_DEALER->ShowHand().total() >= 10) {
+        dealer->cursor = 0;
+        dealer->set_current(CONTROLLER::DEAL_SERVANT);
     } else {
-        Event swap(Event::DealerResponse::SWAPPLAYER, std::string());
-        dealer->HandleEvent(swap);
+        dealer->cursor = 0;
+        dealer->set_current(CONTROLLER::MOVE_SERVANT);
     }
+
+    //TODO показать карты все участнико, потом убрать при графике
 }
 
-void DealerHandlers::DealerableHandler::GiveDoubleDown(Controller::IDealer * dealer) {
-    std::cout << dealer->GetPlayer()->ShowHand().GetSize() << std::endl;
-    if (dealer->GetPlayer()->ShowHand().GetSize() == 2) {
+void DealerHandlers::MoveHandler::serveMove(Controller::IDealer * dealer) {
+    Event cur_state_for_player(EVENT::STATE,
+                               std::string("Current State is MOVE for " + std::to_string(dealer->cursor) + ""));
+    dealer->general_view_manager->notify(
+            cur_state_for_player.GetData<std::string>()); // отобразить кнопки для текущего игрока
 
-        dealer->MakeBet(dealer->GetBet() * 2);
-        dealer->SetPlayer(dealer->GetPlayer(), dealer->GetBet() * 2);
-        Event bet(Event::DealerResponse::MAKEBET, dealer->GetBet());
-        dealer->HandleEvent(bet);
+    if (CURRENT_PLAYER->ShowHand().total() < BLACKJACK) {
+        auto response = CURRENT_PLAYER->Move(); // для графики он может проверять на клик по кнопке
+        if (response.Response == EVENT::MAKEBET) {
+            auto card = STACK->GetCard();
+            CURRENT_PLAYER->SetCard(card);
 
-        auto card = dealer->GetCard();
-        dealer->GetPlayer()->SetCard(card);
-        Event new_card(Event::DealerResponse::GIVECARD, card);
-        dealer->HandleEvent(new_card);
+            Event take_p_card1(EVENT::GIVECARD, std::string(
+                    "Player " + std::to_string(dealer->cursor) + " take a card: " + std::string(card)));
+            dealer->general_view_manager->notify(take_p_card1.GetData<std::string>());
 
-        if (dealer->GetPlayer()->ShowHand().total() > BLACKJACK) {
-            Event lose(Event::DealerResponse::LOSE, std::string("\t\t\tYou Lose: " + std::to_string(dealer->GetBet())));
-            dealer->MakeBet((-1) * dealer->GetBet());
-            dealer->HandleEvent(lose);
+            if (CURRENT_PLAYER->ShowHand().total() > BLACKJACK){
+                // тут также можно вычитать из бд где лежат деньги
+                CURRENT_PLAYER->GetRoundResult((-1) * CURRENT_BET);
+                CURRENT_DEALER->GetRoundResult(CURRENT_BET);
+
+                Event lose(EVENT::LOSE, std::string(
+                        "Player " + std::to_string(dealer->cursor) + " lose: " + std::to_string(CURRENT_BET)));
+                dealer->general_view_manager->notify(lose.GetData<std::string>());
+
+                dealer->AFKCurrentPlayer();
+            }
         }
-        SwapPlayer(dealer);
-    } else YOU_CANT_DO_IT
-}
+        else if (response.Response == EVENT::SWAPPLAYER){
+            if (++dealer->cursor == dealer->m_players.size())
+                dealer->set_current(CONTROLLER::ROUND_SERVANT);
+        }
+        else if (response.Response == EVENT::DOUBLEDOWN){
+            if (CURRENT_PLAYER->ShowHand().GetSize() == 2){
+                auto card = STACK->GetCard();
+                CURRENT_PLAYER->SetCard(card);
 
+                Event take_p_card1(EVENT::GIVECARD, std::string(
+                        "Player " + std::to_string(dealer->cursor) + " take a card: " + std::string(card)));
+                dealer->general_view_manager->notify(take_p_card1.GetData<std::string>());
 
-void DealerHandlers::BetableHandler::TakeBet(Controller::IDealer * dealer, int bet) {
-    if (bet > Controller::IDealer::min && bet < Controller::IDealer::max) {
-        dealer->MakeBet(bet);
-        dealer->SetPlayer(dealer->GetPlayer(), bet);
-        Event bet_(Event::DealerResponse::MAKEBET, dealer->GetBet());
-        dealer->HandleEvent(bet_);
-        SwapPlayer(dealer);
-    } else {
-        std::cout << "INVALID BET" << std::endl;
-    }
-}
-
-void DealerHandlers::BetableHandler::SwapPlayer(Controller::IDealer * dealer) {
-    dealer->Next();
-    if (dealer->IsPlayerDealer()) {
-        dealer->set_current(Controller::IDealer::states::DISTRIBUTION);
-        Event swap_state(Event::DealerResponse::STATE, std::string());
-        dealer->HandleEvent(swap_state);
-        dealer->NewRound();
-    } else {
-        Event swap(Event::DealerResponse::SWAPPLAYER, std::string());
-        dealer->HandleEvent(swap);
-    }
-}
-
-void DealerHandlers::DistributionHandler::NewRound(Controller::IDealer * dealer) {
-    while (!dealer->IsPlayerDealer()){
-        dealer->Next();
-    }
-
-    auto card1 = dealer->GetCard();
-    dealer->GetPlayer()->SetCard(card1);
-    Event new_card1(Event::DealerResponse::GIVECARD, card1);
-    dealer->HandleEvent(new_card1);
-
-    auto card2 = dealer->GetCard();
-    dealer->GetPlayer()->SetCard(card2);
-    dealer->GetPlayer()->ShowHand().MakeSecret(1);
-    Event new_card2(Event::DealerResponse::GIVECARD, card2);
-    dealer->HandleEvent(new_card2);
-
-    SwapPlayer(dealer);
-    while (!dealer->IsPlayerDealer()) {
-
-        auto card1 = dealer->GetCard();
-        dealer->GetPlayer()->SetCard(card1);
-        Event new_card1(Event::DealerResponse::GIVECARD, card1);
-        dealer->HandleEvent(new_card1);
-
-        auto card2 = dealer->GetCard();
-        dealer->GetPlayer()->SetCard(card2);
-        Event new_card2(Event::DealerResponse::GIVECARD, card2);
-        dealer->HandleEvent(new_card2);
-
-        dealer->Next();
-    }
-    if (dealer->GetDealerHand().total() >= 10) {
-        if (dealer->GetDealerHand().total() == BLACKJACK) {
-            dealer->set_current(Controller::IDealer::states::PLAYABLE);
-            Event swap_state(Event::DealerResponse::STATE, std::string());
-            dealer->HandleEvent(swap_state);
-            dealer->Reset();
-            dealer->SwapPlayer();
-            dealer->PlayOut();
+                CURRENT_BET *= 2;
+                Event bet(EVENT::MAKEBET, CURRENT_BET);
+                dealer->general_view_manager->notify(std::string("Player " + std::to_string(dealer->cursor) + " doubled his bet: " + std::to_string(bet.GetData<int>())));
+            } else {
+                Event warn(EVENT::WARN, std::string("YOU CANT DO IT"));
+                dealer->general_view_manager->notify(warn.GetData<std::string>());
+            }
         } else {
-            dealer->set_current(Controller::IDealer::states::DEALERABLE);
-            Event swap_state(Event::DealerResponse::STATE, std::string());
-            dealer->Reset();
-            dealer->HandleEvent(swap_state);
-            dealer->SwapPlayer();
+            Event warn(EVENT::WARN, std::string("YOU CANT DO IT"));
+            dealer->general_view_manager->notify(warn.GetData<std::string>());
         }
     } else {
-        dealer->set_current(Controller::IDealer::states::DEALERABLE);
-        Event swap_state(Event::DealerResponse::STATE, std::string());
-        dealer->HandleEvent(swap_state);
-        dealer->Reset();
-        dealer->SwapPlayer();
+        if (++dealer->cursor == dealer->m_players.size())
+            dealer->set_current(CONTROLLER::PLAYOUT_SERVANT);
     }
+
+    //TODO показать все карты, убрать при графике
 }
 
-void DealerHandlers::DistributionHandler::SwapPlayer(Controller::IDealer * dealer) {
-    if (dealer->IsPlayerDealer())
-        dealer->Reset();
-    dealer->Next();
-    Event swap(Event::DealerResponse::SWAPPLAYER, std::string());
-    dealer->HandleEvent(swap);
-}
 
-void DealerHandlers::PlayableHandler::GiveCard(Controller::IDealer * dealer) {
-    while (!dealer->IsPlayerDealer()){
-        dealer->Next();
-    }
-    dealer->GetPlayer()->ShowHand().UnSecret(1);
-    while (dealer->GetPlayer()->ShowHand().total() < DEALERBORDER){
-        auto card = dealer->GetCard();
-        dealer->GetPlayer()->SetCard(card);
-        Event new_card(Event::DealerResponse::GIVECARD, card);
-        dealer->HandleEvent(new_card);
-    }
-    SwapPlayer(dealer);
-    dealer->PlayOut();
-}
+void DealerHandlers::PlayoutHandler::servePlayout(Controller::IDealer * dealer) {
+    Event cur_state(EVENT::STATE, std::string("Current State is PlayOut for all"));
+    dealer->general_view_manager->notify(cur_state.GetData<std::string>());
 
-void DealerHandlers::PlayableHandler::SwapPlayer(Controller::IDealer * dealer) {
-    if (dealer->IsPlayerDealer())
-        dealer->Reset();
-    dealer->Next();
-    Event swap(Event::DealerResponse::SWAPPLAYER, std::string());
-    dealer->HandleEvent(swap);
-}
+    for (auto & [player, bet] : dealer->m_players){
+        if (player->ShowHand().total() == BLACKJACK && player->ShowHand().GetSize() == 2) {
+            CURRENT_PLAYER->GetRoundResult(static_cast<int>(static_cast<double>(CURRENT_BET) * WinFactor));
+            CURRENT_DEALER->GetRoundResult((-1) * static_cast<int>(static_cast<double>(CURRENT_BET) * WinFactor));
 
-// TODO мб стоит засунуть номера и ники в класс плеера, и вообще делегировать ему основную работу
-void DealerHandlers::PlayableHandler::PlayOut(Controller::IDealer * dealer) {
-    while (!dealer->IsPlayerDealer()) {
-        if (dealer->GetPlayer()->ShowHand().total() == dealer->GetDealerHand().total()){
-            Event draw(Event::DealerResponse::DRAW, std::string("\t\t\tDraw, you get back: " + std::to_string(dealer->GetBet())));
-            dealer->MakeBet(0);
-            dealer->HandleEvent(draw);
+            Event won(EVENT::WIN, std::string(
+                    "Player " + std::to_string(dealer->cursor) + " get BlackJack in 2 card, win: " + std::to_string(CURRENT_BET + static_cast<int>(static_cast<double>(CURRENT_BET) * WinFactor))));
+            dealer->general_view_manager->notify(won.GetData<std::string>());
         }
-        else if ((dealer->GetPlayer()->ShowHand().total() > dealer->GetDealerHand().total() && dealer->GetDealerHand().total() <= BLACKJACK)
-                    || (dealer->GetDealerHand().total() > BLACKJACK && dealer->GetPlayer()->ShowHand().total() <= BLACKJACK))
-        {
-            Event win(Event::DealerResponse::WIN, std::string("\t\t\tYou win: " + std::to_string(dealer->GetBet())));
-            dealer->MakeBet(dealer->GetBet());
-            dealer->HandleEvent(win);
+        else if (player->ShowHand().total() > CURRENT_DEALER->ShowHand().total() && CURRENT_DEALER->ShowHand().total() <= BLACKJACK){
+            CURRENT_PLAYER->GetRoundResult(CURRENT_BET);
+            CURRENT_DEALER->GetRoundResult((-1) * CURRENT_BET);
+
+            Event won(EVENT::WIN, std::string(
+                    "Player " + std::to_string(dealer->cursor) + " win: " + std::to_string(CURRENT_BET * 2)));
+            dealer->general_view_manager->notify(won.GetData<std::string>());
+        } else if (player->ShowHand().total() < CURRENT_DEALER->ShowHand().total() && CURRENT_DEALER->ShowHand().total() <= BLACKJACK){
+            CURRENT_PLAYER->GetRoundResult((-1) * CURRENT_BET);
+            CURRENT_DEALER->GetRoundResult(CURRENT_BET);
+
+            Event lose(EVENT::LOSE, std::string(
+                    "Player " + std::to_string(dealer->cursor) + " lose: " + std::to_string(CURRENT_BET)));
+            dealer->general_view_manager->notify(lose.GetData<std::string>());
+        } else if (player->ShowHand().total() == CURRENT_DEALER->ShowHand().total()){
+            CURRENT_PLAYER->GetRoundResult(0);
+            CURRENT_DEALER->GetRoundResult(0);
+
+            Event draw(EVENT::DRAW, std::string(
+                    "Player " + std::to_string(dealer->cursor) + " draw with dealer, You get back: " + std::to_string(CURRENT_BET)));
+            dealer->general_view_manager->notify(draw.GetData<std::string>());
+        }
+    }
+
+    dealer->set_current(CONTROLLER::BET_SERVANT);
+    dealer->cursor = 0;
+}
+
+void DealerHandlers::PlayingHandler::serveYourself(Controller::IDealer * dealer) {
+    Event cur_state(EVENT::STATE, std::string("Current State is DealerMoves for all"));
+    dealer->general_view_manager->notify(cur_state.GetData<std::string>());
+
+    CURRENT_DEALER->ShowHand().UnSecret(1);
+
+    if (CURRENT_DEALER->ShowHand().total() == BLACKJACK && CURRENT_DEALER->ShowHand().GetSize() == 2) {
+        // TODO показать карты, убрать при графике
+        std::string dealer_cards;
+        for (auto & cards : CURRENT_DEALER->ShowHand().LookAtCards()){
+            dealer_cards += std::string(cards) + " ";
+        }
+        dealer->general_view_manager->notify(std::string("Dealer have BlackJack: " + dealer_cards));
+
+        for (auto & [player, bet] : dealer->m_players){
+            if (dealer->insurances.at(player)){
+                player->GetRoundResult(0);
+                CURRENT_DEALER->GetRoundResult(0);
+
+                Event draw(EVENT::DRAW, std::string(
+                        "Player " + std::to_string(dealer->cursor) + " save his bet, You get back: " + std::to_string(bet)));
+                dealer->general_view_manager->notify(draw.GetData<std::string>());
+            } else {
+                player->GetRoundResult((-1) * bet);
+                CURRENT_DEALER->GetRoundResult(bet);
+
+                Event lose(EVENT::LOSE, std::string(
+                        "Player " + std::to_string(dealer->cursor) + " lose: " + std::to_string(bet)));
+                dealer->general_view_manager->notify(lose.GetData<std::string>());
+            }
+        }
+
+        dealer->set_current(CONTROLLER::BET_SERVANT);
+        dealer->cursor = 0;
+
+    } else {
+        while (CURRENT_DEALER->ShowHand().total() < DEALERBORDER) {
+            auto card = STACK->GetCard();
+            CURRENT_DEALER->SetCard(card);
+
+            // потом для графики можно будет подменить на полный Event
+            Event take_card(EVENT::GIVECARD, std::string("Dealer take a card: " + std::string(card)));
+            dealer->general_view_manager->notify(take_card.GetData<std::string>());
+        }
+
+        dealer->set_current(CONTROLLER::PLAYOUT_SERVANT);
+        dealer->cursor = 0;
+    }
+}
+
+void DealerHandlers::DealHandler::serveMove(Controller::IDealer * dealer) {
+    Event cur_state_for_player(EVENT::STATE,
+                               std::string("Current State is DEAL for " + std::to_string(dealer->cursor) + ""));
+    dealer->general_view_manager->notify(
+            cur_state_for_player.GetData<std::string>());
+
+    auto response = CURRENT_PLAYER->Move();
+
+    dealer->insurances[CURRENT_PLAYER] = response.Response == EVENT::YES;
+
+    if (++dealer->cursor == dealer->m_players.size()) {
+        CURRENT_DEALER->ShowHand().UnSecret(1);
+        auto is_blackJack = CURRENT_DEALER->ShowHand().total();
+        CURRENT_DEALER->ShowHand().MakeSecret(1);
+        if (is_blackJack == BLACKJACK) {
+            dealer->set_current(CONTROLLER::PLAYOUT_SERVANT);
         } else {
-            Event lose(Event::DealerResponse::LOSE, std::string("\t\t\tYou lose: " + std::to_string(dealer->GetBet())));
-            dealer->MakeBet((-1) * dealer->GetBet());
-            dealer->HandleEvent(lose);
-        }
-        SwapPlayer(dealer);
-    }
-    dealer->set_current(Controller::IDealer::states::BETABLE);
+            for (auto & [player, bet] : dealer->m_players){
+                if (dealer->insurances.at(player)){
+                    player->GetRoundResult((-1) * bet / 2);
+                    CURRENT_DEALER->GetRoundResult(bet / 2);
 
-    dealer->TimeToShuffle();
-    Event restart(Event::DealerResponse::RESTART, std::string("restart"));
-    dealer->HandleEvent(restart);
+                    Event lose(EVENT::LOSE, std::string(
+                            "Player " + std::to_string(dealer->cursor) + " insurance lost: " + std::to_string(bet / 2)));
+                    dealer->general_view_manager->notify(lose.GetData<std::string>());
+                }
+            }
+            dealer->insurances.clear();
+            dealer->cursor = 0;
+            dealer->set_current(CONTROLLER::MOVE_SERVANT);
+        }
+    }
 }

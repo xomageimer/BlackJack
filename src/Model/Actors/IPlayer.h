@@ -1,15 +1,27 @@
 #ifndef BLACKJACK_IPLAYER_H
 #define BLACKJACK_IPLAYER_H
 
+#include "OutputManager.h"
 #include "Events.h"
 #include "Cards/CardStack.h"
 
 namespace Actors {
     const int BLACKJACK = 21;
     struct IPlayer {
+    protected:
+        std::string nickname; // mb database key + ID
+        // mb database value its a bank
+
+        // тут также храним кооординаты в графическом представлении того, где находимся
+
+        std::shared_ptr<OutputManager> view_manager;
     public:
         virtual ~IPlayer() = default;
         IPlayer() = default;
+
+        virtual Event Move() = 0;
+        virtual Event Bet() = 0;
+        virtual Event Answer() = 0;
 
         virtual void SetCard(const GameCard::Cards &) = 0;
         [[nodiscard]] virtual bool BlackJackCheck() const = 0;
@@ -21,12 +33,18 @@ namespace Actors {
         [[nodiscard]] virtual int GetPlayerCost() const = 0;
     };
 
-    struct OfflinePlayer : public IPlayer{
+    struct ConsoleOfflinePlayer : public IPlayer{
     protected:
         GameCard::Hand m_hand;
         int m_bank;
+
+
     public:
-        explicit OfflinePlayer(int bank) : m_bank(bank) {}
+        explicit ConsoleOfflinePlayer(int bank) : m_bank(bank) {}
+
+        Event Move() override;
+        Event Bet() override;
+        Event Answer() override;
 
         void SetCard(const GameCard::Cards &) override;
         [[nodiscard]] bool BlackJackCheck() const override;
