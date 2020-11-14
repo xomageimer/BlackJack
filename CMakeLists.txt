@@ -20,7 +20,19 @@ add_executable(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PRIVATE src src/Model src/View src/Engine)
 
-add_executable(tests test/simple_tests.cpp)
+add_executable(tests test/simple_tests.cpp test/gamelogic.cpp
+
+        src/Controller/Dealer.cpp
+        src/Controller/IHandler.cpp
+
+        src/Model/Actors/IPlayer.cpp
+        src/Model/Cards/CardStack.cpp
+        src/Model/Actors/GameGround.cpp
+
+        src/View/OutputManager.cpp
+
+        src/Engine/BlackJack.cpp
+        )
 
 add_subdirectory(
         "contrib/gtest"
@@ -28,6 +40,7 @@ add_subdirectory(
 )
 
 target_link_libraries(tests PRIVATE gtest gtest_main gmock)
+target_include_directories(tests PRIVATE src src/Model src/View src/Engine)
 
 set_target_properties(${PROJECT_NAME} tests PROPERTIES
         CXX_STANDARD 17
