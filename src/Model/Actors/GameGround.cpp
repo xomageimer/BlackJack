@@ -121,7 +121,12 @@ void GameGround::Display(const Event & event) {
             [[fallthrough]];
         case Event::DealerResponse::WIN :
             [[fallthrough]];
-        case Event::DealerResponse::DRAW :
+        case Event::DealerResponse::DRAW : {
+            auto tmp = current_player;
+            current_player = player_dealer;
+            DisplayStat();
+            current_player = tmp;
+
             om->notify(event.GetData<std::string>());
             player_dealer->GetRoundResult((-1) * bets[current_number - 1]);
             current_player->GetRoundResult(bets[current_number - 1]);
@@ -129,6 +134,7 @@ void GameGround::Display(const Event & event) {
             current_player->ClearHand();
             Output();
             break;
+        }
         case Event::DealerResponse::RESTART : {
             player_dealer->ClearHand();
             current_number = 0;

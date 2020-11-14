@@ -87,7 +87,7 @@ namespace Controller {
         void GetRoundResult(int) override;
 
         void ClearHand() override;
-        GameCard::Hand GetDealerHand() const override;
+        [[nodiscard]] GameCard::Hand GetDealerHand() const override;
 
         [[nodiscard]] int GetBet() const override;
 

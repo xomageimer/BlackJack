@@ -3,8 +3,6 @@
 #include <iostream>
 #include <utility>
 
-// TODO туз должен быть 1 или 11
-
 std::ostream& operator<<(std::ostream& os, const GameCard::Cards& sc)
 {
     os << static_cast<int>(sc.price) << ' ' << static_cast<int>(sc.suit) << ';';
@@ -21,7 +19,6 @@ std::ostream& operator<<(std::ostream& os, const std::list<GameCard::Cards>& lis
 
 void GameCard::CardStack::GenNewStacks() {
     m_CardShoe.splice(m_CardShoe.begin(), m_goneCards);
-
 
     for (size_t j = 0; j < card_stack_count; j++) {
         auto it = prev(m_CardShoe.end());
@@ -55,7 +52,7 @@ GameCard::Cards::CardSuit& operator++(GameCard::Cards::CardSuit & cp){
 void GameCard::GenerateCardPack(GameCard::CardStack & cs) {
     for (auto i = GameCard::Cards::CardSuit::SPADES; i != GameCard::Cards::CardSuit::STOPPER; ++i){
         for (auto j = GameCard::Cards::CardPrice::ACE; j != GameCard::Cards::CardPrice::STOPPER; ++j){
-            cs.m_CardShoe.emplace_back(GameCard::Cards{j, i});
+            cs.m_CardShoe.emplace_back(GameCard::Cards{j, i, false});
         }
     }
 }
@@ -87,7 +84,7 @@ size_t GameCard::CardStack::CardShoeSize() const {
     return m_CardShoe.size();
 }
 
-GameCard::Hand::Hand(size_t max_card_per_hand) : is_open(max_card_per_hand, true) {m_Cards.reserve(max_card_per_hand);}
+GameCard::Hand::Hand(size_t max_card_per_hand) {m_Cards.reserve(max_card_per_hand);}
 
 const std::vector<GameCard::Cards> &GameCard::Hand::LookAtCards() const {
     return this->m_Cards;
@@ -122,10 +119,12 @@ int GameCard::Hand::total() const {
     }
 
     for (auto & i : LookAtCards()){
-        if (i.price != Cards::CardPrice::ACE)
-            h_price += (i.price <= Cards::CardPrice::TEN) ? static_cast<int>(i.price) : 10;
-        else
-            h_price += 11;
+        if (!i.is_secret) {
+            if (i.price != Cards::CardPrice::ACE)
+                h_price += (i.price <= Cards::CardPrice::TEN) ? static_cast<int>(i.price) : 10;
+            else
+                h_price += 11;
+        }
     }
 
     while (h_price > 21 && ACE_counts > 0) {
@@ -161,12 +160,12 @@ bool GameCard::operator!=(const GameCard::Hand & h, int val) {
     return h.total() != val;
 }
 
-void GameCard::Hand::MakeSecret(size_t i) {
-    is_open[i] = false;
+void GameCard::Hand::MakeSecret(size_t i) const {
+    m_Cards.at(i).secret(true);
 }
 
-void GameCard::Hand::UnSecret(size_t i) {
-    is_open[i] = true;
+void GameCard::Hand::UnSecret(size_t i) const {
+    m_Cards.at(i).secret(false);
 }
 
 GameCard::Mersenne_Generator::Mersenne_Generator() : mersenne(std::random_device()()) {}
@@ -177,10 +176,31 @@ size_t GameCard::Mersenne_Generator::seed(size_t seed_) {
 }
 
 GameCard::Cards::operator std::string() const {
-    auto o_value = m_value.find(this->price);
-    auto o_suit = m_suit.find(this->suit);
-    std::string out = (((o_value == m_value.end())
-                          ? std::to_string(static_cast<int>(this->price))
-                          : o_value->second) + o_suit->second);
+    std::string out;
+    if (!is_secret) {
+        auto o_value = m_value.find(this->price);
+        auto o_suit = m_suit.find(this->suit);
+        out = (((o_value == m_value.end())
+                            ? std::to_string(static_cast<int>(this->price))
+                            : o_value->second) + o_suit->second);
+    } else {
+        out = "#SECRET#";
+    }
     return out;
+}
+
+void GameCard::Cards::secret(bool b) const {
+    is_secret = b;
+}
+
+GameCard::Cards::Cards(const Cards & card) {
+    price = card.price;
+    suit = card.suit;
+    is_secret = card.is_secret;
+}
+
+GameCard::Cards::Cards(GameCard::Cards::CardPrice _price, GameCard::Cards::CardSuit _suit, bool _secr) {
+    price = _price;
+    suit = _suit;
+    is_secret = _secr;
 }

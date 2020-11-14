@@ -93,36 +93,46 @@ void DealerHandlers::DistributionHandler::NewRound(Controller::IDealer * dealer)
 
     auto card2 = dealer->GetCard();
     dealer->GetPlayer()->SetCard(card2);
+    dealer->GetPlayer()->ShowHand().MakeSecret(1);
     Event new_card2(Event::DealerResponse::GIVECARD, card2);
     dealer->HandleEvent(new_card2);
 
-    if (dealer->GetDealerHand().total() == BLACKJACK){
-        dealer->set_current(Controller::IDealer::states::PLAYABLE);
-        Event swap_state(Event::DealerResponse::STATE, std::string());
-        dealer->HandleEvent(swap_state);
-        SwapPlayer(dealer);
-        dealer->PlayOut();
-    } else {
-        SwapPlayer(dealer);
-        while (!dealer->IsPlayerDealer()) {
+    SwapPlayer(dealer);
+    while (!dealer->IsPlayerDealer()) {
 
-            auto card1 = dealer->GetCard();
-            dealer->GetPlayer()->SetCard(card1);
-            Event new_card1(Event::DealerResponse::GIVECARD, card1);
-            dealer->HandleEvent(new_card1);
+        auto card1 = dealer->GetCard();
+        dealer->GetPlayer()->SetCard(card1);
+        Event new_card1(Event::DealerResponse::GIVECARD, card1);
+        dealer->HandleEvent(new_card1);
 
-            auto card2 = dealer->GetCard();
-            dealer->GetPlayer()->SetCard(card2);
-            Event new_card2(Event::DealerResponse::GIVECARD, card2);
-            dealer->HandleEvent(new_card2);
+        auto card2 = dealer->GetCard();
+        dealer->GetPlayer()->SetCard(card2);
+        Event new_card2(Event::DealerResponse::GIVECARD, card2);
+        dealer->HandleEvent(new_card2);
 
-            dealer->Next();
+        dealer->Next();
+    }
+    if (dealer->GetDealerHand().total() >= 10) {
+        if (dealer->GetDealerHand().total() == BLACKJACK) {
+            dealer->set_current(Controller::IDealer::states::PLAYABLE);
+            Event swap_state(Event::DealerResponse::STATE, std::string());
+            dealer->HandleEvent(swap_state);
+            dealer->Reset();
+            dealer->SwapPlayer();
+            dealer->PlayOut();
+        } else {
+            dealer->set_current(Controller::IDealer::states::DEALERABLE);
+            Event swap_state(Event::DealerResponse::STATE, std::string());
+            dealer->Reset();
+            dealer->HandleEvent(swap_state);
+            dealer->SwapPlayer();
         }
+    } else {
         dealer->set_current(Controller::IDealer::states::DEALERABLE);
         Event swap_state(Event::DealerResponse::STATE, std::string());
         dealer->HandleEvent(swap_state);
-
-        SwapPlayer(dealer);
+        dealer->Reset();
+        dealer->SwapPlayer();
     }
 }
 
@@ -138,6 +148,7 @@ void DealerHandlers::PlayableHandler::GiveCard(Controller::IDealer * dealer) {
     while (!dealer->IsPlayerDealer()){
         dealer->Next();
     }
+    dealer->GetPlayer()->ShowHand().UnSecret(1);
     while (dealer->GetPlayer()->ShowHand().total() < DEALERBORDER){
         auto card = dealer->GetCard();
         dealer->GetPlayer()->SetCard(card);

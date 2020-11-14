@@ -50,14 +50,13 @@ namespace GameCard {
     struct Hand {
     private:
         std::vector<struct Cards> m_Cards;
-        std::vector<bool> is_open;
     public:
         explicit Hand(size_t max_card_per_hand = 11); // reserve 10
 
         [[nodiscard]] const std::vector<struct Cards> &LookAtCards() const;
 
-        void MakeSecret(size_t i);
-        void UnSecret(size_t i);
+        void MakeSecret(size_t i) const;
+        void UnSecret(size_t i) const;
 
         void SetNewCard(struct Cards);
 
@@ -93,6 +92,7 @@ namespace GameCard {
     bool operator!=(const Hand&, int);
 
     struct Cards {
+
         enum class CardPrice : int {
             ACE = 1,
             TWO,
@@ -121,6 +121,12 @@ namespace GameCard {
             STOPPER
         };
 
+        Cards(CardPrice, CardSuit, bool);
+        Cards(const Cards &);
+        Cards(Cards &&) = default;
+
+        void secret(bool) const;
+
         // для консоли
         static inline std::map<GameCard::Cards::CardPrice, std::string> m_value{
                 {GameCard::Cards::CardPrice::ACE, "A"},
@@ -138,6 +144,7 @@ namespace GameCard {
 
         CardPrice price;
         CardSuit suit;
+        mutable bool is_secret;
 
         explicit operator std::string() const;
     };
