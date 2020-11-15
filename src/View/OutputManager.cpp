@@ -9,6 +9,7 @@ void OutputManager::notify(const std::string &new_info) {
     for (auto & i : subscribers){
         i.second->update(new_info);
     }
+    drop(); // без буферизирования
 }
 
 void OutputManager::notify(const GameCard::Cards &new_info) {
@@ -19,6 +20,7 @@ void OutputManager::notify(const GameCard::Cards &new_info) {
                    ? std::to_string(static_cast<int>(new_info.price))
                    : value->second) + suit->second);
     }
+    drop();
 }
 
 void OutputManager::unsubscribe(const std::string &listener) {

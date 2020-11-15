@@ -10,6 +10,8 @@
 
 const size_t MAX_PLAYER_COUNT = 7;
 
+// Некий медиатор над машиной состояний
+
 struct GameGround {
 private:
     std::shared_ptr<OutputManager> om;
@@ -18,9 +20,10 @@ private:
     std::shared_ptr<Actors::IPlayer> player_dealer;
 
     std::map<std::string, std::shared_ptr<Actors::IPlayer>> players;
-    std::vector<int> bets;
 
     std::map<std::string, std::shared_ptr<Actors::IPlayer>> AFK_players;
+    std::map<std::string, int> AFK_players_limited;
+
 
     std::vector<size_t> vacancy {};
     std::vector<std::string> queue {};
@@ -35,35 +38,22 @@ public:
     template <typename T>
     inline constexpr auto SubscribeDealer(std::shared_ptr<T> new_dealer) noexcept ->
     decltype (
-            std::declval<T>().GiveCard(),
+            std::declval<T>().ServeBet(),
             std::declval<T>().ShowHand(),
             void()
     ){
         dealer = new_dealer;
         player_dealer = new_dealer;
-        dealer->SetBase(this);
+        dealer->SetPlayerDealer(player_dealer);
     }
     template <typename T>
     inline constexpr void SubscribeDealer([[maybe_unused]] T new_dealer){
         throw std::logic_error("\nERROR; FROM SUBSCRIBE DEALER METHOD; FILE: " + std::string(__FILE__) + "; ON LINE: " + std::to_string(__LINE__ - 1) + ";\nARGUMENT IS NOT INHERITED FROM IDealer AND/OR IActor;");
     }
-    bool UnSubscribePlayer(const std::string & player_nickname);
+    bool UnSubscribePlayer(const std::string &player_nickname);
 
-    [[nodiscard]] bool CheckPlayerEQDealer() const;
+    void Execute();
 
-    void TakeBet(int bet);
-
-    void DisplayStat() const;
-
-    [[nodiscard]] bool ActivePlayers() const{
-        return !players.empty();
-    };
-
-    void ChangePlayer();
-    void Reset();
-
-    void Listen(const Event &);
-    void Display(const Event &);
     void Output();
     void Destroy();
 };

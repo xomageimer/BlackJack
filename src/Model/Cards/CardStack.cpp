@@ -72,8 +72,10 @@ GameCard::CardStack::CardStack(std::shared_ptr<Generator> gen, size_t count_of_c
 }
 
 void GameCard::CardStack::TimeToShuffle() {
-    if ((2 * (m_CardShoe.size() + m_goneCards.size()) / 3) <= m_goneCards.size())
+    if ((2 * (m_CardShoe.size() + m_goneCards.size()) / 3) <= m_goneCards.size()) {
         GenNewStacks();
+        std::cout << "SHUFFLE" << std::endl;
+    }
 }
 
 size_t GameCard::CardStack::GoneCardsSize() const {

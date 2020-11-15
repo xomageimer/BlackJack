@@ -2,8 +2,6 @@
 #include "IHandler.h"
 #include "Actors/GameGround.h"
 
-// TODO мб стоит засунуть ground внутрь диллера и передавать shared_ptr на player
-
 Controller::IDealer::IDealer() {
      cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::BET_SERVANT),
                         std::forward_as_tuple(std::make_shared<DealerHandlers::BetHandler>()));
@@ -41,7 +39,15 @@ std::shared_ptr<Actors::IPlayer> Controller::IDealer::getDealerPlayer() {
 
 void Controller::IDealer::AFKCurrentPlayer() {
     AFK_players.push_back(m_players.at(cursor).first);
-    m_players.erase(m_players.begin() + cursor);
+   // m_players.erase(m_players.begin() + cursor);
+}
+
+void Controller::IDealer::SetView(std::shared_ptr<OutputManager> om) {
+    general_view_manager = om;
+}
+
+void Controller::IDealer::SetPlayerDealer(std::shared_ptr<Actors::IPlayer> del) {
+    player_dealer = del;
 }
 
 void Controller::SimpleDealer::ServeBet() {
@@ -86,4 +92,34 @@ void Controller::SimpleDealer::Process() {
             ServeBet();
             break;
     }
+}
+
+Event Controller::SimpleDealer::Move() DEFAULT
+
+Event Controller::SimpleDealer::Bet() DEFAULT
+
+Event Controller::SimpleDealer::Answer() DEFAULT
+
+void Controller::SimpleDealer::SetCard(const GameCard::Cards & card) {
+    m_hand.SetNewCard(card);
+}
+
+bool Controller::SimpleDealer::BlackJackCheck() const {
+    return m_hand == BLACKJACK;
+}
+
+void Controller::SimpleDealer::GetRoundResult(int bet) {
+    m_bank += bet;
+}
+
+void Controller::SimpleDealer::ClearHand() {
+    m_hand.Clear();
+}
+
+const GameCard::Hand &Controller::SimpleDealer::ShowHand() const {
+    return m_hand;
+}
+
+int Controller::SimpleDealer::GetPlayerCost() const {
+    return m_bank;
 }

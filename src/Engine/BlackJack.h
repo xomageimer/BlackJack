@@ -19,7 +19,7 @@ public:
     bool PlayerConnect(const std::string & nick_name, std::shared_ptr<Actors::IPlayer> player);
     bool PlayerDisconnect(const std::string & nick_name);
 
-    void Run(std::istream& input, std::ostream& output);
+    void Run(std::ostream& output);
 
 private:
     BlackJack();

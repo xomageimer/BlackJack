@@ -8,6 +8,15 @@
 namespace Actors {
     const int BLACKJACK = 21;
     struct IPlayer {
+    public:
+        std::map<std::string, Event::PlayerRequests> commands{
+                {"BET", Event::PlayerRequests::BET},
+                {"HIT", Event::PlayerRequests::HIT},
+                {"STAND", Event::PlayerRequests::STAND},
+                {"DOUBLEDOWN", Event::PlayerRequests::DOUBLEDOWN},
+                {"BANK", Event::PlayerRequests::BANK},
+                {"YES", Event::PlayerRequests::YES}
+        };
     protected:
         std::string nickname; // mb database key + ID
         // mb database value its a bank
@@ -38,9 +47,10 @@ namespace Actors {
         GameCard::Hand m_hand;
         int m_bank;
 
+        std::istream & is;
 
     public:
-        explicit ConsoleOfflinePlayer(int bank) : m_bank(bank) {}
+        explicit ConsoleOfflinePlayer(int bank, std::istream& in = std::cin) : m_bank(bank), is(in) {}
 
         Event Move() override;
         Event Bet() override;

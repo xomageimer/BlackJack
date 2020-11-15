@@ -7,7 +7,6 @@ bool GameGround::SubscribePlayer(std::string player_nickname, std::shared_ptr<Ac
     // TODO можно проверять хватает ли у плеера фишек
     if (queue.size() < MAX_PLAYER_COUNT) {
         queue.emplace_back(player_nickname);
-        bets.emplace_back(0);
         players.emplace(std::piecewise_construct, std::forward_as_tuple(player_nickname),
                         std::forward_as_tuple(new_player));
         if (queue.size() == 1){
@@ -16,7 +15,6 @@ bool GameGround::SubscribePlayer(std::string player_nickname, std::shared_ptr<Ac
         return true;
     } else if (!vacancy.empty()) {
         queue[vacancy.back()] = player_nickname;
-        bets[vacancy.back()] = 0.f;
         vacancy.pop_back();
         players.emplace(std::piecewise_construct, std::forward_as_tuple(player_nickname),
                         std::forward_as_tuple(new_player));
@@ -54,150 +52,13 @@ void GameGround::Destroy() {
 
 GameGround::GameGround(std::shared_ptr<OutputManager> output) : om(std::move(output)) {}
 
-// сначала change потом действие
-void GameGround::ChangePlayer() {
-    if (!players.empty()) {
-        if (current_number != queue.size()) {
-            while (AFK_players.count(queue.at(current_number))) {
-                ++current_number;
-            }
-        }
-        int current_bet;
-        current_player = (current_number == queue.size()) ? (current_bet = 0, player_dealer)
-                                                          : (current_bet = bets[current_number], players.at(
-                        queue.at(current_number++)));
-        dealer->SetPlayer(current_player.get(), current_bet);
-    } else {
-        current_player = player_dealer;
-        dealer->SetPlayer(current_player.get(), 0);
-        dealer->ExtraEnd();
+void GameGround::Execute() {
+    dealer->SetView(om);
+    for (auto & i : players){
+        dealer->SetPlayer(i.second);
     }
-}
 
-void GameGround::Reset() {
-    current_number = 0;
-}
-
-void GameGround::Display(const Event & event) {
-    switch (event.Response) {
-        case Event::DealerResponse::WARN :
-            om->notify(event.GetData<std::string>());
-            Output();
-            break;
-        case Event::DealerResponse::MAKEBET :
-            om->notify(std::string("Player " + std::to_string(current_number) + " Made a Bet: " +
-                                   std::to_string(event.GetData<int>())));
-            Output();
-            break;
-        case Event::DealerResponse::GIVECARD :
-            if (CheckPlayerEQDealer()) {
-                om->notify(std::string("Dealer Take a Card: "));
-            } else {
-                om->notify(std::string("Player " + std::to_string(current_number) + " Take a Card: "));
-            }
-            om->notify(event.GetData<GameCard::Cards>());
-            DisplayStat();
-            Output();
-            break;
-        case Event::DealerResponse::DOUBLEDOWN :
-            om->notify(std::string("Player " + std::to_string(current_number) + " Doubled the Bet  : " +
-                                   std::to_string(bets[current_number - 1]) + " and Take Card: "));
-            om->notify(event.GetData<GameCard::Cards>());
-            DisplayStat();
-            Output();
-            break;
-        case Event::DealerResponse::SWAPPLAYER :
-            om->notify(std::string("Change Player"));
-            Output();
-            break;
-        case Event::DealerResponse::STATE :
-            om->notify(std::string("Change State"));
-            Output();
-            break;
-        case Event::DealerResponse::LOSE : {
-            auto tmp = players.extract(queue.at(current_number - 1));
-            AFK_players.insert(std::move(tmp));
-        }
-            [[fallthrough]];
-        case Event::DealerResponse::WIN :
-            [[fallthrough]];
-        case Event::DealerResponse::DRAW : {
-            auto tmp = current_player;
-            current_player = player_dealer;
-            DisplayStat();
-            current_player = tmp;
-
-            om->notify(event.GetData<std::string>());
-            player_dealer->GetRoundResult((-1) * bets[current_number - 1]);
-            current_player->GetRoundResult(bets[current_number - 1]);
-            bets[current_number] = 0;
-            current_player->ClearHand();
-            Output();
-            break;
-        }
-        case Event::DealerResponse::RESTART : {
-            player_dealer->ClearHand();
-            current_number = 0;
-            while (!AFK_players.empty()) {
-                auto tmp = AFK_players.extract(queue.at(current_number++));
-                players.insert(std::move(tmp));
-            }
-            current_player = players.at(queue.at(0));
-            Destroy();
-            DisplayStat();
-            om->notify(std::string("New Round: "));
-            ChangePlayer();
-            Output();
-            break;
-        }
-        default:
-            Destroy();
-            break;
-    }
-    // свитчом бегать по евентам и выплевывать в om вывод
-    // Если это специфичный евент можно вывести сразу, а можно накопить его и вывести потом
-}
-
-bool GameGround::CheckPlayerEQDealer() const {
-    return current_player == player_dealer;
-}
-
-void GameGround::TakeBet(int bet) {
-    bets[current_number - 1] = bet;
-}
-
-void GameGround::Listen(const Event & event) {
-    switch (event.Request) {
-        case Event::PlayerRequests::HIT :
-            dealer->GiveCard();
-            break;
-        case Event::PlayerRequests::BET :
-            dealer->TakeBet(event.GetData<int>());
-            break;
-        case Event::PlayerRequests::STAND :
-            dealer->SwapPlayer();
-            break;
-        case Event::PlayerRequests::DOUBLEDOWN :
-            dealer->GiveDoubleDown();
-            break;
-        case Event::PlayerRequests::BANK:
-            om->notify(std::string("Player " + std::to_string(current_number) + " bank: " + std::to_string(players.at(queue.at(current_number - 1))->GetPlayerCost())));
-            Output();
-            break;
-        default :
-            std::cout << "YOU CANT DO IT" << std::endl;
-    }
-}
-
-void GameGround::DisplayStat() const {
-    std::string cur_hand;
-    for (auto & i : current_player->ShowHand().LookAtCards()){
-        cur_hand += std::string(i) + " ";
-    }
-    cur_hand += " = " + std::to_string(current_player->ShowHand().total());
-    if (current_player == player_dealer){
-        om->notify(std::string("Dealer hand: " + cur_hand));
-    } else {
-        om->notify(std::string("Player " + std::to_string(current_number) + " hand: " + cur_hand));
+    while (true){
+        dealer->Process();
     }
 }

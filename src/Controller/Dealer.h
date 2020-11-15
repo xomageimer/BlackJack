@@ -44,13 +44,15 @@ namespace Controller {
         friend DealerHandlers::DealHandler;
 
         virtual void set_current(states state) {
-            cur_handler = cmd_handles[state];
+            cur_state = state;
+            cur_handler = cmd_handles[cur_state];
         }
 
     public:
         explicit IDealer();
         virtual ~IDealer() = default;
 
+        virtual void SetView(std::shared_ptr<OutputManager>);
         virtual void SetPlayer(std::shared_ptr<Actors::IPlayer>);
 
         virtual void ServeBet() = 0;
@@ -62,6 +64,8 @@ namespace Controller {
         virtual void Process() = 0;
 
         virtual const std::vector<std::shared_ptr<Actors::IPlayer>> & kickAFK();
+
+        virtual void SetPlayerDealer(std::shared_ptr<Actors::IPlayer>);
 
         static inline const int max = 600;
         static inline const int min = 10;
@@ -80,7 +84,6 @@ namespace Controller {
         size_t cursor = 0;
         // может быть бд, где ID плеера будет ключем для того, чтобы получить доступ
         // к его ставке и фишкам
-
         virtual void AFKCurrentPlayer();
 
         virtual std::pair<std::shared_ptr<Actors::IPlayer>, int> & getPlayer();
@@ -106,6 +109,19 @@ namespace Controller {
         void ServeYourself() override;
 
         void Process() override;
+
+        Event Move() override;
+        Event Bet() override;
+        Event Answer() override;
+
+        void SetCard(const GameCard::Cards &) override;
+        [[nodiscard]] bool BlackJackCheck() const override;
+        void GetRoundResult(int) override;
+
+        void ClearHand() override;
+
+        [[nodiscard]] const GameCard::Hand &ShowHand() const override;
+        [[nodiscard]] int GetPlayerCost() const override;
     };
 
 }
