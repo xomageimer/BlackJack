@@ -10,7 +10,7 @@
 
 const size_t MAX_PLAYER_COUNT = 7;
 
-// Некий медиатор над машиной состояний
+// Некий медиатор/декоратор над машиной состояний
 
 struct GameGround {
 private:

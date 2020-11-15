@@ -86,6 +86,7 @@ void DealerHandlers::RoundHandler::serveRound(Controller::IDealer * dealer) {
         }
         player_cards += " = " + std::to_string(player->ShowHand().total());
         dealer->general_view_manager->notify(std::string("Player " + std::to_string(j) + " have: " + player_cards));
+        j++;
     }
 }
 
@@ -121,6 +122,7 @@ void DealerHandlers::MoveHandler::serveMove(Controller::IDealer * dealer) {
                 }
                 player_cards += " = " + std::to_string(player->ShowHand().total());
                 dealer->general_view_manager->notify(std::string("Player " + std::to_string(j) + " have: " + player_cards));
+                j++;
             }
             // TODO КОНЕЦ
 
@@ -190,38 +192,39 @@ void DealerHandlers::PlayoutHandler::servePlayout(Controller::IDealer * dealer) 
         }
         player_cards += " = " + std::to_string(player->ShowHand().total());
         dealer->general_view_manager->notify(std::string("Player " + std::to_string(j) + " have: " + player_cards));
+        j++;
     }
     // TODO конец
-
+    size_t p = 0;
     for (auto & [player, bet] : dealer->m_players){
-        if (player->ShowHand().total() == BLACKJACK && player->ShowHand().GetSize() == 2) {
+        if (player->ShowHand().total() == BLACKJACK && player->ShowHand().GetSize() == 2 && CURRENT_DEALER->ShowHand().total() != BLACKJACK) {
             player->GetRoundResult(static_cast<int>(static_cast<double>(bet) * WinFactor));
             CURRENT_DEALER->GetRoundResult((-1) * static_cast<int>(static_cast<double>(bet) * WinFactor));
 
             Event won(EVENT::WIN, std::string(
-                    "Player " + std::to_string(dealer->cursor) + " get BlackJack in 2 card, win: " + std::to_string(bet + static_cast<int>(static_cast<double>(bet) * WinFactor))));
+                    "Player " + std::to_string(p++) + " get BlackJack in 2 card, win: " + std::to_string(bet + static_cast<int>(static_cast<double>(bet) * WinFactor))));
             dealer->general_view_manager->notify(won.GetData<std::string>());
         }
-        else if (player->ShowHand().total() > CURRENT_DEALER->ShowHand().total() && player->ShowHand().total() <= BLACKJACK){
+        else if ((player->ShowHand().total() > CURRENT_DEALER->ShowHand().total() && player->ShowHand().total() <= BLACKJACK) || (player->ShowHand().total() <= BLACKJACK && CURRENT_DEALER->ShowHand().total() > BLACKJACK)){
             player->GetRoundResult(bet);
             CURRENT_DEALER->GetRoundResult((-1) * bet);
 
             Event won(EVENT::WIN, std::string(
-                    "Player " + std::to_string(dealer->cursor) + " win: " + std::to_string(bet * 2)));
+                    "Player " + std::to_string(p++) + " win: " + std::to_string(bet * 2)));
             dealer->general_view_manager->notify(won.GetData<std::string>());
         } else if (player->ShowHand().total() < CURRENT_DEALER->ShowHand().total() && CURRENT_DEALER->ShowHand().total() <= BLACKJACK){
             player->GetRoundResult((-1) * bet);
             CURRENT_DEALER->GetRoundResult(bet);
 
             Event lose(EVENT::LOSE, std::string(
-                    "Player " + std::to_string(dealer->cursor) + " lose: " + std::to_string(bet)));
+                    "Player " + std::to_string(p++) + " lose: " + std::to_string(bet)));
             dealer->general_view_manager->notify(lose.GetData<std::string>());
-        } else if (player->ShowHand().total() == CURRENT_DEALER->ShowHand().total()){
+        } else if (player->ShowHand().total() == CURRENT_DEALER->ShowHand().total() && CURRENT_DEALER->ShowHand().total() <= BLACKJACK){
             player->GetRoundResult(0);
             CURRENT_DEALER->GetRoundResult(0);
 
             Event draw(EVENT::DRAW, std::string(
-                    "Player " + std::to_string(dealer->cursor) + " draw with dealer, You get back: " + std::to_string(bet)));
+                    "Player " + std::to_string(p++) + " draw with dealer, You get back: " + std::to_string(bet)));
             dealer->general_view_manager->notify(draw.GetData<std::string>());
         }
         player->ClearHand();
@@ -300,15 +303,17 @@ void DealerHandlers::DealHandler::serveMove(Controller::IDealer * dealer) {
         if (is_blackJack == BLACKJACK) {
             dealer->set_current(CONTROLLER::PLAYOUT_SERVANT);
         } else {
+            size_t i = 0;
             for (auto & [player, bet] : dealer->m_players){
                 if (dealer->insurances.at(player)){
                     player->GetRoundResult((-1) * bet / 2);
                     CURRENT_DEALER->GetRoundResult(bet / 2);
 
                     Event lose(EVENT::LOSE, std::string(
-                            "Player " + std::to_string(dealer->cursor) + " insurance lost: " + std::to_string(bet / 2)));
+                            "Player " + std::to_string(i) + " insurance lost: " + std::to_string(bet / 2)));
                     dealer->general_view_manager->notify(lose.GetData<std::string>());
                 }
+                i++;
             }
             dealer->insurances.clear();
             dealer->cursor = 0;
