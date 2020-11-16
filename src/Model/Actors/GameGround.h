@@ -38,8 +38,9 @@ public:
     template <typename T>
     inline constexpr auto SubscribeDealer(std::shared_ptr<T> new_dealer) noexcept ->
     decltype (
-            std::declval<T>().ServeBet(),
-            std::declval<T>().ShowHand(),
+            Controller::Is_Inherited_v<T, Controller::IDealer>,
+            Controller::Is_Inherited_v<T, Actors::IPlayer>,
+
             void()
     ){
         dealer = new_dealer;

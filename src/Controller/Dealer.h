@@ -124,6 +124,26 @@ namespace Controller {
         [[nodiscard]] int GetPlayerCost() const override;
     };
 
+    struct TRUE {bool m;};
+    struct FALSE {bool m[2]; };
+
+    template <typename C, typename P>
+    struct Is_Inherited{
+        static TRUE check(C *) { return TRUE {}; };
+        static FALSE check(...) { return FALSE{}; };
+
+        static bool const value = sizeof(check((P *)(nullptr)))
+                == sizeof(TRUE);
+    };
+
+    template <typename T>
+    struct Is_Inherited<T, T> {
+        static bool const value = false;
+    };
+
+    template <typename Child, typename Parent>
+    auto Is_Inherited_v = Is_Inherited<Child, Parent>::value;
+
 }
 
 #endif //BLACKJACK_DEALER_H

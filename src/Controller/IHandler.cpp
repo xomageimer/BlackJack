@@ -226,7 +226,7 @@ void DealerHandlers::PlayoutHandler::servePlayout(Controller::IDealer * dealer) 
             Event draw(EVENT::DRAW, std::string(
                     "Player " + std::to_string(p++) + " draw with dealer, You get back: " + std::to_string(bet)));
             dealer->general_view_manager->notify(draw.GetData<std::string>());
-        }
+        } else {p++;}
         player->ClearHand();
     }
 

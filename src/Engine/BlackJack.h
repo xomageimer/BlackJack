@@ -24,14 +24,6 @@ public:
 private:
     BlackJack();
     std::shared_ptr<GameGround> _grounds;
-
-    std::map<std::string, Event::PlayerRequests> commands{
-            {"BET", Event::PlayerRequests::BET},
-            {"HIT", Event::PlayerRequests::HIT},
-            {"STAND", Event::PlayerRequests::STAND},
-            {"DOUBLEDOWN", Event::PlayerRequests::DOUBLEDOWN},
-            {"BANK", Event::PlayerRequests::BANK}
-    };
 };
 
 
