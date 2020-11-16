@@ -129,10 +129,10 @@ namespace Controller {
 
     template <typename C, typename P>
     struct Is_Inherited{
-        static TRUE check(C *) { return TRUE {}; };
+        static TRUE check(P *) { return TRUE {}; };
         static FALSE check(...) { return FALSE{}; };
 
-        static bool const value = sizeof(check((P *)(nullptr)))
+        static bool const value = sizeof(check((C *)(nullptr)))
                 == sizeof(TRUE);
     };
 
