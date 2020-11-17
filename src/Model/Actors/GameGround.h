@@ -54,6 +54,7 @@ public:
     bool UnSubscribePlayer(const std::string &player_nickname);
 
     void Execute();
+    void Execute(size_t count); // For tests
 
     void Output();
     void Destroy();

@@ -21,6 +21,10 @@ public:
 
     void Run(std::ostream& output);
 
+    void Run(std::ostream& output, size_t command_count); // For tests
+
+    void Reset();
+
 private:
     BlackJack();
     std::shared_ptr<GameGround> _grounds;

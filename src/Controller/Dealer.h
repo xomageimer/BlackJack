@@ -1,13 +1,13 @@
 #ifndef BLACKJACK_DEALER_H
 #define BLACKJACK_DEALER_H
 
+#include <utility>
+
 #include "Actors/IPlayer.h"
 
 const int BLACKJACK = 21;
 const double WinFactor = 1.5f;
 const int DEALERBORDER = 17;
-
-struct GameGround;
 
 namespace DealerHandlers {
     struct IDealerHandler;
@@ -75,7 +75,7 @@ namespace Controller {
 
         std::shared_ptr<Actors::IPlayer> player_dealer;
 
-        std::shared_ptr<GameCard::CardStack> m_stack;
+        std::shared_ptr<GameCard::ICardStack> m_stack;
         std::vector<std::pair<std::shared_ptr<Actors::IPlayer>, int>> m_players;
         std::map<std::shared_ptr<Actors::IPlayer>, bool> insurances;
 
@@ -100,6 +100,10 @@ namespace Controller {
         explicit SimpleDealer(int bank) : m_bank(bank) {
             m_stack = std::make_shared<GameCard::CardStack>(std::make_shared<GameCard::Mersenne_Generator>());
             m_stack->GenNewStacks();
+        };
+
+        explicit SimpleDealer(int bank, std::shared_ptr<GameCard::ICardStack> stack) : m_bank(bank) {
+            m_stack = std::move(stack);
         };
 
         void ServeBet() override;

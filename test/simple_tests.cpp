@@ -139,3 +139,19 @@ TEST (cards, Operation_5){
     };
     EXPECT_EQ(answer.str(), expected.str());
 }
+
+TEST (cards, Operation_6_ACE_pair){
+    std::stringstream answer;
+
+    GameCard::Hand hand;
+
+    hand.SetNewCard(GameCard::Cards(GameCard::Cards::CardPrice::ACE, GameCard::Cards::CardSuit::CLUBS, false));
+    hand.SetNewCard(GameCard::Cards(GameCard::Cards::CardPrice::ACE, GameCard::Cards::CardSuit::CLUBS, false));
+
+    answer << ((hand == 12) ? "true" : "false");
+
+    std::stringstream expected {
+            "true"
+    };
+    EXPECT_EQ(answer.str(), expected.str());
+}

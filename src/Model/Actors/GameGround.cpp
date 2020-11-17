@@ -62,3 +62,14 @@ void GameGround::Execute() {
         dealer->Process();
     }
 }
+
+void GameGround::Execute(size_t count = 10) {
+    dealer->SetView(om);
+    for (auto & i : players){
+        dealer->SetPlayer(i.second);
+    }
+
+    while (count--){
+        dealer->Process();
+    }
+}

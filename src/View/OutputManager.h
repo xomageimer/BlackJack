@@ -30,6 +30,7 @@ private:
 
 public:
     OutputManager() = default;
+    ~OutputManager() { std::cout << "DIE" << std::endl;}
 
     void subscribe(const std::string & name_listener, std::shared_ptr<struct ILogger> new_listener);
     void notify(const std::string & new_info);

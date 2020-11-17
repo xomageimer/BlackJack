@@ -250,22 +250,24 @@ void DealerHandlers::PlayingHandler::serveYourself(Controller::IDealer * dealer)
         }
         dealer->general_view_manager->notify(std::string("Dealer have BlackJack: " + dealer_cards));
 
+        size_t p = 0;
         for (auto & [player, bet] : dealer->m_players){
             if (dealer->insurances.at(player)){
                 player->GetRoundResult(0);
                 CURRENT_DEALER->GetRoundResult(0);
 
                 Event draw(EVENT::DRAW, std::string(
-                        "Player " + std::to_string(dealer->cursor) + " save his bet, You get back: " + std::to_string(bet)));
+                        "Player " + std::to_string(p) + " save his bet, You get back: " + std::to_string(bet)));
                 dealer->general_view_manager->notify(draw.GetData<std::string>());
             } else {
                 player->GetRoundResult((-1) * bet);
                 CURRENT_DEALER->GetRoundResult(bet);
 
                 Event lose(EVENT::LOSE, std::string(
-                        "Player " + std::to_string(dealer->cursor) + " lose: " + std::to_string(bet)));
+                        "Player " + std::to_string(p) + " lose: " + std::to_string(bet)));
                 dealer->general_view_manager->notify(lose.GetData<std::string>());
             }
+            p++;
         }
 
         dealer->set_current(CONTROLLER::BET_SERVANT);
@@ -301,7 +303,7 @@ void DealerHandlers::DealHandler::serveMove(Controller::IDealer * dealer) {
         auto is_blackJack = CURRENT_DEALER->ShowHand().total();
         CURRENT_DEALER->ShowHand().MakeSecret(1);
         if (is_blackJack == BLACKJACK) {
-            dealer->set_current(CONTROLLER::PLAYOUT_SERVANT);
+            dealer->set_current(CONTROLLER::YOURSELF_SERVANT);
         } else {
             size_t i = 0;
             for (auto & [player, bet] : dealer->m_players){
