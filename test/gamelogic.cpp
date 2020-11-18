@@ -22,8 +22,9 @@ TEST (One_Player, test_insurances_1){
     std::shared_ptr<Actors::IPlayer> player1(new Actors::ConsoleOfflinePlayer (1000, input));
     std::shared_ptr<Controller::SimpleDealer> dealer(new Controller::SimpleDealer(1'000'000, fs));
 
-    BlackJack::Instance().PlayerConnect("Player1", player1);
-    BlackJack::Instance().SetDealer(dealer);
+    TestBlackJack bj;
+    bj.PlayerConnect("Player1", player1);
+    bj.SetDealer(dealer);
 
     // TODO убрать все кроме превых 4 карт
     GameCard::GenerateCardPack(fixed_stack,
@@ -56,7 +57,7 @@ TEST (One_Player, test_insurances_1){
             "Player 0 bet: 20\n"
     };
 
-    BlackJack::Instance().Run(answer, 5);
+    bj.Run(answer, 5);
 
 
     EXPECT_EQ(answer.str(), expected.str());
@@ -76,8 +77,9 @@ TEST (One_Player, test_insurances_2){
     std::shared_ptr<Actors::IPlayer> player1(new Actors::ConsoleOfflinePlayer (1000, input));
     std::shared_ptr<Controller::SimpleDealer> dealer(new Controller::SimpleDealer(1'000'000, fs));
 
-    BlackJack::Instance().PlayerConnect("Player1", player1);
-    BlackJack::Instance().SetDealer(dealer);
+    TestBlackJack bj;
+    bj.PlayerConnect("Player1", player1);
+    bj.SetDealer(dealer);
 
     // TODO убрать все кроме превых 4 карт
     GameCard::GenerateCardPack(fixed_stack,
@@ -110,7 +112,7 @@ TEST (One_Player, test_insurances_2){
             "Player 0 have: 2♣ 3♣ 7♣  = 12\n"
     };
 
-    BlackJack::Instance().Run(answer, 4);
+    bj.Run(answer, 4);
 
 
     EXPECT_EQ(answer.str(), expected.str());
@@ -130,8 +132,9 @@ TEST (One_Player, test_game_1){
     std::shared_ptr<Actors::IPlayer> player1(new Actors::ConsoleOfflinePlayer (1000, input));
     std::shared_ptr<Controller::SimpleDealer> dealer(new Controller::SimpleDealer(1'000'000, fs));
 
-    BlackJack::Instance().PlayerConnect("Player1", player1);
-    BlackJack::Instance().SetDealer(dealer);
+    TestBlackJack bj;
+    bj.PlayerConnect("Player1", player1);
+    bj.SetDealer(dealer);
 
     // TODO убрать все кроме превых 4 карт
     GameCard::GenerateCardPack(fixed_stack,
@@ -172,7 +175,7 @@ TEST (One_Player, test_game_1){
             "Current State is MOVE for 0\n"
     };
 
-    BlackJack::Instance().Run(answer, 6);
+    bj.Run(answer, 6);
 
 
     EXPECT_EQ(answer.str(), expected.str());
@@ -192,8 +195,9 @@ TEST (One_Player, test_game_2){
     std::shared_ptr<Actors::IPlayer> player1(new Actors::ConsoleOfflinePlayer (1000, input));
     std::shared_ptr<Controller::SimpleDealer> dealer(new Controller::SimpleDealer(1'000'000, fs));
 
-    BlackJack::Instance().PlayerConnect("Player1", player1);
-    BlackJack::Instance().SetDealer(dealer);
+    TestBlackJack bj;
+    bj.PlayerConnect("Player1", player1);
+    bj.SetDealer(dealer);
 
     // TODO убрать все кроме превых 4 карт
     GameCard::GenerateCardPack(fixed_stack,
@@ -232,7 +236,7 @@ TEST (One_Player, test_game_2){
             "Player 0 win: 60\n"
     };
 
-    BlackJack::Instance().Run(answer, 6);
+    bj.Run(answer, 6);
 
 
     EXPECT_EQ(answer.str(), expected.str());
@@ -274,10 +278,11 @@ TEST (One_Player, test_time){
     std::shared_ptr<Actors::IPlayer> player1(new Actors::ConsoleOfflinePlayer (1000, inp));
     std::shared_ptr<Controller::SimpleDealer> dealer(new Controller::SimpleDealer(1'000'000));
 
-    BlackJack::Instance().PlayerConnect("Player1", player1);
-    BlackJack::Instance().SetDealer(dealer);
+    TestBlackJack bj;
+    bj.PlayerConnect("Player1", player1);
+    bj.SetDealer(dealer);
 
-    BlackJack::Instance().Run(bucket, count);
+    bj.Run(bucket, count);
 
     ASSERT_EQ(1, 1);
 }
