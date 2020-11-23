@@ -146,7 +146,7 @@ namespace Controller {
     };
 
     template <typename Child, typename Parent>
-    auto Is_Inherited_v = Is_Inherited<Child, Parent>::value;
+    constexpr auto Is_Inherited_v = Is_Inherited<Child, Parent>::value;
 
 }
 

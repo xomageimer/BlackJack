@@ -36,19 +36,13 @@ public:
     void SetViewManager(std::shared_ptr<ILogger>);
     bool SubscribePlayer(std::string player_nickname, std::shared_ptr<Actors::IPlayer> new_player);
     template <typename T>
-    inline constexpr auto SubscribeDealer(std::shared_ptr<T> new_dealer) noexcept ->
-    decltype (
-            Controller::Is_Inherited_v<T, Controller::IDealer>,
-            Controller::Is_Inherited_v<T, Actors::IPlayer>,
-
-            void()
-    ){
+    inline constexpr std::enable_if_t<Controller::Is_Inherited_v<T, Controller::IDealer> && Controller::Is_Inherited_v<T, Actors::IPlayer>, void> SubscribeDealer(std::shared_ptr<T> new_dealer){
         dealer = new_dealer;
         player_dealer = new_dealer;
         dealer->SetPlayerDealer(player_dealer);
     }
     template <typename T>
-    inline constexpr void SubscribeDealer([[maybe_unused]] T new_dealer){
+    inline constexpr std::enable_if_t<!Controller::Is_Inherited_v<T, Controller::IDealer> && !Controller::Is_Inherited_v<T, Actors::IPlayer>, void> SubscribeDealer([[maybe_unused]] std::shared_ptr<T> new_dealer){
         throw std::logic_error("\nERROR; FROM SUBSCRIBE DEALER METHOD; FILE: " + std::string(__FILE__) + "; ON LINE: " + std::to_string(__LINE__ - 1) + ";\nARGUMENT IS NOT INHERITED FROM IDealer AND/OR IActor;");
     }
     bool UnSubscribePlayer(const std::string &player_nickname);
