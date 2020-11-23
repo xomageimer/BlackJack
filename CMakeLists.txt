@@ -16,7 +16,7 @@ add_executable(${PROJECT_NAME}
         src/View/OutputManager.cpp
 
         src/Engine/BlackJack.cpp
-)
+        src/Model/Actors/ComputerPlayer.cpp src/Model/Actors/ComputerPlayer.h)
 
 target_include_directories(${PROJECT_NAME} PRIVATE src src/Model src/View src/Engine)
 

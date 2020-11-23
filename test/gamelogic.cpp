@@ -262,27 +262,27 @@ TEST (One_Player, test_game_2){
 //    std::chrono::steady_clock::time_point start;
 //};
 
-TEST (One_Player, test_time){
-    std::vector<string> input {"BET 30\n", "HIT\n", "STAND\n"};
-
-    stringstream inp;
-
-    size_t count = 5'000;
-
-    for (size_t i = 0; i < count; i++){
-        inp << input[i % 3];
-    }
-
-    stringstream bucket;
-
-    std::shared_ptr<Actors::IPlayer> player1(new Actors::ConsoleOfflinePlayer (1000, inp));
-    std::shared_ptr<Controller::SimpleDealer> dealer(new Controller::SimpleDealer(1'000'000));
-
-    TestBlackJack bj;
-    bj.PlayerConnect("Player1", player1);
-    bj.SetDealer(dealer);
-
-    bj.Run(bucket, count);
-
-    ASSERT_EQ(1, 1);
-}
+//TEST (One_Player, test_time){
+//    std::vector<string> input {"BET 30\n", "HIT\n", "STAND\n"};
+//
+//    stringstream inp;
+//
+//    size_t count = 5'000;
+//
+//    for (size_t i = 0; i < count; i++){
+//        inp << input[i % 3];
+//    }
+//
+//    stringstream bucket;
+//
+//    std::shared_ptr<Actors::IPlayer> player1(new Actors::ConsoleOfflinePlayer (1000, inp));
+//    std::shared_ptr<Controller::SimpleDealer> dealer(new Controller::SimpleDealer(1'000'000));
+//
+//    TestBlackJack bj;
+//    bj.PlayerConnect("Player1", player1);
+//    bj.SetDealer(dealer);
+//
+//    bj.Run(bucket, count);
+//
+//    ASSERT_EQ(1, 1);
+//}

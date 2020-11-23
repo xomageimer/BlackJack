@@ -22,15 +22,15 @@ private:
 
     };
     std::map<GameCard::Cards::CardSuit, std::string> m_suit{
-            {GameCard::Cards::CardSuit::HEARTS, "♥"},
-            {GameCard::Cards::CardSuit::SPADES, "♠"},
-            {GameCard::Cards::CardSuit::DIAMONDS, "♦"},
-            {GameCard::Cards::CardSuit::CLUBS, "♣"}
+            {GameCard::Cards::CardSuit::HEARTS, "H"},
+            {GameCard::Cards::CardSuit::SPADES, "S"},
+            {GameCard::Cards::CardSuit::DIAMONDS, "D"},
+            {GameCard::Cards::CardSuit::CLUBS, "C"}
     };
 
 public:
     OutputManager() = default;
-    ~OutputManager() { std::cout << "DIE" << std::endl;}
+    ~OutputManager() = default;
 
     void subscribe(const std::string & name_listener, std::shared_ptr<struct ILogger> new_listener);
     void notify(const std::string & new_info);
@@ -38,6 +38,10 @@ public:
     void unsubscribe(const std::string & listener);
     void drop();
     void destroy();
+};
+
+struct AI_view{
+
 };
 
 struct ILogger {

@@ -94,11 +94,25 @@ void Controller::SimpleDealer::Process() {
     }
 }
 
-Event Controller::SimpleDealer::Move() DEFAULT
+Event Controller::SimpleDealer::Move() {
+    if (ShowHand().total() < DEALERBORDER) {
+        Event take_card(Event::DealerResponse::GIVECARD, std::string("Dealer take a card: "));
+        return take_card;
+    } else {
+        Event stand(Event::DealerResponse::SWAPPLAYER, std::string("Enough"));
+        return stand;
+    }
+}
 
-Event Controller::SimpleDealer::Bet() DEFAULT
+Event Controller::SimpleDealer::Bet() {
+    Event bet(Event::DealerResponse::MAKEBET, 10);
+    return bet;
+}
 
-Event Controller::SimpleDealer::Answer() DEFAULT
+Event Controller::SimpleDealer::Answer() {
+    Event answ(Event::DealerResponse::YES, 0);
+    return answ;
+}
 
 void Controller::SimpleDealer::SetCard(const GameCard::Cards & card) {
     m_hand.SetNewCard(card);

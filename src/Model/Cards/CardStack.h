@@ -179,10 +179,10 @@ namespace GameCard {
 
         };
         static inline std::map<GameCard::Cards::CardSuit, std::string> m_suit{
-                {GameCard::Cards::CardSuit::HEARTS, "♥"},
-                {GameCard::Cards::CardSuit::SPADES, "♠"},
-                {GameCard::Cards::CardSuit::DIAMONDS, "♦"},
-                {GameCard::Cards::CardSuit::CLUBS, "♣"}
+                {GameCard::Cards::CardSuit::HEARTS, "H"},
+                {GameCard::Cards::CardSuit::SPADES, "S"},
+                {GameCard::Cards::CardSuit::DIAMONDS, "D"},
+                {GameCard::Cards::CardSuit::CLUBS, "C"}
         };
 
         CardPrice price;
