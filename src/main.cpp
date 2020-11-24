@@ -12,8 +12,8 @@ int main() {
 
     BlackJack::Instance().PlayerConnect("Player1", player1);
 //    BlackJack::Instance().PlayerConnect("Player2", player2);
-    BlackJack::Instance().PlayerConnect("Player3", player3);
-    BlackJack::Instance().SetDealer(player3);
+    BlackJack::Instance().PlayerConnect("Player2", player3);
+    BlackJack::Instance().SetDealer(dealer);
 
     BlackJack::Instance().Run(cout);
 

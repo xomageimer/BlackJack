@@ -41,6 +41,8 @@ public:
 };
 
 struct AI_view{
+    std::vector<GameCard::Hand> all_hands;
+
 
 };
 
