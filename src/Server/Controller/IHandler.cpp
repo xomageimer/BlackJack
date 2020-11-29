@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#define LOBBY dealer->my_room
+
 #define CURRENT_PLAYER dealer->getPlayer().first
 #define CURRENT_BET dealer->getPlayer().second
 #define CURRENT_DEALER dealer->getDealerPlayer()

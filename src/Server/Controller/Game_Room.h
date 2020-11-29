@@ -31,6 +31,14 @@ public:
     int get_id() const {
         return my_id;
     }
+
+    void set_name(int new_name){
+        name = new_name;
+    }
+    std::string get_name() const {
+        return name;
+    }
+
     virtual ~player_participant() {}
     virtual void deliver(const json_message& msg) = 0;
 };
@@ -50,6 +58,7 @@ public:
     {
         participant->set_id(count);
         participants_.emplace(count++, participant);
+        SubscribePlayer(participant->get_name(), std::make_shared<Actors::Player>(1'000));
         for (auto msg: recent_msgs_)
             participant->deliver(msg);
     }
@@ -57,7 +66,11 @@ public:
     void leave( player_participant_ptr participant)
     {
         auto id = participant->get_id();
+        UnSubscribePlayer(participant->get_name());
         participants_.erase(participant->get_id());
+
+        // можно оповестить что плеер ливнул чтобы убрать его из диллера но хз
+        // хотя мб придется иметь доступ к диллеру
     }
 
     void deliver(const json_message& msg, int num)
