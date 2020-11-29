@@ -1,6 +1,6 @@
 #include "Dealer.h"
 #include "IHandler.h"
-#include "Actors/GameGround.h"
+#include "Game_Server.h"
 
 Controller::IDealer::IDealer() {
      cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::BET_SERVANT),
@@ -29,25 +29,16 @@ std::pair<std::shared_ptr<Actors::IPlayer>, int> & Controller::IDealer::getPlaye
     return m_players.at(cursor);
 }
 
-const std::vector<std::shared_ptr<Actors::IPlayer>> & Controller::IDealer::kickAFK() {
-    return AFK_players;
-}
-
 std::shared_ptr<Actors::IPlayer> Controller::IDealer::getDealerPlayer() {
     return player_dealer;
 }
 
-void Controller::IDealer::AFKCurrentPlayer() {
-    AFK_players.push_back(m_players.at(cursor).first);
-   // m_players.erase(m_players.begin() + cursor);
-}
-
-void Controller::IDealer::SetView(std::shared_ptr<OutputManager> om) {
-    general_view_manager = om;
-}
-
 void Controller::IDealer::SetPlayerDealer(std::shared_ptr<Actors::IPlayer> del) {
     player_dealer = del;
+}
+
+void Controller::IDealer::SetRoom(Game_Room * room) {
+    my_room = room;
 }
 
 void Controller::SimpleDealer::ServeBet() {
@@ -84,6 +75,7 @@ void Controller::SimpleDealer::Process() {
             break;
         case IDealer::states::PLAYOUT_SERVANT:
             ServePlayout();
+            // взять новых игроков
             break;
         case IDealer::states::YOURSELF_SERVANT:
             ServeYourself();
@@ -136,4 +128,18 @@ const GameCard::Hand &Controller::SimpleDealer::ShowHand() const {
 
 int Controller::SimpleDealer::GetPlayerCost() const {
     return m_bank;
+}
+
+void Controller::SimpleDealer::Maker(std::string json) {
+    switch (cur_state) {
+        case IDealer::states::BET_SERVANT:
+            MakeBet(json);
+            break;
+        case IDealer::states::DEAL_SERVANT:
+        case IDealer::states::MOVE_SERVANT:
+            MakeMove(json);
+            break;
+        default:
+            break;
+    }
 }

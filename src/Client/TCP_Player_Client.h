@@ -1,0 +1,10 @@
+#ifndef BLACKJACK_TCP_PLAYER_CLIENT_H
+#define BLACKJACK_TCP_PLAYER_CLIENT_H
+
+
+class TCP_Player_Client {
+
+};
+
+
+#endif //BLACKJACK_TCP_PLAYER_CLIENT_H

@@ -11,7 +11,7 @@ using EVENT = Event::DealerResponse;
 using CONTROLLER = Controller::IDealer::states;
 
 void DealerHandlers::BetHandler::serveBet(Controller::IDealer * dealer) {
-    Event cur_state_for_player (EVENT::STATE, std::string("Current State is BET for " + std::to_string(dealer->cursor) + ""));
+    Event cur_state_for_player (EVENT::STATE, std::string("BET for " + std::to_string(dealer->cursor)));
     dealer->general_view_manager->notify(cur_state_for_player.GetData<std::string>()); // отобразить кнопки для текущего игрока
 
     auto response = CURRENT_PLAYER->Bet(); // для графики он может проверять на клик по кнопке
@@ -134,8 +134,6 @@ void DealerHandlers::MoveHandler::serveMove(Controller::IDealer * dealer) {
                 Event lose(EVENT::LOSE, std::string(
                         "Player " + std::to_string(dealer->cursor) + " lose: " + std::to_string(CURRENT_BET)));
                 dealer->general_view_manager->notify(lose.GetData<std::string>());
-
-                dealer->AFKCurrentPlayer();
             }
         }
         else if (response.Response == EVENT::SWAPPLAYER){

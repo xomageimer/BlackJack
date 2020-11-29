@@ -3,31 +3,31 @@
 using p_EVENT = Event::PlayerRequests;
 using d_EVENT = Event::DealerResponse;
 
-void Actors::ConsoleOfflinePlayer::SetCard(const GameCard::Cards & card) {
+void Actors::Player::SetCard(const GameCard::Cards & card) {
     m_hand.SetNewCard(card);
 }
 
-bool Actors::ConsoleOfflinePlayer::BlackJackCheck() const {
+bool Actors::Player::BlackJackCheck() const {
     return m_hand == BLACKJACK;
 }
 
-void Actors::ConsoleOfflinePlayer::GetRoundResult(int bet) {
+void Actors::Player::GetRoundResult(int bet) {
     m_bank += bet;
 }
 
-const GameCard::Hand &Actors::ConsoleOfflinePlayer::ShowHand() const {
+const GameCard::Hand &Actors::Player::ShowHand() const {
     return m_hand;
 }
 
-int Actors::ConsoleOfflinePlayer::GetPlayerCost() const {
+int Actors::Player::GetPlayerCost() const {
     return m_bank;
 }
 
-void Actors::ConsoleOfflinePlayer::ClearHand() {
+void Actors::Player::ClearHand() {
     m_hand.Clear();
 }
 
-Event Actors::ConsoleOfflinePlayer::Move() {
+Event Actors::Player::Move() {
     std::string command;
     while (is >> command){
         auto request = commands.find(command);
@@ -53,7 +53,7 @@ Event Actors::ConsoleOfflinePlayer::Move() {
     }
 }
 
-Event Actors::ConsoleOfflinePlayer::Bet() {
+Event Actors::Player::Bet() {
     std::string command;
     while (is >> command){
         if (p_EVENT::BANK == commands.find(command)->second) {
@@ -70,7 +70,7 @@ Event Actors::ConsoleOfflinePlayer::Bet() {
     }
 }
 
-Event Actors::ConsoleOfflinePlayer::Answer() {
+Event Actors::Player::Answer() {
     std::string command;
     while (is >> command){
         if (p_EVENT::YES == commands.find(command)->second) {

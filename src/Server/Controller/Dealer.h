@@ -3,6 +3,7 @@
 
 #include <utility>
 
+#include "Game_Room.h"
 #include "Actors/IPlayer.h"
 
 const int BLACKJACK = 21;
@@ -46,14 +47,16 @@ namespace Controller {
         virtual void set_current(states state) {
             cur_state = state;
             cur_handler = cmd_handles[cur_state];
+            this->Process();
         }
 
     public:
         explicit IDealer();
         virtual ~IDealer() = default;
 
-        virtual void SetView(std::shared_ptr<OutputManager>);
         virtual void SetPlayer(std::shared_ptr<Actors::IPlayer>);
+
+        virtual void SetRoom(Game_Room * room);
 
         virtual void ServeBet() = 0;
         virtual void ServeMove() = 0;
@@ -61,9 +64,11 @@ namespace Controller {
         virtual void ServePlayout() = 0;
         virtual void ServeYourself() = 0;
 
-        virtual void Process() = 0;
+        virtual void MakeBet(std::string json) = 0;
+        virtual void MakeMove(std::string json) = 0;
 
-        virtual const std::vector<std::shared_ptr<Actors::IPlayer>> & kickAFK();
+        virtual void Process() = 0;
+        virtual void Maker(std::string json) = 0;
 
         virtual void SetPlayerDealer(std::shared_ptr<Actors::IPlayer>);
 
@@ -71,7 +76,10 @@ namespace Controller {
         static inline const int min = 10;
 
     protected:
-        std::shared_ptr<OutputManager> general_view_manager;
+        // TODO замена на своего Сендера, через game_ground подключение к диллеру новых плееров или
+        //  их отключение. В диллере только игровая логика сервера, в game_ground'е - обслуживание комнаты
+
+        Game_Room * my_room;
 
         std::shared_ptr<Actors::IPlayer> player_dealer;
 
@@ -79,12 +87,7 @@ namespace Controller {
         std::vector<std::pair<std::shared_ptr<Actors::IPlayer>, int>> m_players;
         std::map<std::shared_ptr<Actors::IPlayer>, bool> insurances;
 
-        std::vector<std::shared_ptr<Actors::IPlayer>> AFK_players;
-
         size_t cursor = 0;
-        // может быть бд, где ID плеера будет ключем для того, чтобы получить доступ
-        // к его ставке и фишкам
-        virtual void AFKCurrentPlayer();
 
         virtual std::pair<std::shared_ptr<Actors::IPlayer>, int> & getPlayer();
         virtual std::shared_ptr<Actors::IPlayer> getDealerPlayer();
@@ -112,7 +115,11 @@ namespace Controller {
         void ServePlayout() override;
         void ServeYourself() override;
 
+        void MakeBet(std::string json) override;
+        void MakeMove(std::string json) override;
+
         void Process() override;
+        void Maker(std::string json) override;
 
         Event Move() override;
         Event Bet() override;

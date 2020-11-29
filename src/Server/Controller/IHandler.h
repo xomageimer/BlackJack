@@ -1,7 +1,7 @@
 #ifndef BLACKJACK_IHANDLER_H
 #define BLACKJACK_IHANDLER_H
 
-#include "Controller/Dealer.h"
+#include "Server/Controller/Dealer.h"
 #include "Actors/IPlayer.h"
 
 #define DEFAULT {               \
