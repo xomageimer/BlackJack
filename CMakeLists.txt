@@ -34,15 +34,13 @@ if (Boost_FOUND)
 
             src/Client/TCP_Player_Client.cpp
 
-            src/Server/Controller/Broadcast/Sender.cpp
-            src/Server/Controller/Broadcast/Reciver.cpp
-            src/Model/json_message.h src/Server/Controller/Game_Room.cpp src/Server/Controller/Game_Room.h)
+            src/Server/Controller/Game_Room.cpp
+            )
 
     add_executable(${Client}
             src/Client/main.cpp
 
-            src/Client/TCP_Player_Client.cpp
-            src/Server/BroadCast/Sender.cpp src/Server/BroadCast/Sender.h)
+            src/Client/TCP_Player_Client.cpp)
 
     target_include_directories(${Server} PRIVATE src src/Model src/Server/Engine)
 
@@ -83,6 +81,7 @@ endif()
 add_subdirectory("contrib/json")
 
 target_link_libraries(${Server} nlohmann_json)
+target_link_libraries(${Client} nlohmann_json)
 
 #target_link_libraries(tests PRIVATE gtest gtest_main gmock)
 #target_include_directories(tests PRIVATE src src/Model src/Client/View src/Game_Server/Engine)

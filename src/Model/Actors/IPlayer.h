@@ -24,6 +24,9 @@ namespace Actors {
         virtual ~IPlayer() = default;
         IPlayer() = default;
 
+        virtual void SetName(const std::string &  name);
+        virtual const std::string & GetName() const;
+
         virtual Event Move() = 0;
         virtual Event Bet() = 0;
         virtual Event Answer() = 0;
@@ -43,10 +46,8 @@ namespace Actors {
         GameCard::Hand m_hand;
         int m_bank;
 
-        std::istream & is;
-
     public:
-        explicit Player(int bank, std::istream& in = std::cin) : m_bank(bank), is(in) {}
+        explicit Player(int bank) : m_bank(bank) {}
 
         Event Move() override;
         Event Bet() override;

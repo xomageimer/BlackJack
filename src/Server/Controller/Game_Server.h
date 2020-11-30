@@ -3,8 +3,6 @@
 
 #include <utility>
 
-#include "json_message.h"
-
 #include "Server/Controller/Dealer.h"
 #include "Game_Room.h"
 
@@ -15,18 +13,18 @@ struct Game_Session : public player_participant,
 public:
     Game_Session(tcp::socket socket, Game_Room& room, std::shared_ptr<Controller::IDealer> ur_dealer)
             : socket_(std::move(socket)),
-              room_(room), dealer(ur_dealer) {
+              room_(room), dealer(std::move(ur_dealer)) {
         dealer->SetRoom(&room_);
+        room_.SetDealer(dealer);
     }
 
     void start()
     {
         room_.join(shared_from_this());
-
-        do_read_header();
+        do_read_body();
     }
 
-    void deliver(const json_message& msg) override
+    void deliver(const std::string& msg) override
     {
         bool write_in_progress = !write_msgs_.empty();
         write_msgs_.push_back(msg);
@@ -37,37 +35,21 @@ public:
     }
 
 private:
-    void do_read_header()
-    {
-        auto self(shared_from_this());
-        boost::asio::async_read(socket_,
-        boost::asio::buffer(read_msg_.data(), json_message::header_length),
-        [this, self](boost::system::error_code ec, std::size_t /*length*/)
-        {
-            if (!ec && read_msg_.decode_header())
-            {
-                do_read_body();
-            }
-            else
-            {
-                room_.leave(shared_from_this());
-            }
-        });
-    }
-
     void do_read_body()
     {
         auto self(shared_from_this());
-        boost::asio::async_read(socket_,
-        boost::asio::buffer(read_msg_.body(), read_msg_.body_length()),
-        [this, self](boost::system::error_code ec, std::size_t /*length*/)
-        {
+        boost::asio::async_read_until(socket_,
+          read_msg_,
+          "\r\n\r\n",
+          [this, self](boost::system::error_code ec, std::size_t /*length*/)
+          {
             if (!ec)
             {
-                //room_.deliver(read_msg_, current);
-                dealer->Maker(std::string(read_msg_.body(), read_msg_.body_length()));
-                //std::cout << std::string(read_msg_.body(), read_msg_.body_length()) << std::endl;
-                do_read_header();
+                std::string str;
+                std::istream(&read_msg_) >> str;
+                dealer->Maker(std::string(str));
+                dealer->Process();
+                do_read_body();
             }
             else
             {
@@ -80,8 +62,7 @@ private:
     {
         auto self(shared_from_this());
         boost::asio::async_write(socket_,
-         boost::asio::buffer(write_msgs_.front().data(),
-                             write_msgs_.front().length()),
+                                 boost::asio::buffer(write_msgs_.front()),
          [this, self](boost::system::error_code ec, std::size_t /*length*/)
          {
              if (!ec)
@@ -101,7 +82,7 @@ private:
 
     tcp::socket socket_;
     Game_Room& room_;
-    json_message read_msg_;
+    boost::asio::streambuf read_msg_;
     json_message_queue write_msgs_;
 
     std::shared_ptr<Controller::IDealer> dealer;

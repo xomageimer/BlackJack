@@ -7,6 +7,8 @@
 #include <random>
 #include <memory>
 
+#include <nlohmann/json.hpp>
+
 namespace GameCard {
     struct Generator {
     public:
@@ -115,6 +117,8 @@ namespace GameCard {
         friend bool operator!=(const Hand&, const Hand &);
         friend bool operator!=(const Hand&, int);
 
+        nlohmann::json Serialize();
+
         void Clear();
 
         [[nodiscard]] int total() const;
@@ -136,15 +140,15 @@ namespace GameCard {
 
         enum class CardPrice : int {
             ACE = 1,
-            TWO,
-            THREE,
-            FOUR,
-            FIVE,
-            SIX,
-            SEVEN,
-            EIGHT,
-            NINE,
-            TEN,
+            _2,
+            _3,
+            _4,
+            _5,
+            _6,
+            _7,
+            _8,
+            _9,
+            _10,
             JACK,
             QUEEN,
             KING,
@@ -168,6 +172,8 @@ namespace GameCard {
         Cards & operator= (const Cards &) = default;
         Cards & operator= (Cards&&) = default;
 
+        nlohmann::json Serialize();
+
         void secret(bool) const;
 
         // для консоли
@@ -179,10 +185,10 @@ namespace GameCard {
 
         };
         static inline std::map<GameCard::Cards::CardSuit, std::string> m_suit{
-                {GameCard::Cards::CardSuit::HEARTS, "H"},
-                {GameCard::Cards::CardSuit::SPADES, "S"},
-                {GameCard::Cards::CardSuit::DIAMONDS, "D"},
-                {GameCard::Cards::CardSuit::CLUBS, "C"}
+                {GameCard::Cards::CardSuit::HEARTS, "Hearts"},
+                {GameCard::Cards::CardSuit::SPADES, "Spades"},
+                {GameCard::Cards::CardSuit::DIAMONDS, "Diamonds"},
+                {GameCard::Cards::CardSuit::CLUBS, "Clubs"}
         };
 
         CardPrice price;

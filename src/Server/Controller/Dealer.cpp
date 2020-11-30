@@ -41,6 +41,54 @@ void Controller::IDealer::SetRoom(Game_Room * room) {
     my_room = room;
 }
 
+void Controller::IDealer::RefreshPlayer(std::shared_ptr<Actors::IPlayer> pl) {
+    auto it = std::find_if(m_players.begin(), m_players.end(), [&pl](auto player) {
+        return player.first == pl;
+    });
+
+    if (it != m_players.end()){
+        m_players.erase(it);
+    }
+}
+
+void Controller::IDealer::RestartDealer() {
+    m_players.clear();
+    my_room->NewRound();
+    set_current(states::BET_SERVANT);
+}
+
+void Controller::IDealer::Notify_about_player(int num) {
+    json event;
+    event["command"] = "PlayerChanged";
+
+    event["data"]["number"] = num;
+    event["data"]["isDealer"] = false;
+    for (int i = 0; i < getDealerPlayer()->ShowHand().GetSize(); i++) {
+        std::string cardN = "card" + std::to_string(i);
+        event["data"]["hand"][cardN]["isOpen"] = !getPlayer().first->ShowHand().LookAtCards()[i].is_secret;
+        event["data"]["hand"][cardN]["rank"] = getPlayer().first->ShowHand().LookAtCards()[i].price;
+        event["data"]["hand"][cardN]["suit"] = getPlayer().first->ShowHand().LookAtCards()[i].suit;
+    }
+    event["data"]["name"] = getPlayer().first->GetName();
+
+    my_room->deliver(event.dump());
+}
+
+void Controller::IDealer::Notify_about_dealer() {
+    json event;
+    event["command"] = "PlayerChanged";
+
+    event["data"]["isDealer"] = true;
+    for (int i = 0; i < getDealerPlayer()->ShowHand().GetSize(); i++) {
+        std::string cardN = "card" + std::to_string(i);
+        event["data"]["hand"][cardN]["isOpen"] = !getPlayer().first->ShowHand().LookAtCards()[i].is_secret;
+        event["data"]["hand"][cardN]["rank"] = getPlayer().first->ShowHand().LookAtCards()[i].price;
+        event["data"]["hand"][cardN]["suit"] = getPlayer().first->ShowHand().LookAtCards()[i].suit;
+    }
+
+    my_room->deliver(event.dump());
+}
+
 void Controller::SimpleDealer::ServeBet() {
     cur_handler->serveBet(this);
 }
@@ -75,7 +123,7 @@ void Controller::SimpleDealer::Process() {
             break;
         case IDealer::states::PLAYOUT_SERVANT:
             ServePlayout();
-            // взять новых игроков
+            RestartDealer();
             break;
         case IDealer::states::YOURSELF_SERVANT:
             ServeYourself();
@@ -135,11 +183,95 @@ void Controller::SimpleDealer::Maker(std::string json) {
         case IDealer::states::BET_SERVANT:
             MakeBet(json);
             break;
-        case IDealer::states::DEAL_SERVANT:
         case IDealer::states::MOVE_SERVANT:
             MakeMove(json);
             break;
+        case IDealer::states::DEAL_SERVANT:
+            MakeDeal(json);
+            break;
         default:
             break;
+    }
+}
+
+void Controller::SimpleDealer::MakeBet(std::string json_str) {
+    json response = json::parse(json_str);
+
+    if (response["command"] == "OK") {
+        getPlayer().second = response["data"]["bet"];
+
+        if (++cursor == m_players.size())
+            set_current(states::ROUND_SERVANT);
+    }
+}
+
+void Controller::SimpleDealer::MakeMove(std::string json_str) {
+    json answer;
+    json response = json::parse(json_str);
+
+    if (response["command"] == "OK") {
+        if (response["action"] == "Hit") {
+            auto card = m_stack->GetCard();
+            getPlayer().first->SetCard(card);
+
+            Notify_about_player(cursor);
+
+            if (getPlayer().first->ShowHand().total() > BLACKJACK) {
+                getPlayer().first->GetRoundResult((-1) * getPlayer().second);
+                getDealerPlayer()->GetRoundResult(getPlayer().second);
+
+                if (++cursor == m_players.size())
+                    set_current(states::YOURSELF_SERVANT);
+            }
+        } else if (response["action"] == "Stand") {
+            if (++cursor == m_players.size())
+                set_current(states::YOURSELF_SERVANT);
+        } else if (response["action"] == "Double") {
+            if (getPlayer().first->ShowHand().GetSize() == 2 &&
+                getPlayer().first->GetPlayerCost() > getPlayer().second) {
+
+                auto card = m_stack->GetCard();
+                getPlayer().first->SetCard(card);
+
+                getPlayer().second *= 2;
+
+                Notify_about_player(cursor);
+
+                if (++cursor == m_players.size())
+                    set_current(states::YOURSELF_SERVANT);
+            }
+        }
+    }
+}
+
+void Controller::SimpleDealer::MakeDeal(std::string json_str) {
+    json answer;
+    json response = json::parse(json_str);
+
+    if (response["command"] == "OK") {
+        insurances[getPlayer().first] = response["insurance"];
+
+        if (++cursor == m_players.size()) {
+            if (++cursor == m_players.size()) {
+                getDealerPlayer()->ShowHand().UnSecret(1);
+                auto is_blackJack = getDealerPlayer()->ShowHand().total();
+                getDealerPlayer()->ShowHand().MakeSecret(1);
+                if (is_blackJack == BLACKJACK) {
+                    set_current(states::YOURSELF_SERVANT);
+                } else {
+                    size_t i = 0;
+                    for (auto &[player, bet] : m_players) {
+                        if (insurances.at(player)) {
+                            player->GetRoundResult((-1) * bet / 2);
+                            getDealerPlayer()->GetRoundResult(bet / 2);
+                        }
+                        i++;
+                    }
+                    insurances.clear();
+                    cursor = 0;
+                    set_current(states::MOVE_SERVANT);
+                }
+            }
+        }
     }
 }

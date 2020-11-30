@@ -143,7 +143,7 @@ int GameCard::Hand::total() const {
     for (auto & i : LookAtCards()){
         if (!i.is_secret) {
             if (i.price != Cards::CardPrice::ACE)
-                h_price += (i.price <= Cards::CardPrice::TEN) ? static_cast<int>(i.price) : 10;
+                h_price += (i.price <= Cards::CardPrice::_10) ? static_cast<int>(i.price) : 10;
             else
                 h_price += 11;
         }
@@ -190,6 +190,14 @@ void GameCard::Hand::UnSecret(size_t i) const {
     m_Cards.at(i).secret(false);
 }
 
+nlohmann::json GameCard::Hand::Serialize() {
+    nlohmann::json j;
+    for (auto card : m_Cards){
+        j.push_back(card.Serialize());
+    }
+    return j;
+}
+
 GameCard::Mersenne_Generator::Mersenne_Generator() : mersenne(std::random_device()()) {}
 
 size_t GameCard::Mersenne_Generator::seed(size_t seed_) {
@@ -225,4 +233,13 @@ GameCard::Cards::Cards(GameCard::Cards::CardPrice _price, GameCard::Cards::CardS
     price = _price;
     suit = _suit;
     is_secret = _secr;
+}
+
+nlohmann::json GameCard::Cards::Serialize() {
+    nlohmann::json j;
+    j["isOpen"] = !is_secret;
+    j["value"] = m_value.at(price);
+    j["suit"] = m_suit.at(suit);
+
+    return j;
 }

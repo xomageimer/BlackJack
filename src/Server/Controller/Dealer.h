@@ -6,6 +6,10 @@
 #include "Game_Room.h"
 #include "Actors/IPlayer.h"
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
 const int BLACKJACK = 21;
 const double WinFactor = 1.5f;
 const int DEALERBORDER = 17;
@@ -54,7 +58,13 @@ namespace Controller {
         explicit IDealer();
         virtual ~IDealer() = default;
 
+        virtual void Notify_about_dealer();
+        virtual void Notify_about_player(int num);
+
         virtual void SetPlayer(std::shared_ptr<Actors::IPlayer>);
+        virtual void RefreshPlayer(std::shared_ptr<Actors::IPlayer>);
+
+        virtual void RestartDealer();
 
         virtual void SetRoom(Game_Room * room);
 
@@ -66,6 +76,7 @@ namespace Controller {
 
         virtual void MakeBet(std::string json) = 0;
         virtual void MakeMove(std::string json) = 0;
+        virtual void MakeDeal(std::string json) = 0;
 
         virtual void Process() = 0;
         virtual void Maker(std::string json) = 0;
@@ -117,6 +128,7 @@ namespace Controller {
 
         void MakeBet(std::string json) override;
         void MakeMove(std::string json) override;
+        void MakeDeal(std::string json) override;
 
         void Process() override;
         void Maker(std::string json) override;
@@ -135,16 +147,16 @@ namespace Controller {
         [[nodiscard]] int GetPlayerCost() const override;
     };
 
-    struct TRUE {bool m;};
-    struct FALSE {bool m[2]; };
+    struct TRUE_ {bool m;};
+    struct FALSE_ {bool m[2]; };
 
     template <typename C, typename P>
     struct Is_Inherited{
-        static TRUE check(P *) { return TRUE {}; };
-        static FALSE check(...) { return FALSE{}; };
+        static TRUE_ check(P *) { return TRUE_ {}; };
+        static FALSE_ check(...) { return FALSE_{}; };
 
         static bool const value = sizeof(check((C *)(nullptr)))
-                == sizeof(TRUE);
+                == sizeof(TRUE_);
     };
 
     template <typename T>

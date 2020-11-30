@@ -10,14 +10,17 @@
 #include <utility>
 #include <boost/asio.hpp>
 
-#include "Server/Controller/Dealer.h"
 #include "Actors/IPlayer.h"
+
+namespace Controller{
+    struct IDealer;
+}
 
 using boost::asio::ip::tcp;
 
 const size_t MAX_PLAYER_COUNT = 7;
 
-typedef std::deque<json_message> json_message_queue ;
+typedef std::deque<std::string> json_message_queue ;
 
 struct player_participant
 {
@@ -28,31 +31,37 @@ public:
     void set_id(int id){
         my_id = id;
     }
-    int get_id() const {
+    [[nodiscard]] int get_id() const {
         return my_id;
     }
 
-    void set_name(int new_name){
+    void set_name(const std::string & new_name){
         name = new_name;
     }
-    std::string get_name() const {
+    [[nodiscard]] std::string get_name() const {
         return name;
     }
 
-    virtual ~player_participant() {}
-    virtual void deliver(const json_message& msg) = 0;
+    virtual ~player_participant() = default;
+    virtual void deliver(const std::string& msg) = 0;
 };
 
 typedef std::shared_ptr<player_participant> player_participant_ptr;
 
 struct Game_Room {
 private:
+    std::shared_ptr<Controller::IDealer> dealer;
+
     std::map<std::string, std::shared_ptr<Actors::IPlayer>> players;
     std::vector<std::string> queue {};
 public:
 
     bool SubscribePlayer(std::string player_nickname, std::shared_ptr<Actors::IPlayer> new_player);
     bool UnSubscribePlayer(const std::string &player_nickname);
+
+    void NewRound();
+
+    void SetDealer(std::shared_ptr<Controller::IDealer> dealer);
 
     void join( player_participant_ptr participant)
     {
@@ -68,29 +77,25 @@ public:
         auto id = participant->get_id();
         UnSubscribePlayer(participant->get_name());
         participants_.erase(participant->get_id());
-
-        // можно оповестить что плеер ливнул чтобы убрать его из диллера но хз
-        // хотя мб придется иметь доступ к диллеру
     }
 
-    void deliver(const json_message& msg, int num)
+    void deliver(const std::string& msg, int num)
     {
         recent_msgs_.push_back(msg);
         while (recent_msgs_.size() > max_recent_msgs)
             recent_msgs_.pop_front();
 
-        participants_[num]->deliver(msg);
+        participants_[num]->deliver(msg + "\r\n\r\n");
     }
 
-    void deliver(const json_message& msg)
+    void deliver(const std::string& msg)
     {
         recent_msgs_.push_back(msg);
         while (recent_msgs_.size() > max_recent_msgs)
             recent_msgs_.pop_front();
 
         for (auto participant: participants_)
-          participant.second->deliver(msg);
-
+          participant.second->deliver(msg + "\r\n\r\n");
     }
 
 private:
