@@ -99,7 +99,11 @@ void DealerHandlers::PlayoutHandler::servePlayout(Controller::IDealer * dealer) 
 
     CURRENT_DEALER->ClearHand();
     dealer->cursor = 0;
-    dealer->m_stack->TimeToShuffle();
+    if (STACK->TimeToShuffle()) {
+        json shuffle_event;
+        shuffle_event["command"] = "Shuffle";
+        LOBBY->deliver(shuffle_event.dump());
+    }
     dealer->set_current(CONTROLLER::BET_SERVANT);
 }
 

@@ -28,17 +28,19 @@ if (Boost_FOUND)
             src/Model/Cards/CardStack.cpp
             src/Server/Controller/Game_Server.cpp
 
-            src/Client/View/OutputManager.cpp
-
             src/Server/Engine/BlackJack.cpp
-
-            src/Client/TCP_Player_Client.cpp
 
             src/Server/Controller/Game_Room.cpp
             )
 
     add_executable(${Client}
             src/Client/main.cpp
+
+            src/Model/Actors/IPlayer.cpp
+
+            src/Model/Cards/CardStack.cpp
+
+            src/Client/View/OutputManager.cpp
 
             src/Client/TCP_Player_Client.cpp)
 

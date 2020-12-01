@@ -54,6 +54,7 @@ private:
 
     std::map<std::string, std::shared_ptr<Actors::IPlayer>> players;
     std::vector<std::string> queue {};
+    std::vector<int> vacancy;
 public:
 
     bool SubscribePlayer(std::string player_nickname, std::shared_ptr<Actors::IPlayer> new_player);
@@ -61,22 +62,33 @@ public:
 
     void NewRound();
 
+    void Notify_result();
+
     void SetDealer(std::shared_ptr<Controller::IDealer> dealer);
 
     void join( player_participant_ptr participant)
     {
-        participant->set_id(count);
-        participants_.emplace(count++, participant);
-        SubscribePlayer(participant->get_name(), std::make_shared<Actors::Player>(1'000));
-        for (auto msg: recent_msgs_)
-            participant->deliver(msg);
+        if (queue.size() < MAX_PLAYER_COUNT) {
+            if (!vacancy.empty()) {
+                participant->set_id(vacancy.back());
+                participants_.emplace(vacancy.back(), participant);
+                vacancy.pop_back();
+            } else {
+                participant->set_id(count);
+                participants_.emplace(count++, participant);
+            }
+            SubscribePlayer(participant->get_name(), std::make_shared<Actors::Player>(1'000));
+            for (auto msg: recent_msgs_)
+                participant->deliver(msg);
+        }
     }
 
     void leave( player_participant_ptr participant)
     {
-        auto id = participant->get_id();
-        UnSubscribePlayer(participant->get_name());
-        participants_.erase(participant->get_id());
+        if (!queue.empty()) {
+            UnSubscribePlayer(participant->get_name());
+            participants_.erase(participant->get_id());
+        }
     }
 
     void deliver(const std::string& msg, int num)

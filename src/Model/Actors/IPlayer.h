@@ -27,9 +27,9 @@ namespace Actors {
         virtual void SetName(const std::string &  name);
         virtual const std::string & GetName() const;
 
-        virtual Event Move() = 0;
-        virtual Event Bet() = 0;
-        virtual Event Answer() = 0;
+        virtual void Move() = 0;
+        virtual void Bet() = 0;
+        virtual void Answer() = 0;
 
         virtual void SetCard(const GameCard::Cards &) = 0;
         [[nodiscard]] virtual bool BlackJackCheck() const = 0;
@@ -49,9 +49,9 @@ namespace Actors {
     public:
         explicit Player(int bank) : m_bank(bank) {}
 
-        Event Move() override;
-        Event Bet() override;
-        Event Answer() override;
+        void Move() override;
+        void Bet() override;
+        void Answer() override;
 
         void SetCard(const GameCard::Cards &) override;
         [[nodiscard]] bool BlackJackCheck() const override;

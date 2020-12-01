@@ -27,7 +27,7 @@ void Actors::Player::ClearHand() {
     m_hand.Clear();
 }
 
-Event Actors::Player::Move() {
+void Actors::Player::Move() {
 //    std::string command;
 //    while (is >> command){
 //        auto request = commands.find(command);
@@ -53,7 +53,7 @@ Event Actors::Player::Move() {
 //    }
 }
 
-Event Actors::Player::Bet() {
+void Actors::Player::Bet() {
 //    std::string command;
 //    while (is >> command){
 //        if (p_EVENT::BANK == commands.find(command)->second) {
@@ -70,7 +70,7 @@ Event Actors::Player::Bet() {
 //    }
 }
 
-Event Actors::Player::Answer() {
+void Actors::Player::Answer() {
 //    std::string command;
 //    while (is >> command){
 //        if (p_EVENT::YES == commands.find(command)->second) {

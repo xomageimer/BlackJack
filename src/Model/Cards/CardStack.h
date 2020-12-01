@@ -29,7 +29,7 @@ namespace GameCard {
         [[nodiscard]] virtual size_t GoneCardsSize() const = 0;
         [[nodiscard]] virtual size_t CardShoeSize() const = 0;
 
-        virtual void TimeToShuffle() = 0;
+        virtual bool TimeToShuffle() = 0;
 
         virtual void GenNewStacks() = 0;
 
@@ -52,7 +52,7 @@ namespace GameCard {
         [[nodiscard]] size_t GoneCardsSize() const override;
         [[nodiscard]] size_t CardShoeSize() const override;
 
-        void TimeToShuffle() override;
+        bool TimeToShuffle() override;
 
         void GenNewStacks() override;
 
@@ -60,35 +60,6 @@ namespace GameCard {
     };
 
     void GenerateCardPack(CardStack &);
-
-    // stack for test
-    struct TestCardStack : public ICardStack {
-    private:
-        // TODO использовать свой аллокатор для LIST
-        std::list<struct Cards> m_CardShoe;
-        std::list<struct Cards> m_goneCards;
-
-        size_t card_stack_count;
-        std::shared_ptr<Generator> _gen;
-    public:
-        explicit TestCardStack(std::shared_ptr<Generator> gen, size_t count_of_card_stacks = 4): card_stack_count(count_of_card_stacks), _gen(std::move(gen)){};
-        [[nodiscard]] size_t GoneCardsSize() const override;
-        [[nodiscard]] size_t CardShoeSize() const override;
-
-        template <typename ... Args>
-        friend void GenerateCardPack(TestCardStack &, Args... args);
-
-        [[deprecated]] void TimeToShuffle() override;
-
-        [[deprecated]] void GenNewStacks() override;
-
-        struct Cards GetCard() override;
-    };
-
-    template <typename ... Args>
-    void GenerateCardPack(TestCardStack & cs, Args... args){
-        cs.m_CardShoe = {args...};
-    }
 
     struct Hand {
     private:
@@ -172,7 +143,7 @@ namespace GameCard {
         Cards & operator= (const Cards &) = default;
         Cards & operator= (Cards&&) = default;
 
-        nlohmann::json Serialize();
+        nlohmann::json Serialize() const;
 
         void secret(bool) const;
 

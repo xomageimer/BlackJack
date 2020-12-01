@@ -71,31 +71,13 @@ GameCard::CardStack::CardStack(std::shared_ptr<Generator> gen, size_t count_of_c
     }
 }
 
-size_t GameCard::TestCardStack::GoneCardsSize() const {
-    return m_goneCards.size();
-}
-
-size_t GameCard::TestCardStack::CardShoeSize() const {
-    return m_CardShoe.size();
-}
-
-void GameCard::TestCardStack::TimeToShuffle() {}
-
-GameCard::Cards GameCard::TestCardStack::GetCard() {
-    this->m_goneCards.push_back(this->m_CardShoe.front());
-    GameCard::Cards tmp = this->m_CardShoe.front();
-    this->m_CardShoe.pop_front();
-
-    return tmp;
-}
-
-void GameCard::TestCardStack::GenNewStacks() {}
-
-void GameCard::CardStack::TimeToShuffle() {
+bool GameCard::CardStack::TimeToShuffle() {
     if ((2 * (m_CardShoe.size() + m_goneCards.size()) / 3) <= m_goneCards.size()) {
         GenNewStacks();
         std::cout << "SHUFFLE" << std::endl;
+        return true;
     }
+    return false;
 }
 
 size_t GameCard::CardStack::GoneCardsSize() const {
@@ -235,7 +217,7 @@ GameCard::Cards::Cards(GameCard::Cards::CardPrice _price, GameCard::Cards::CardS
     is_secret = _secr;
 }
 
-nlohmann::json GameCard::Cards::Serialize() {
+nlohmann::json GameCard::Cards::Serialize() const{
     nlohmann::json j;
     j["isOpen"] = !is_secret;
     j["value"] = m_value.at(price);

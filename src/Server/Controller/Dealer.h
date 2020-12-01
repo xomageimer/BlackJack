@@ -49,9 +49,10 @@ namespace Controller {
         friend DealerHandlers::DealHandler;
 
         virtual void set_current(states state) {
+            cursor = 0;
             cur_state = state;
             cur_handler = cmd_handles[cur_state];
-            this->Process();
+           // this->Process();
         }
 
     public:
@@ -133,9 +134,9 @@ namespace Controller {
         void Process() override;
         void Maker(std::string json) override;
 
-        Event Move() override;
-        Event Bet() override;
-        Event Answer() override;
+        void Move() override;
+        void Bet() override;
+        void Answer() override;
 
         void SetCard(const GameCard::Cards &) override;
         [[nodiscard]] bool BlackJackCheck() const override;

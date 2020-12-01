@@ -39,6 +39,64 @@ void OutputManager::destroy() {
     }
 }
 
+void OutputManager::notify_PlayerList(json j) {
+    std::string text = j["command"];
+    text += ":\n";
+    for (auto & player_stats : j["data"]["Players"]){
+        text += "Name: " + std::string(player_stats["name"]);
+        text += ", Id: " + player_stats["id"].dump() + '\n';
+        text += "Bank: " + player_stats["bank"].dump();
+    }
+    for (auto & i : subscribers){
+        i.second->update(text);
+    }
+    drop();
+}
+
+void OutputManager::notify_Bet(json j) {
+    std::string text = j["command"];
+    text += ":\n";
+    text += "min: " + j["data"]["min"].dump() + '\n';
+    text += "max: " + j["data"]["max"].dump() + '\n';
+    for (auto & i : subscribers){
+        i.second->update(text);
+    }
+    drop();
+}
+
+void OutputManager::notify_Insurance(json j) {
+    std::string text = j["command"];
+    text += ":\n";
+    for (auto & i : subscribers){
+        i.second->update(text);
+    }
+    drop();
+}
+
+void OutputManager::notify_PlayerChanged(json j) {
+    std::string text = j["command"];
+    text += ":\n Cards: ";
+    for (auto & hand_stats : j["data"]["hand"]){
+        if (hand_stats["isOpen"]) {
+            text += hand_stats["value"]; // ОШИБКА ТУТ
+            text += hand_stats["suit"];
+            text += '\n';
+        } else {
+            text += std::string("SECRET") + '\n';
+        }
+    }
+    drop();
+}
+
+void OutputManager::notify_RequestAction(json j) {
+    std::string text = j["command"].dump();
+    for (auto & i : subscribers){
+        i.second->update(text);
+    }
+    drop();
+}
+
+
 void ConsoleLogger::output() {
     for (auto & i : buffer){
         out << i + '\n';

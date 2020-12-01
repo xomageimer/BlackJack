@@ -63,13 +63,23 @@ void Controller::IDealer::Notify_about_player(int num) {
 
     event["data"]["number"] = num;
     event["data"]["isDealer"] = false;
-    for (int i = 0; i < getDealerPlayer()->ShowHand().GetSize(); i++) {
+    for (int i = 0; i < getPlayer().first->ShowHand().GetSize(); i++) {
         std::string cardN = "card" + std::to_string(i);
-        event["data"]["hand"][cardN]["isOpen"] = !getPlayer().first->ShowHand().LookAtCards()[i].is_secret;
-        event["data"]["hand"][cardN]["rank"] = getPlayer().first->ShowHand().LookAtCards()[i].price;
-        event["data"]["hand"][cardN]["suit"] = getPlayer().first->ShowHand().LookAtCards()[i].suit;
+        auto cur_card = getPlayer().first->ShowHand().LookAtCards()[i];
+        json card_val;
+        card_val["isOpen"] = !getPlayer().first->ShowHand().LookAtCards()[i].is_secret;
+        if (GameCard::Cards::m_value.find(cur_card.price) != GameCard::Cards::m_value.end()) {
+            card_val["rank"] = GameCard::Cards::m_value.at(cur_card.price);
+        } else {
+            card_val["rank"] = std::to_string(static_cast<int>(cur_card.price));
+        }
+        card_val["suit"] = GameCard::Cards::m_suit.at(cur_card.suit);
+        event["data"]["hand"].push_back(card_val);
     }
     event["data"]["name"] = getPlayer().first->GetName();
+
+
+    std::cerr << event.dump() << std::endl;
 
     my_room->deliver(event.dump());
 }
@@ -81,9 +91,16 @@ void Controller::IDealer::Notify_about_dealer() {
     event["data"]["isDealer"] = true;
     for (int i = 0; i < getDealerPlayer()->ShowHand().GetSize(); i++) {
         std::string cardN = "card" + std::to_string(i);
-        event["data"]["hand"][cardN]["isOpen"] = !getPlayer().first->ShowHand().LookAtCards()[i].is_secret;
-        event["data"]["hand"][cardN]["rank"] = getPlayer().first->ShowHand().LookAtCards()[i].price;
-        event["data"]["hand"][cardN]["suit"] = getPlayer().first->ShowHand().LookAtCards()[i].suit;
+        auto cur_card = getDealerPlayer()->ShowHand().LookAtCards()[i];
+        json card_val;
+        card_val["isOpen"] = !getDealerPlayer()->ShowHand().LookAtCards()[i].is_secret;
+        if (GameCard::Cards::m_value.find(cur_card.price) != GameCard::Cards::m_value.end()) {
+            card_val["rank"] = GameCard::Cards::m_value.at(cur_card.price);
+        } else {
+            card_val["rank"] = std::to_string(static_cast<int>(cur_card.price));
+        }
+        card_val["suit"] = GameCard::Cards::m_suit.at(cur_card.suit);
+        event["data"]["hand"].push_back(card_val);
     }
 
     my_room->deliver(event.dump());
@@ -134,24 +151,20 @@ void Controller::SimpleDealer::Process() {
     }
 }
 
-Event Controller::SimpleDealer::Move() {
+void Controller::SimpleDealer::Move() {
     if (ShowHand().total() < DEALERBORDER) {
         Event take_card(Event::DealerResponse::GIVECARD, std::string("Dealer take a card: "));
-        return take_card;
     } else {
         Event stand(Event::DealerResponse::SWAPPLAYER, std::string("Enough"));
-        return stand;
     }
 }
 
-Event Controller::SimpleDealer::Bet() {
+void Controller::SimpleDealer::Bet() {
     Event bet(Event::DealerResponse::MAKEBET, 10);
-    return bet;
 }
 
-Event Controller::SimpleDealer::Answer() {
+void Controller::SimpleDealer::Answer() {
     Event answ(Event::DealerResponse::YES, 0);
-    return answ;
 }
 
 void Controller::SimpleDealer::SetCard(const GameCard::Cards & card) {

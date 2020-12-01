@@ -8,10 +8,17 @@
 #include <boost/asio.hpp>
 
 #include "Actors/IPlayer.h"
+#include "View/OutputManager.h"
+
+#define DEFAULT {               \
+    throw std::logic_error(""); \
+}                               \
 
 using boost::asio::ip::tcp;
 
 typedef std::deque<std::string> chat_message_queue;
+
+#define BLACKJACK 21
 
 class player_client
 {
@@ -24,14 +31,14 @@ public:
         do_connect(endpoint_iterator);
     }
 
-    void write(std::string& msg)
+    void write(const std::string& msg)
     {
-        msg += "\r\n\r\n";
+        auto t_msg = msg + "\r\n\r\n";
         io_service_.post(
-            [this, msg]()
+            [this, t_msg]()
             {
                 bool write_in_progress = !write_msgs_.empty();
-                write_msgs_.push_back(msg);
+                write_msgs_.push_back(t_msg);
                 if (!write_in_progress)
                 {
                     do_write();
@@ -44,7 +51,7 @@ public:
         io_service_.post([this]() { socket_.close(); });
     }
 
-private:
+protected:
     void do_connect(tcp::resolver::iterator endpoint_iterator)
     {
         boost::asio::async_connect(socket_, endpoint_iterator,
@@ -57,7 +64,7 @@ private:
                });
     }
 
-    void do_read_body()
+    virtual void do_read_body()
     {
         boost::asio::async_read_until(socket_,
               read_msg_,
@@ -101,7 +108,7 @@ private:
              });
     }
 
-private:
+protected:
     boost::asio::io_service& io_service_;
     tcp::socket socket_;
     boost::asio::streambuf read_msg_;
@@ -109,13 +116,64 @@ private:
 };
 
 
-struct TCP_Player_Client :  public player_client {
+struct TCP_Player_Client : public Actors::IPlayer, public player_client {
 protected:
+    GameCard::Hand m_hand;
+    int m_bank;
+
+    std::shared_ptr<OutputManager> om;
+
+    enum class states : int {
+        BET,
+        MOVE,
+        DEAL,
+        NOTHING
+    };
+    states cur_state = states::NOTHING;
 
 public:
     explicit TCP_Player_Client(int bank, boost::asio::io_service& io_service,
-                               tcp::resolver::iterator endpoint_iterator) : player_client(io_service, endpoint_iterator) {}
+                               tcp::resolver::iterator endpoint_iterator) : player_client(io_service, endpoint_iterator), m_bank(bank) {}
 
+    void do_read_body() override
+    {
+        boost::asio::async_read_until(socket_,
+              read_msg_,
+              "\r\n\r\n",
+              [this](boost::system::error_code ec, std::size_t /*length*/)
+              {
+                  if (!ec)
+                  {
+                      std::string str;
+                      std::istream(&read_msg_) >> str;
+                      Request(str);
+                      do_read_body();
+                  }
+                  else
+                  {
+                      socket_.close();
+                  }
+              });
+    }
+
+    void Request(std::string str);
+
+    void SetManager(std::shared_ptr<OutputManager> manager);
+
+    void Process();
+
+    void Move() override;
+    void Bet() override;
+    void Answer() override;
+
+    void SetCard(const GameCard::Cards &) override;
+    [[nodiscard]] bool BlackJackCheck() const override;
+    void GetRoundResult(int) override;
+
+    void ClearHand() override;
+
+    [[nodiscard]] const GameCard::Hand &ShowHand() const override;
+    [[nodiscard]] int GetPlayerCost() const override;
 };
 
 

@@ -10,6 +10,10 @@
 #include "Cards/CardStack.h"
 #include "Actors/Events.h"
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
 struct OutputManager {
 private:
     std::map<std::string, std::shared_ptr<struct ILogger>> subscribers;
@@ -22,10 +26,10 @@ private:
 
     };
     std::map<GameCard::Cards::CardSuit, std::string> m_suit{
-            {GameCard::Cards::CardSuit::HEARTS, "H"},
-            {GameCard::Cards::CardSuit::SPADES, "S"},
-            {GameCard::Cards::CardSuit::DIAMONDS, "D"},
-            {GameCard::Cards::CardSuit::CLUBS, "C"}
+            {GameCard::Cards::CardSuit::HEARTS, "Hearts"},
+            {GameCard::Cards::CardSuit::SPADES, "Spades"},
+            {GameCard::Cards::CardSuit::DIAMONDS, "Diamonds"},
+            {GameCard::Cards::CardSuit::CLUBS, "Clubs"}
     };
 
 public:
@@ -34,6 +38,11 @@ public:
 
     void subscribe(const std::string & name_listener, std::shared_ptr<struct ILogger> new_listener);
     void notify(const std::string & new_info);
+    void notify_PlayerList(json j);
+    void notify_Bet(json j);
+    void notify_Insurance(json j);
+    void notify_PlayerChanged(json j);
+    void notify_RequestAction(json j);
     void notify(const GameCard::Cards & new_info);
     void unsubscribe(const std::string & listener);
     void drop();

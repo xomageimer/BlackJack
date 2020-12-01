@@ -47,7 +47,9 @@ private:
             {
                 std::string str;
                 std::istream(&read_msg_) >> str;
-                dealer->Maker(std::string(str));
+                if (!str.empty()) {
+                    dealer->Maker(std::string(str));
+                }
                 dealer->Process();
                 do_read_body();
             }
