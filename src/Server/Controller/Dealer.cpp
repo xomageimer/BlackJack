@@ -48,6 +48,10 @@ void Controller::IDealer::RefreshPlayer(std::shared_ptr<Actors::IPlayer> pl) {
 
     if (it != m_players.end()){
         m_players.erase(it);
+        if (cursor >= m_players.size()){
+            set_current(states::ROUND_SERVANT);
+        }
+        Process();
     }
 }
 
@@ -63,7 +67,7 @@ void Controller::IDealer::Notify_about_player(int num) {
 
     event["data"]["number"] = num;
     event["data"]["isDealer"] = false;
-    for (int i = 0; i < getPlayer().first->ShowHand().GetSize(); i++) {
+    for (size_t i = 0; i < getPlayer().first->ShowHand().GetSize(); i++) {
         std::string cardN = "card" + std::to_string(i);
         auto cur_card = getPlayer().first->ShowHand().LookAtCards()[i];
         json card_val;
@@ -89,17 +93,19 @@ void Controller::IDealer::Notify_about_dealer() {
     event["command"] = "PlayerChanged";
 
     event["data"]["isDealer"] = true;
-    for (int i = 0; i < getDealerPlayer()->ShowHand().GetSize(); i++) {
+    for (size_t i = 0; i < getDealerPlayer()->ShowHand().GetSize(); i++) {
         std::string cardN = "card" + std::to_string(i);
         auto cur_card = getDealerPlayer()->ShowHand().LookAtCards()[i];
         json card_val;
         card_val["isOpen"] = !getDealerPlayer()->ShowHand().LookAtCards()[i].is_secret;
-        if (GameCard::Cards::m_value.find(cur_card.price) != GameCard::Cards::m_value.end()) {
-            card_val["rank"] = GameCard::Cards::m_value.at(cur_card.price);
-        } else {
-            card_val["rank"] = std::to_string(static_cast<int>(cur_card.price));
+        if (card_val["isOpen"]) {
+            if (GameCard::Cards::m_value.find(cur_card.price) != GameCard::Cards::m_value.end()) {
+                card_val["rank"] = GameCard::Cards::m_value.at(cur_card.price);
+            } else {
+                card_val["rank"] = std::to_string(static_cast<int>(cur_card.price));
+            }
+            card_val["suit"] = GameCard::Cards::m_suit.at(cur_card.suit);
         }
-        card_val["suit"] = GameCard::Cards::m_suit.at(cur_card.suit);
         event["data"]["hand"].push_back(card_val);
     }
 
@@ -265,25 +271,23 @@ void Controller::SimpleDealer::MakeDeal(std::string json_str) {
         insurances[getPlayer().first] = response["insurance"];
 
         if (++cursor == m_players.size()) {
-            if (++cursor == m_players.size()) {
-                getDealerPlayer()->ShowHand().UnSecret(1);
-                auto is_blackJack = getDealerPlayer()->ShowHand().total();
-                getDealerPlayer()->ShowHand().MakeSecret(1);
-                if (is_blackJack == BLACKJACK) {
-                    set_current(states::YOURSELF_SERVANT);
-                } else {
-                    size_t i = 0;
-                    for (auto &[player, bet] : m_players) {
-                        if (insurances.at(player)) {
-                            player->GetRoundResult((-1) * bet / 2);
-                            getDealerPlayer()->GetRoundResult(bet / 2);
-                        }
-                        i++;
+            getDealerPlayer()->ShowHand().UnSecret(1);
+            auto is_blackJack = getDealerPlayer()->ShowHand().total();
+            getDealerPlayer()->ShowHand().MakeSecret(1);
+            if (is_blackJack == BLACKJACK) {
+                set_current(states::YOURSELF_SERVANT);
+            } else {
+                size_t i = 0;
+                for (auto &[player, bet] : m_players) {
+                    if (insurances.at(player)) {
+                        player->GetRoundResult((-1) * bet / 2);
+                        getDealerPlayer()->GetRoundResult(bet / 2);
                     }
-                    insurances.clear();
-                    cursor = 0;
-                    set_current(states::MOVE_SERVANT);
+                    i++;
                 }
+                insurances.clear();
+                cursor = 0;
+                set_current(states::MOVE_SERVANT);
             }
         }
     }

@@ -7,24 +7,27 @@ using p_EVENT = Event::PlayerRequests;
 
 void TCP_Player_Client::Request(std::string str) {
     if(!str.empty()) {
-        json request = json::parse(str);
+        try {
+            json request = json::parse(str);
+            str.clear();
 
-        std::cerr << str << std::endl;
-
-        if (request["command"] == "PlayerList") {
-            om->notify_PlayerList(request);
-        } else if (request["command"] == "Bet") {
-            om->notify_Bet(request);
-            cur_state = states::BET;
-        } else if (request["command"] == "insurance") {
-            om->notify_Insurance(request);
-            cur_state = states::DEAL;
-        } else if (request["command"] == "PlayerChanged") {
-            om->notify_PlayerChanged(request);
+            if (request["command"] == "PlayerList") {
+                om->notify_PlayerList(request);
+            } else if (request["command"] == "Bet") {
+                om->notify_Bet(request);
+                cur_state = states::BET;
+            } else if (request["command"] == "Insurance") {
+                om->notify_Insurance(request);
+                cur_state = states::DEAL;
+            } else if (request["command"] == "PlayerChanged") {
+                om->notify_PlayerChanged(request);
 //        SetCard(request["data"]["hand"].back().dump());
-        } else if (request["command"] == "RequestAction") {
-            om->notify_RequestAction(request);
-            cur_state = states::MOVE;
+            } else if (request["command"] == "RequestAction") {
+                om->notify_RequestAction(request);
+                cur_state = states::MOVE;
+            }
+        } catch (...) {
+            std::cerr << "some error input, continue!" << std::endl;
         }
     }
 }

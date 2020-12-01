@@ -36,8 +36,7 @@ void Game_Room::NewRound() {
     for (auto & player : players){
         dealer->SetPlayer(player.second);
     }
-    std::cerr << "1" << std::endl;
-    dealer->Process();
+    //dealer->Process();
 }
 
 void Game_Room::Notify_result() {

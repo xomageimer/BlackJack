@@ -74,16 +74,21 @@ void OutputManager::notify_Insurance(json j) {
 }
 
 void OutputManager::notify_PlayerChanged(json j) {
-    std::string text = j["command"];
-    text += ":\n Cards: ";
+    std::string text = (j["data"]["isDealer"]) ? "DealerChanged" : j["command"];
+    if (!j["data"]["isDealer"]) text += " " + std::to_string(j["data"]["number"].get<int>());
+    text += ":\nCards: ";
     for (auto & hand_stats : j["data"]["hand"]){
         if (hand_stats["isOpen"]) {
-            text += hand_stats["value"]; // ОШИБКА ТУТ
+            text += hand_stats["rank"];
             text += hand_stats["suit"];
-            text += '\n';
+            text += " ";
         } else {
-            text += std::string("SECRET") + '\n';
+            text += std::string("SECRET") + " ";
         }
+    }
+    text += "\n";
+    for (auto & i : subscribers){
+        i.second->update(text);
     }
     drop();
 }

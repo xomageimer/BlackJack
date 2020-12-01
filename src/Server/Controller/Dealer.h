@@ -52,7 +52,7 @@ namespace Controller {
             cursor = 0;
             cur_state = state;
             cur_handler = cmd_handles[cur_state];
-           // this->Process();
+            this->Process();
         }
 
     public:
