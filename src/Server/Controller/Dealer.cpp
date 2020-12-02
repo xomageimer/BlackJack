@@ -227,7 +227,7 @@ void Controller::SimpleDealer::MakeMove(std::string json_str) {
     json response = json::parse(json_str);
 
     if (response["command"] == "OK") {
-        if (response["action"] == "Hit") {
+        if (response["data"]["action"] == "Hit") {
             auto card = m_stack->GetCard();
             getPlayer().first->SetCard(card);
 
@@ -240,10 +240,10 @@ void Controller::SimpleDealer::MakeMove(std::string json_str) {
                 if (++cursor == m_players.size())
                     set_current(states::YOURSELF_SERVANT);
             }
-        } else if (response["action"] == "Stand") {
+        } else if (response["data"]["action"] == "Stand") {
             if (++cursor == m_players.size())
                 set_current(states::YOURSELF_SERVANT);
-        } else if (response["action"] == "Double") {
+        } else if (response["data"]["action"] == "Double") {
             if (getPlayer().first->ShowHand().GetSize() == 2 &&
                 getPlayer().first->GetPlayerCost() > getPlayer().second) {
 
@@ -269,7 +269,7 @@ void Controller::SimpleDealer::MakeDeal(std::string json_str) {
 
 
     if (response["command"] == "OK") {
-        insurances[getPlayer().first] = response["insurance"];
+        insurances[getPlayer().first] = response["data"]["insurance"];
 
         if (++cursor == m_players.size()) {
             getDealerPlayer()->ShowHand().UnSecret(1);

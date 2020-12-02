@@ -25,6 +25,7 @@ typedef std::deque<std::string> json_message_queue ;
 struct player_participant
 {
 protected:
+    bool is_Authorize = false;
     std::string name = "Player";
     int my_id = 0;
 public:
@@ -70,16 +71,16 @@ public:
 
     void join( player_participant_ptr participant)
     {
-        if (queue.size() < MAX_PLAYER_COUNT) {
+        if (queue.size() <= MAX_PLAYER_COUNT) {
             if (!vacancy.empty()) {
                 participant->set_id(vacancy.back());
                 participants_.emplace(vacancy.back(), participant);
                 vacancy.pop_back();
             } else {
+                std::cerr << "new player " << count << std::endl;
                 participant->set_id(count);
                 participants_.emplace(count++, participant);
             }
-            SubscribePlayer(participant->get_name(), std::make_shared<Actors::Player>(1'000));
 //            for (auto msg: recent_msgs_)
 //                participant->deliver(msg);
         }

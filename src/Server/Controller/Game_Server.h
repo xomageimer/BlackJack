@@ -51,8 +51,14 @@ private:
                         - std::string("\r\n\r\n").size()};
                 read_msg_.consume(bytes_transferred);
                 if (!str.empty()) {
-                    std::cerr << "READ: " << str << std::endl << std::endl;
-                    dealer->Maker(std::string(str));
+                    if (is_Authorize) {
+                        std::cerr << "READ: " << str << std::endl << std::endl;
+                        dealer->Maker(std::string(str));
+                    } else {
+                        set_name(str);
+                        is_Authorize = true;
+                        room_.SubscribePlayer(get_name(), std::make_shared<Actors::Player>(1'000));
+                    }
                 }
                 do_read_body();
             }

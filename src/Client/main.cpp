@@ -29,6 +29,9 @@ int main(int argc, char* argv[])
 //        std::string line;
 //        for (std::string line; std::getline(std::cin, line);)
 //        {
+
+        c.SetName();
+
         while (true) {
             c.Process();
         }

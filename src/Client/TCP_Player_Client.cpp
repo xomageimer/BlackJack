@@ -47,19 +47,19 @@ void TCP_Player_Client::Move() {
             j["command"] = "OK";
             switch (request->second) {
                 case p_EVENT::HIT :
-                   j["action"] = "Hit";
+                   j["data"]["action"] = "Hit";
                    break;
                 case p_EVENT::STAND :
-                   j["action"] = "Stand";
+                   j["data"]["action"] = "Stand";
                    break;
                 case p_EVENT::DOUBLEDOWN :
-                   j["action"] = "Double";
+                   j["data"]["action"] = "Double";
                    break;
                 case p_EVENT::BANK :
                     std::cout << "Your bank : " << m_bank << std::endl;
                     break;
                 default:
-                    j["action"] = "Stand";
+                    j["data"]["action"] = "Stand";
             }
             cur_state = states::NOTHING;
             write(j.dump());
@@ -102,9 +102,9 @@ void TCP_Player_Client::Answer() {
     j["command"] = "OK";
     std::cin >> command;
     if (p_EVENT::YES == commands.find(command)->second) {
-        j["insurance"] = true;
+        j["data"]["insurance"] = true;
     } else {
-        j["insurance"] = false;
+        j["data"]["insurance"] = false;
     }
     cur_state = states::NOTHING;
     write(j.dump());
@@ -149,4 +149,13 @@ void TCP_Player_Client::Process() {
         default :
             break;
     }
+}
+
+void TCP_Player_Client::SetName() {
+    std::string command;
+    json j;
+    j["command"] = "Authorize";
+    std::cin >> command;
+    j["data"]["name"] = command;
+    write(j.dump());
 }

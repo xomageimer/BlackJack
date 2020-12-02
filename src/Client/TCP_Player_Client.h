@@ -146,6 +146,8 @@ public:
 
     void Process();
 
+    void SetName();
+
     void Move() override;
     void Bet() override;
     void Answer() override;

@@ -7,9 +7,16 @@ bool Game_Room::SubscribePlayer(std::string player_nickname, std::shared_ptr<Act
     queue.emplace_back(player_nickname);
     players.emplace(std::piecewise_construct, std::forward_as_tuple(player_nickname),
                     std::forward_as_tuple(new_player));
-    if (queue.size() == 1) {
+
+    json answ;
+    answ["command"] = "OK";
+    answ["data"] = {{"Bank", 1000}, {"id", std::to_string(count - 1)}, {"name", player_nickname}};
+    deliver(answ.dump(), count - 1);
+
+    if (queue.size() == 2) {
         dealer->RestartDealer();
     }
+
     return true;
 }
 
@@ -36,6 +43,7 @@ void Game_Room::NewRound() {
     for (auto & player : players){
         dealer->SetPlayer(player.second);
     }
+    std::cerr << players.size() << '\n';
     //dealer->Process();
 }
 

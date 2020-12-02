@@ -123,6 +123,7 @@ void DealerHandlers::PlayingHandler::serveYourself(Controller::IDealer * dealer)
                 CURRENT_DEALER->GetRoundResult(bet);
             }
             p++;
+            player->ClearHand();
         }
 
         dealer->RestartDealer();

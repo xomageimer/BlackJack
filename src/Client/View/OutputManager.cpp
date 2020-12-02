@@ -66,7 +66,7 @@ void OutputManager::notify_Bet(json j) {
 
 void OutputManager::notify_Insurance(json j) {
     std::string text = j["command"];
-    text += ":\n";
+    text += ":";
     for (auto & i : subscribers){
         i.second->update(text);
     }
@@ -86,7 +86,6 @@ void OutputManager::notify_PlayerChanged(json j) {
             text += std::string("SECRET") + " ";
         }
     }
-    text += "\n";
     for (auto & i : subscribers){
         i.second->update(text);
     }
