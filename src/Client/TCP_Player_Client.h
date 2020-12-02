@@ -16,7 +16,7 @@
 
 using boost::asio::ip::tcp;
 
-typedef std::deque<std::string> chat_message_queue;
+typedef std::deque<std::string> message_queue;
 
 #define BLACKJACK 21
 
@@ -64,27 +64,7 @@ protected:
                });
     }
 
-    virtual void do_read_body()
-    {
-        boost::asio::async_read_until(socket_,
-              read_msg_,
-              "\r\n\r\n",
-              [this](boost::system::error_code ec, std::size_t /*length*/)
-              {
-                  if (!ec)
-                  {
-                      std::string myString;
-                      std::istream(&read_msg_) >> myString;
-                      std::cout << myString << std::endl;
-                      std::cout << "\n";
-                      do_read_body();
-                  }
-                  else
-                  {
-                      socket_.close();
-                  }
-              });
-    }
+    virtual void do_read_body() = 0;
 
     void do_write()
     {
@@ -112,7 +92,7 @@ protected:
     boost::asio::io_service& io_service_;
     tcp::socket socket_;
     boost::asio::streambuf read_msg_;
-    chat_message_queue write_msgs_;
+    message_queue write_msgs_;
 };
 
 
@@ -140,12 +120,16 @@ public:
         boost::asio::async_read_until(socket_,
               read_msg_,
               "\r\n\r\n",
-              [this](boost::system::error_code ec, std::size_t /*length*/)
+              [this](boost::system::error_code ec, std::size_t bytes_transferred/*length*/)
               {
                   if (!ec)
                   {
-                      std::string str;
-                      std::istream(&read_msg_) >> str;
+                      std::string str{
+                              boost::asio::buffers_begin(read_msg_.data()),
+                                                         boost::asio::buffers_begin(read_msg_.data()) + bytes_transferred
+                                                         - std::string("\r\n\r\n").size()};
+                      read_msg_.consume(bytes_transferred);
+                     // std::cerr << "-----------\n" << str << "\n------------" << std::endl;
                       Request(str);
                       do_read_body();
                   }

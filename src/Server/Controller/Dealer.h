@@ -49,6 +49,7 @@ namespace Controller {
         friend DealerHandlers::DealHandler;
 
         virtual void set_current(states state) {
+            std::cerr << "\n" << "change context" << '\n' << std::endl;
             cursor = 0;
             cur_state = state;
             cur_handler = cmd_handles[cur_state];

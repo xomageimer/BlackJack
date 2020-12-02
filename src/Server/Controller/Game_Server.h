@@ -41,16 +41,18 @@ private:
         boost::asio::async_read_until(socket_,
           read_msg_,
           "\r\n\r\n",
-          [this, self](boost::system::error_code ec, std::size_t /*length*/)
+          [this, self](boost::system::error_code ec, std::size_t bytes_transferred/*length*/)
           {
             if (!ec)
             {
-                std::string str;
-                std::istream(&read_msg_) >> str;
+                std::string str{
+                        boost::asio::buffers_begin(read_msg_.data()),
+                        boost::asio::buffers_begin(read_msg_.data()) + bytes_transferred
+                        - std::string("\r\n\r\n").size()};
+                read_msg_.consume(bytes_transferred);
                 if (!str.empty()) {
-                    std::cerr << str << std::endl;
+                    std::cerr << "READ: " << str << std::endl << std::endl;
                     dealer->Maker(std::string(str));
-                    dealer->Process();
                 }
                 do_read_body();
             }
@@ -70,6 +72,7 @@ private:
          {
              if (!ec)
              {
+                 //std::cerr << "from queue: " << write_msgs_.front() << std::endl;
                  write_msgs_.pop_front();
                  if (!write_msgs_.empty())
                  {

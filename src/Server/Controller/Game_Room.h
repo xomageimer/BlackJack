@@ -66,6 +66,8 @@ public:
 
     void SetDealer(std::shared_ptr<Controller::IDealer> dealer);
 
+    // TODO ГДЕ-ТО ТУТ ЗАПРОС НА АВТОРИЗАЦИЮ
+
     void join( player_participant_ptr participant)
     {
         if (queue.size() < MAX_PLAYER_COUNT) {
@@ -78,8 +80,8 @@ public:
                 participants_.emplace(count++, participant);
             }
             SubscribePlayer(participant->get_name(), std::make_shared<Actors::Player>(1'000));
-            for (auto msg: recent_msgs_)
-                participant->deliver(msg);
+//            for (auto msg: recent_msgs_)
+//                participant->deliver(msg);
         }
     }
 
@@ -93,19 +95,21 @@ public:
 
     void deliver(const std::string& msg, int num)
     {
-        recent_msgs_.push_back(msg);
-        while (recent_msgs_.size() > max_recent_msgs)
-            recent_msgs_.pop_front();
+//        recent_msgs_.push_back(msg);
+//        while (recent_msgs_.size() > max_recent_msgs)
+//            recent_msgs_.pop_front();
 
+        std::cerr << "SEND TO " << num << ": " << msg << std::endl << std::endl;
         participants_[num]->deliver(msg + "\r\n\r\n");
     }
 
     void deliver(const std::string& msg)
     {
-        recent_msgs_.push_back(msg);
-        while (recent_msgs_.size() > max_recent_msgs)
-            recent_msgs_.pop_front();
+//        recent_msgs_.push_back(msg);
+//        while (recent_msgs_.size() > max_recent_msgs)
+//            recent_msgs_.pop_front();
 
+        std::cerr << "SEND TO ALL: " << msg << std::endl << std::endl;
         for (auto participant: participants_)
           participant.second->deliver(msg + "\r\n\r\n");
     }

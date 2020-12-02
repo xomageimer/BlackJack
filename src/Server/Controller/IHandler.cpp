@@ -98,13 +98,12 @@ void DealerHandlers::PlayoutHandler::servePlayout(Controller::IDealer * dealer) 
     }
 
     CURRENT_DEALER->ClearHand();
-    dealer->cursor = 0;
     if (STACK->TimeToShuffle()) {
         json shuffle_event;
         shuffle_event["command"] = "Shuffle";
         LOBBY->deliver(shuffle_event.dump());
     }
-    dealer->set_current(CONTROLLER::BET_SERVANT);
+    dealer->RestartDealer();
 }
 
 void DealerHandlers::PlayingHandler::serveYourself(Controller::IDealer * dealer) {
@@ -126,8 +125,7 @@ void DealerHandlers::PlayingHandler::serveYourself(Controller::IDealer * dealer)
             p++;
         }
 
-        dealer->set_current(CONTROLLER::BET_SERVANT);
-        dealer->cursor = 0;
+        dealer->RestartDealer();
 
     } else {
         while (CURRENT_DEALER->ShowHand().total() < DEALERBORDER) {
@@ -138,7 +136,6 @@ void DealerHandlers::PlayingHandler::serveYourself(Controller::IDealer * dealer)
         }
 
         dealer->set_current(CONTROLLER::PLAYOUT_SERVANT);
-        dealer->cursor = 0;
     }
 }
 

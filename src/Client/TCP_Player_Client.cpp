@@ -26,8 +26,9 @@ void TCP_Player_Client::Request(std::string str) {
                 om->notify_RequestAction(request);
                 cur_state = states::MOVE;
             }
-        } catch (...) {
-            std::cerr << "some error input, continue!" << std::endl;
+        } catch (const std::exception & e) {
+            std::cerr << "some error input: " << e.what() << ", continue!" << std::endl;
+            std::cerr << "Msg has: " << str << std::endl;
         }
     }
 }

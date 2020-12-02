@@ -82,9 +82,6 @@ void Controller::IDealer::Notify_about_player(int num) {
     }
     event["data"]["name"] = getPlayer().first->GetName();
 
-
-    std::cerr << event.dump() << std::endl;
-
     my_room->deliver(event.dump());
 }
 
@@ -146,7 +143,6 @@ void Controller::SimpleDealer::Process() {
             break;
         case IDealer::states::PLAYOUT_SERVANT:
             ServePlayout();
-            RestartDealer();
             break;
         case IDealer::states::YOURSELF_SERVANT:
             ServeYourself();
@@ -221,6 +217,8 @@ void Controller::SimpleDealer::MakeBet(std::string json_str) {
 
         if (++cursor == m_players.size())
             set_current(states::ROUND_SERVANT);
+        else
+            Process();
     }
 }
 
@@ -260,12 +258,15 @@ void Controller::SimpleDealer::MakeMove(std::string json_str) {
                     set_current(states::YOURSELF_SERVANT);
             }
         }
+        if (cur_state == states::MOVE_SERVANT)
+            Process();
     }
 }
 
 void Controller::SimpleDealer::MakeDeal(std::string json_str) {
     json answer;
     json response = json::parse(json_str);
+
 
     if (response["command"] == "OK") {
         insurances[getPlayer().first] = response["insurance"];
@@ -289,6 +290,7 @@ void Controller::SimpleDealer::MakeDeal(std::string json_str) {
                 cursor = 0;
                 set_current(states::MOVE_SERVANT);
             }
-        }
+        } else
+            Process();
     }
 }
