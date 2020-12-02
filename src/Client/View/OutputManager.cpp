@@ -45,7 +45,7 @@ void OutputManager::notify_PlayerList(json j) {
     for (auto & player_stats : j["data"]["Players"]){
         text += "Name: " + std::string(player_stats["name"]);
         text += ", Id: " + player_stats["id"].dump() + '\n';
-        text += "Bank: " + player_stats["bank"].dump();
+        text += "Bank: " + player_stats["bank"].dump() + '\n';
     }
     for (auto & i : subscribers){
         i.second->update(text);

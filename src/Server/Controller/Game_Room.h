@@ -11,10 +11,13 @@
 #include <boost/asio.hpp>
 
 #include "Actors/IPlayer.h"
+#include "nlohmann/json.hpp"
 
 namespace Controller{
     struct IDealer;
 }
+
+using json = nlohmann::json;
 
 using boost::asio::ip::tcp;
 
@@ -37,7 +40,8 @@ public:
     }
 
     void set_name(const std::string & new_name){
-        name = new_name;
+        json j_name = json::parse(new_name);
+        name = j_name["data"]["name"];
     }
     [[nodiscard]] std::string get_name() const {
         return name;
