@@ -169,6 +169,7 @@ namespace GameCard {
         explicit operator std::string() const;
     };
 
+
     Cards FromStr(std::string price, std::string suit, bool is_open);
 }
 

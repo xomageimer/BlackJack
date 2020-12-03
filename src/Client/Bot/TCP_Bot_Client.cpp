@@ -4,6 +4,7 @@
 
 #define MAX 100
 #define MIN 10
+const size_t MAX_CARD = 208;
 
 using json = nlohmann::json;
 
@@ -44,13 +45,24 @@ void TCP_Bot_Client::Request(std::string str) {
                             } else {
                                 is_ace = false;
                             }
+                            leave_cards.SetNewCard(card);
+                        }
+                    } else {
+                        for (auto &hand : request["data"]["hand"]) {
+                            auto card = GameCard::FromStr(hand["rank"].get<std::string>(), hand["suit"].get<std::string>(),
+                                                          !hand["isOpen"].get<bool>());
+                            leave_cards.SetNewCard(card);
                         }
                     }
                 } else {
                     for (auto &hand : request["data"]["hand"]) {
-                        if (hand["isOpen"].get<bool>())
-                            SetDealerCard(GameCard::FromStr(hand["rank"].get<std::string>(), hand["suit"].get<std::string>(),
-                                                  !hand["isOpen"].get<bool>()));
+                        if (hand["isOpen"].get<bool>()) {
+                            auto card = GameCard::FromStr(hand["rank"].get<std::string>(),
+                                                          hand["suit"].get<std::string>(),
+                                                          !hand["isOpen"].get<bool>());
+                            SetDealerCard(card);
+                            leave_cards.SetNewCard(card);
+                        }
                     }
                 }
                 om->notify_PlayerChanged(request);
@@ -65,6 +77,7 @@ void TCP_Bot_Client::Request(std::string str) {
                 m_bank = request["data"]["Bank"];
                 my_banks.push_back(m_bank);
             } else if (request["command"] == "Shuffle"){
+                leave_cards.Clear();
                 std::cerr << "Shuffle" << std::endl;
                 json j;
                 j["command"] = "OK";
@@ -106,6 +119,14 @@ void TCP_Bot_Client::Process() {
 }
 
 void TCP_Bot_Client::Move() {
+    lefts_cards.clear();
+    for (auto & card : leave_cards.LookAtCards()){
+        lefts_cards[card.price]++;
+    }
+    std::map<double, GameCard::Cards::CardPrice> mat;
+    for (auto it : lefts_cards){
+        mat[static_cast<double>(16 - it.second) / static_cast<double>(MAX_CARD - lefts_cards.size())] = it.first;
+    }
     auto branch = (is_ace) ? tactic_with_ace.find(dealer_hand.total()) : tactic.find(dealer_hand.total());
     auto comm = branch->second.find(m_hand.total());
     std::string command = "STAND";
@@ -119,6 +140,17 @@ void TCP_Bot_Client::Move() {
     } else {
         command = "STAND";
     }
+
+    GameCard::Hand tmp_hand = m_hand;
+    tmp_hand.SetNewCard(GameCard::Cards(mat.begin()->second, GameCard::Cards::CardSuit::DIAMONDS, false));
+    if (tmp_hand.total() <= BLACKJACK && tmp_hand.total() > 15){
+        if (m_hand.GetSize() == 2) {
+            command = "DOUBLEDOWN";
+        } else {
+            command = "HIT";
+        }
+    }
+
     auto request = commands.find(command);
     if (request != commands.end()) {
         json j;
@@ -151,7 +183,7 @@ void TCP_Bot_Client::Bet() {
     if (my_banks.size() <= 1){
         bet = MIN;
     } else if (*(--(--my_banks.end())) > my_banks.back()) {
-        bet = *(--(--my_banks.end())) - my_banks.back() + 5;
+        bet = *(--(--my_banks.end())) - my_banks.back() * 2;
     } else if (*(--(--my_banks.end())) <= my_banks.back()) {
         bet = *(--(--my_banks.end())) - my_banks.back();
     }

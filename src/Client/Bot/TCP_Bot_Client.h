@@ -7,11 +7,13 @@ struct TCP_Bot_Client : public player_client, public Actors::IPlayer {
 protected:
     GameCard::Hand m_hand;
     GameCard::Hand dealer_hand;
-    // std::vector<GameCard::Hand> other_hand;
+    GameCard::Hand leave_cards;
     std::vector<int> my_banks;
     int m_bank;
 
     bool is_ace = false;
+
+    std::map<GameCard::Cards::CardPrice, int> lefts_cards;
 
     inline static std::map<int, std::map<int, std::string>> tactic {
             { 2, { {4, "HIT"}, {5, "HIT"}, {6, "HIT"}, {7, "HIT"}, {8, "HIT"}, {9, "HIT"}, {10, "DOUBLEDOWN"}, {11, "DOUBLEDOWN"}, {12, "HIT"}, {13, "STAND"}, {14, "STAND"}, {15, "STAND"}, {16, "STAND"}, {17, "STAND"} } },
