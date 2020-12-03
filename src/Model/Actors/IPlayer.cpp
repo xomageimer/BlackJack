@@ -88,3 +88,7 @@ void Actors::IPlayer::SetName(const std::string & name) {
 const std::string &Actors::IPlayer::GetName() const {
     return nickname;
 }
+
+int Actors::IPlayer::GetId() const {
+    return my_id;
+}

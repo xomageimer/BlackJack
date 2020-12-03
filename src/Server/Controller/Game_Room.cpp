@@ -2,6 +2,8 @@
 
 #include "Server/Controller/Dealer.h"
 
+#define MIN 10
+
 bool Game_Room::SubscribePlayer(std::string player_nickname, std::shared_ptr<Actors::IPlayer> new_player, int id) {
     new_player->SetName(player_nickname);
     queue.emplace_back(player_nickname);
@@ -13,7 +15,7 @@ bool Game_Room::SubscribePlayer(std::string player_nickname, std::shared_ptr<Act
     answ["data"] = {{"Bank", 1000}, {"id", std::to_string(id)}, {"name", player_nickname}};
     deliver(answ.dump(), id);
 
-    if (queue.size() == 1) {
+    if (queue.size() >= 1) {
         dealer->RestartDealer();
     }
 
@@ -41,7 +43,18 @@ void Game_Room::NewRound() {
     Notify_result();
     recent_msgs_.clear();
     for (auto & player : players){
-        dealer->SetPlayer(player.second);
+        if (player.second->GetPlayerCost() >= MIN){
+            dealer->SetPlayer(player.second);
+        }
+    }
+    for (auto it = players.begin(); it != players.end();){
+        if (it->second->GetPlayerCost() < MIN) {
+            auto tmp_it = ++it;
+            leave(participants_.find((--it)->second->GetId())->second);
+            it = tmp_it;
+        } else {
+            it++;
+        }
     }
     std::cerr << players.size() << '\n';
     //dealer->Process();

@@ -2,6 +2,9 @@
 #include "IHandler.h"
 #include "Game_Server.h"
 
+#define MIN 10
+#define MAX 100
+
 Controller::IDealer::IDealer() {
      cmd_handles.emplace(std::piecewise_construct, std::forward_as_tuple(states::BET_SERVANT),
                         std::forward_as_tuple(std::make_shared<DealerHandlers::BetHandler>()));
@@ -64,7 +67,9 @@ void Controller::IDealer::RefreshPlayer(std::shared_ptr<Actors::IPlayer> pl) {
 void Controller::IDealer::RestartDealer() {
     m_players.clear();
     my_room->NewRound();
-    set_current(states::BET_SERVANT);
+    if (m_players.size() > 0) {
+        set_current(states::BET_SERVANT);
+    }
 }
 
 void Controller::IDealer::Notify_about_player(int num) {
@@ -128,7 +133,8 @@ void Controller::IDealer::CheckBJ() {
     } else {
         size_t i = 0;
         for (auto &[player, bet] : m_players) {
-            if (insurances.at(player)) {
+            auto it = insurances.find(player);
+            if (it != insurances.end() && it->second) {
                 player->GetRoundResult((-1) * bet / 2);
                 getDealerPlayer()->GetRoundResult(bet / 2);
             }
@@ -244,12 +250,17 @@ void Controller::SimpleDealer::MakeBet(std::string json_str) {
     json response = json::parse(json_str);
 
     if (response["command"] == "OK" && response.size() > 1) {
-        getPlayer().second = response["data"]["bet"];
+        if ((response["data"]["bet"] >= MIN) && (response["data"]["bet"] <= MAX) &&
+                (getPlayer().first->GetPlayerCost() >= response["data"]["bet"])) {
+            getPlayer().second = response["data"]["bet"];
 
-        if (++cursor == m_players.size())
-            set_current(states::ROUND_SERVANT);
-        else
-            Process();
+            if (++cursor == m_players.size())
+                set_current(states::ROUND_SERVANT);
+        }
+        else {
+            if (cur_state == states::BET_SERVANT)
+                Process();
+        }
     }
 }
 
@@ -301,7 +312,8 @@ void Controller::SimpleDealer::MakeDeal(std::string json_str) {
 
 
     if (response["command"] == "OK" && response.size() > 1) {
-        insurances[getPlayer().first] = response["data"]["insurance"];
+        if (getPlayer().first->GetPlayerCost() >= getPlayer().second + getPlayer().second / 2)
+            insurances[getPlayer().first] = response["data"]["insurance"];
 
         if (++cursor == m_players.size()) {
             CheckBJ();

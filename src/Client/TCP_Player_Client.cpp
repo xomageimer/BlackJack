@@ -68,12 +68,15 @@ void TCP_Player_Client::Move() {
             switch (request->second) {
                 case p_EVENT::HIT :
                    j["data"]["action"] = "Hit";
+                   cur_state = states::NOTHING;
                    break;
                 case p_EVENT::STAND :
                    j["data"]["action"] = "Stand";
+                   cur_state = states::NOTHING;
                    break;
                 case p_EVENT::DOUBLEDOWN :
                    j["data"]["action"] = "Double";
+                    cur_state = states::NOTHING;
                    break;
                 case p_EVENT::BANK :
                     std::cout << "Your bank : " << m_bank << std::endl;
@@ -81,7 +84,6 @@ void TCP_Player_Client::Move() {
                 default:
                     j["data"]["action"] = "Stand";
             }
-            cur_state = states::NOTHING;
             write(j.dump());
             return;
         } else {
