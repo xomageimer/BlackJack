@@ -24,6 +24,8 @@ using boost::asio::ip::tcp;
 
 const size_t MAX_PLAYER_COUNT = 7;
 
+const size_t max_rounds = 1'000;
+
 typedef std::deque<std::string> json_message_queue ;
 
 struct player_participant
@@ -61,6 +63,8 @@ private:
     std::map<std::string, std::shared_ptr<Actors::IPlayer>> players;
     std::vector<std::string> queue {};
     std::vector<int> vacancy;
+
+    size_t rounds = 0;
 public:
 
     bool SubscribePlayer(std::string player_nickname, std::shared_ptr<Actors::IPlayer> new_player, int id);

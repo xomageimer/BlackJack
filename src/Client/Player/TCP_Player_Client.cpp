@@ -46,6 +46,11 @@ void TCP_Player_Client::Request(std::string str) {
             } else if (request["command"] == "OK"){
                 my_id = std::stoi(request["data"]["id"].get<std::string>());
                 m_bank = request["data"]["Bank"];
+            } else if (request["command"] == "Shuffle") {
+                std::cerr << "Shuffle" << std::endl;
+                json j;
+                j["command"] = "OK";
+                write(j.dump());
             }
         } catch (const std::exception & e) {
             std::cerr << "some error input: " << e.what() << ", continue!" << std::endl;

@@ -1,5 +1,8 @@
 #include "Game_Room.h"
 
+#include <chrono>
+#include <thread>
+
 #include "Server/Controller/Dealer.h"
 
 #define MIN 10
@@ -15,7 +18,7 @@ bool Game_Room::SubscribePlayer(std::string player_nickname, std::shared_ptr<Act
     answ["data"] = {{"Bank", 1000}, {"id", std::to_string(id)}, {"name", player_nickname}};
     deliver(answ.dump(), id);
 
-    if (queue.size() >= 1) {
+    if (queue.size() >= 2) {
         dealer->RestartDealer();
     }
 
@@ -23,7 +26,7 @@ bool Game_Room::SubscribePlayer(std::string player_nickname, std::shared_ptr<Act
 }
 
 bool Game_Room::UnSubscribePlayer(const std::string &player_nickname) {
-    dealer->RefreshPlayer(players[player_nickname]);
+    //dealer->RefreshPlayer(players[player_nickname]);
     // сказать всем что плеер ливнул
     players.erase(player_nickname);
     int i = -1;
@@ -40,7 +43,13 @@ void Game_Room::SetDealer(std::shared_ptr<Controller::IDealer> n_dealer) {
 }
 
 void Game_Room::NewRound() {
+    using namespace std::chrono_literals;
     Notify_result();
+    std::cerr << rounds << std::endl;
+    if (rounds++ >= max_rounds){
+        std::cerr << "\nend of rounds\n";
+        exit(0);
+    }
     recent_msgs_.clear();
     for (auto & player : players){
         if (player.second->GetPlayerCost() >= MIN){
@@ -48,10 +57,16 @@ void Game_Room::NewRound() {
         }
     }
     for (auto it = players.begin(); it != players.end();){
+        if (it->second->GetPlayerCost() >= 1'000'000){
+            exit(0);
+        }
         if (it->second->GetPlayerCost() < MIN) {
-            auto tmp_it = ++it;
-            leave(participants_.find((--it)->second->GetId())->second);
-            it = tmp_it;
+            Notify_result();
+            std::this_thread::sleep_for(100ms);
+            exit(0);
+            //            auto tmp_it = ++it;
+//            leave(participants_.find((--it)->second->GetId())->second);
+//            it = tmp_it;
         } else {
             it++;
         }

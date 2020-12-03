@@ -64,6 +64,11 @@ void TCP_Bot_Client::Request(std::string str) {
                 my_id = std::stoi(request["data"]["id"].get<std::string>());
                 m_bank = request["data"]["Bank"];
                 my_banks.push_back(m_bank);
+            } else if (request["command"] == "Shuffle"){
+                std::cerr << "Shuffle" << std::endl;
+                json j;
+                j["command"] = "OK";
+                write(j.dump());
             }
         } catch (const std::exception & e) {
             std::cerr << "some error input: " << e.what() << ", continue!" << std::endl;
@@ -109,8 +114,10 @@ void TCP_Bot_Client::Move() {
     } else if (m_hand.total() <= 17) {
         command = "HIT";
     }
-    if (command == "DOUBLEDOWN" && m_hand.GetSize() != 2) {
+    if (command == "DOUBLEDOWN" && m_hand.GetSize() != 2 && m_bank >= (*(--(--my_banks.end())) - my_banks.back() * 2) && m_hand.total() <= 17) {
         command = "HIT";
+    } else {
+        command = "STAND";
     }
     auto request = commands.find(command);
     if (request != commands.end()) {
@@ -142,9 +149,9 @@ void TCP_Bot_Client::Move() {
 void TCP_Bot_Client::Bet() {
     int bet = MIN;
     if (my_banks.size() <= 1){
-        bet = MIN * 2;
+        bet = MIN;
     } else if (*(--(--my_banks.end())) > my_banks.back()) {
-        bet = *(--(--my_banks.end())) - my_banks.back() * 2;
+        bet = *(--(--my_banks.end())) - my_banks.back() + 5;
     } else if (*(--(--my_banks.end())) <= my_banks.back()) {
         bet = *(--(--my_banks.end())) - my_banks.back();
     }
