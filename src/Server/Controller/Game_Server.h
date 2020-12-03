@@ -57,7 +57,7 @@ private:
                     } else {
                         set_name(str);
                         is_Authorize = true;
-                        room_.SubscribePlayer(get_name(), std::make_shared<Actors::Player>(1'000));
+                        room_.SubscribePlayer(get_name(), std::make_shared<Actors::Player>(1'000), get_id());
                     }
                 }
                 do_read_body();

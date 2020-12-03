@@ -2,7 +2,7 @@
 
 #include "Server/Controller/Dealer.h"
 
-bool Game_Room::SubscribePlayer(std::string player_nickname, std::shared_ptr<Actors::IPlayer> new_player) {
+bool Game_Room::SubscribePlayer(std::string player_nickname, std::shared_ptr<Actors::IPlayer> new_player, int id) {
     new_player->SetName(player_nickname);
     queue.emplace_back(player_nickname);
     players.emplace(std::piecewise_construct, std::forward_as_tuple(player_nickname),
@@ -10,10 +10,10 @@ bool Game_Room::SubscribePlayer(std::string player_nickname, std::shared_ptr<Act
 
     json answ;
     answ["command"] = "OK";
-    answ["data"] = {{"Bank", 1000}, {"id", std::to_string(count - 1)}, {"name", player_nickname}};
-    deliver(answ.dump(), count - 1);
+    answ["data"] = {{"Bank", 1000}, {"id", std::to_string(id)}, {"name", player_nickname}};
+    deliver(answ.dump(), id);
 
-    if (queue.size() == 2) {
+    if (queue.size() == 1) {
         dealer->RestartDealer();
     }
 

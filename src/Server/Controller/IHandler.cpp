@@ -57,16 +57,21 @@ void DealerHandlers::RoundHandler::serveRound(Controller::IDealer * dealer) {
 }
 
 void DealerHandlers::MoveHandler::serveMove(Controller::IDealer * dealer) {
+    bool next = true;
     while (CURRENT_PLAYER->ShowHand().total() >= BLACKJACK) {
-        if (++dealer->cursor == dealer->m_players.size())
+        if (++dealer->cursor == dealer->m_players.size()) {
             dealer->set_current(CONTROLLER::YOURSELF_SERVANT);
+            next = false;
+        }
     }
 
-    json event;
-    event["command"] = "RequestAction";
-    event["data"];
+    if (next) {
+        json event;
+        event["command"] = "RequestAction";
+        event["data"];
 
-    LOBBY->deliver(event.dump(), dealer->cursor);
+        LOBBY->deliver(event.dump(), dealer->cursor);
+    }
 }
 
 
@@ -125,6 +130,7 @@ void DealerHandlers::PlayingHandler::serveYourself(Controller::IDealer * dealer)
             p++;
             player->ClearHand();
         }
+        CURRENT_DEALER->ClearHand();
 
         dealer->RestartDealer();
 

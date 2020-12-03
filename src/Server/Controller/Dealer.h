@@ -56,6 +56,8 @@ namespace Controller {
             this->Process();
         }
 
+        virtual void CheckBJ();
+
     public:
         explicit IDealer();
         virtual ~IDealer() = default;

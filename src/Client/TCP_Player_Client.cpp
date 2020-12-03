@@ -9,10 +9,17 @@ void TCP_Player_Client::Request(std::string str) {
     if(!str.empty()) {
         try {
             json request = json::parse(str);
-            str.clear();
 
             if (request["command"] == "PlayerList") {
                 om->notify_PlayerList(request);
+                for (auto & player : request["data"]["Players"]){
+                    if (player["id"] == my_id){
+                        m_bank = player["bank"];
+                    }
+                }
+                json j;
+                j["command"] = "OK";
+                write(j.dump());
             } else if (request["command"] == "Bet") {
                 om->notify_Bet(request);
                 cur_state = states::BET;
@@ -20,11 +27,24 @@ void TCP_Player_Client::Request(std::string str) {
                 om->notify_Insurance(request);
                 cur_state = states::DEAL;
             } else if (request["command"] == "PlayerChanged") {
+                if (!request["data"]["isDealer"]) {
+                    if (request["data"]["id"].get<int>() == my_id) {
+                        for (auto &hand : request["data"]["hand"]) {
+                            SetCard(GameCard::FromStr(hand["rank"].get<std::string>(), hand["suit"].get<std::string>(),
+                                                      !hand["isOpen"].get<bool>()));
+                        }
+                    }
+                }
                 om->notify_PlayerChanged(request);
-//        SetCard(request["data"]["hand"].back().dump());
+                json j;
+                j["command"] = "OK";
+                write(j.dump());
             } else if (request["command"] == "RequestAction") {
                 om->notify_RequestAction(request);
                 cur_state = states::MOVE;
+            } else if (request["command"] == "OK"){
+                my_id = std::stoi(request["data"]["id"].get<std::string>());
+                m_bank = request["data"]["Bank"];
             }
         } catch (const std::exception & e) {
             std::cerr << "some error input: " << e.what() << ", continue!" << std::endl;
@@ -157,5 +177,6 @@ void TCP_Player_Client::SetName() {
     j["command"] = "Authorize";
     std::cin >> command;
     j["data"]["name"] = command;
+    nickname = command;
     write(j.dump());
 }

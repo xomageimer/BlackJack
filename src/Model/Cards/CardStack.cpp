@@ -164,6 +164,31 @@ bool GameCard::operator!=(const GameCard::Hand & h, int val) {
     return h.total() != val;
 }
 
+GameCard::Cards GameCard::FromStr(std::string price, std::string suit, bool is_open) {
+    GameCard::Cards::CardPrice p;
+    GameCard::Cards::CardSuit s;
+    if (price == "2") p = GameCard::Cards::CardPrice::_2;
+    else if (price == "3") p = GameCard::Cards::CardPrice::_3;
+    else if (price == "4") p = GameCard::Cards::CardPrice::_4;
+    else if (price == "5") p = GameCard::Cards::CardPrice::_5;
+    else if (price == "6") p = GameCard::Cards::CardPrice::_6;
+    else if (price == "7") p = GameCard::Cards::CardPrice::_7;
+    else if (price == "8") p = GameCard::Cards::CardPrice::_8;
+    else if (price == "9") p = GameCard::Cards::CardPrice::_9;
+    else if (price == "10") p = GameCard::Cards::CardPrice::_10;
+    else if (price == "Ace") p = GameCard::Cards::CardPrice::ACE;
+    else if (price == "King") p = GameCard::Cards::CardPrice::KING;
+    else if (price == "Queen") p = GameCard::Cards::CardPrice::QUEEN;
+    else if (price == "Jack") p = GameCard::Cards::CardPrice::JACK;
+
+    if (suit == "Hearts") s = GameCard::Cards::CardSuit::HEARTS;
+    else if (suit == "Spades") s = GameCard::Cards::CardSuit::SPADES;
+    else if (suit == "Clubs") s = GameCard::Cards::CardSuit::CLUBS;
+    else if (suit == "Diamonds") s = GameCard::Cards::CardSuit::DIAMONDS;
+
+    return GameCard::Cards(p, s, is_open);
+}
+
 void GameCard::Hand::MakeSecret(size_t i) const {
     m_Cards.at(i).secret(true);
 }

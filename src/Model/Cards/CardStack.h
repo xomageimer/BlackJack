@@ -149,10 +149,10 @@ namespace GameCard {
 
         // для консоли
         static inline std::map<GameCard::Cards::CardPrice, std::string> m_value{
-                {GameCard::Cards::CardPrice::ACE, "A"},
-                {GameCard::Cards::CardPrice::KING, "K"},
-                {GameCard::Cards::CardPrice::QUEEN, "Q"},
-                {GameCard::Cards::CardPrice::JACK, "J"}
+                {GameCard::Cards::CardPrice::ACE, "Ace"},
+                {GameCard::Cards::CardPrice::KING, "King"},
+                {GameCard::Cards::CardPrice::QUEEN, "Queen"},
+                {GameCard::Cards::CardPrice::JACK, "Jack"}
 
         };
         static inline std::map<GameCard::Cards::CardSuit, std::string> m_suit{
@@ -169,7 +169,7 @@ namespace GameCard {
         explicit operator std::string() const;
     };
 
-
+    Cards FromStr(std::string price, std::string suit, bool is_open);
 }
 
 #endif //BLACKJACK_CARDSTACK_H

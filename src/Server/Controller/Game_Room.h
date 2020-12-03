@@ -9,6 +9,7 @@
 #include <set>
 #include <utility>
 #include <boost/asio.hpp>
+#include <atomic>
 
 #include "Actors/IPlayer.h"
 #include "nlohmann/json.hpp"
@@ -62,7 +63,7 @@ private:
     std::vector<int> vacancy;
 public:
 
-    bool SubscribePlayer(std::string player_nickname, std::shared_ptr<Actors::IPlayer> new_player);
+    bool SubscribePlayer(std::string player_nickname, std::shared_ptr<Actors::IPlayer> new_player, int id);
     bool UnSubscribePlayer(const std::string &player_nickname);
 
     void NewRound();
@@ -124,7 +125,7 @@ private:
     enum { max_recent_msgs = 100 };
     json_message_queue recent_msgs_;
 
-    int count = 0;
+    std::atomic_int count = 0;
 };
 
 

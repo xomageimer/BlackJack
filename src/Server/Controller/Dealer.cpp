@@ -49,9 +49,15 @@ void Controller::IDealer::RefreshPlayer(std::shared_ptr<Actors::IPlayer> pl) {
     if (it != m_players.end()){
         m_players.erase(it);
         if (cursor >= m_players.size()){
-            set_current(states::ROUND_SERVANT);
-        }
-        Process();
+            if (cur_state == states::MOVE_SERVANT)
+                set_current(states::ROUND_SERVANT);
+            else if (cur_state == states::BET_SERVANT)
+                set_current(states::MOVE_SERVANT);
+            else if (cur_state == states::DEAL_SERVANT){
+                CheckBJ();
+            }
+        } else
+            Process();
     }
 }
 
@@ -65,13 +71,13 @@ void Controller::IDealer::Notify_about_player(int num) {
     json event;
     event["command"] = "PlayerChanged";
 
-    event["data"]["number"] = num;
+    event["data"]["id"] = num;
     event["data"]["isDealer"] = false;
-    for (size_t i = 0; i < getPlayer().first->ShowHand().GetSize(); i++) {
+    for (size_t i = 0; i < m_players.at(num).first->ShowHand().GetSize(); i++) {
         std::string cardN = "card" + std::to_string(i);
-        auto cur_card = getPlayer().first->ShowHand().LookAtCards()[i];
+        auto cur_card = m_players.at(num).first->ShowHand().LookAtCards()[i];
         json card_val;
-        card_val["isOpen"] = !getPlayer().first->ShowHand().LookAtCards()[i].is_secret;
+        card_val["isOpen"] = !m_players.at(num).first->ShowHand().LookAtCards()[i].is_secret;
         if (GameCard::Cards::m_value.find(cur_card.price) != GameCard::Cards::m_value.end()) {
             card_val["rank"] = GameCard::Cards::m_value.at(cur_card.price);
         } else {
@@ -80,7 +86,11 @@ void Controller::IDealer::Notify_about_player(int num) {
         card_val["suit"] = GameCard::Cards::m_suit.at(cur_card.suit);
         event["data"]["hand"].push_back(card_val);
     }
-    event["data"]["name"] = getPlayer().first->GetName();
+    event["data"]["name"] = m_players.at(num).first->GetName();
+    event["data"]["rate"] = m_players.at(num).second;
+    event["data"]["bank"] = m_players.at(num).first->GetPlayerCost();
+    auto ins = insurances.find(m_players.at(num).first);
+    event["data"]["insurance"] = (ins != insurances.end()) && ins->second;
 
     my_room->deliver(event.dump());
 }
@@ -107,6 +117,27 @@ void Controller::IDealer::Notify_about_dealer() {
     }
 
     my_room->deliver(event.dump());
+}
+
+void Controller::IDealer::CheckBJ() {
+    getDealerPlayer()->ShowHand().UnSecret(1);
+    auto is_blackJack = getDealerPlayer()->ShowHand().total();
+    getDealerPlayer()->ShowHand().MakeSecret(1);
+    if (is_blackJack == BLACKJACK) {
+        set_current(states::YOURSELF_SERVANT);
+    } else {
+        size_t i = 0;
+        for (auto &[player, bet] : m_players) {
+            if (insurances.at(player)) {
+                player->GetRoundResult((-1) * bet / 2);
+                getDealerPlayer()->GetRoundResult(bet / 2);
+            }
+            i++;
+        }
+        insurances.clear();
+        cursor = 0;
+        set_current(states::MOVE_SERVANT);
+    }
 }
 
 void Controller::SimpleDealer::ServeBet() {
@@ -212,7 +243,7 @@ void Controller::SimpleDealer::Maker(std::string json) {
 void Controller::SimpleDealer::MakeBet(std::string json_str) {
     json response = json::parse(json_str);
 
-    if (response["command"] == "OK") {
+    if (response["command"] == "OK" && response.size() > 1) {
         getPlayer().second = response["data"]["bet"];
 
         if (++cursor == m_players.size())
@@ -226,7 +257,7 @@ void Controller::SimpleDealer::MakeMove(std::string json_str) {
     json answer;
     json response = json::parse(json_str);
 
-    if (response["command"] == "OK") {
+    if (response["command"] == "OK" && response.size() > 1) {
         if (response["data"]["action"] == "Hit") {
             auto card = m_stack->GetCard();
             getPlayer().first->SetCard(card);
@@ -263,33 +294,17 @@ void Controller::SimpleDealer::MakeMove(std::string json_str) {
     }
 }
 
+
 void Controller::SimpleDealer::MakeDeal(std::string json_str) {
     json answer;
     json response = json::parse(json_str);
 
 
-    if (response["command"] == "OK") {
+    if (response["command"] == "OK" && response.size() > 1) {
         insurances[getPlayer().first] = response["data"]["insurance"];
 
         if (++cursor == m_players.size()) {
-            getDealerPlayer()->ShowHand().UnSecret(1);
-            auto is_blackJack = getDealerPlayer()->ShowHand().total();
-            getDealerPlayer()->ShowHand().MakeSecret(1);
-            if (is_blackJack == BLACKJACK) {
-                set_current(states::YOURSELF_SERVANT);
-            } else {
-                size_t i = 0;
-                for (auto &[player, bet] : m_players) {
-                    if (insurances.at(player)) {
-                        player->GetRoundResult((-1) * bet / 2);
-                        getDealerPlayer()->GetRoundResult(bet / 2);
-                    }
-                    i++;
-                }
-                insurances.clear();
-                cursor = 0;
-                set_current(states::MOVE_SERVANT);
-            }
+            CheckBJ();
         } else
             Process();
     }
