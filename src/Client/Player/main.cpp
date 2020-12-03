@@ -1,7 +1,7 @@
 #undef BOOST_ASIO_ENABLE_HANDLER_TRACKING
 
 #include "OutputManager.h"
-#include "TCP_Player_Client.h"
+#include "Client/Player/TCP_Player_Client.h"
 
 int main(int argc, char* argv[])
 {

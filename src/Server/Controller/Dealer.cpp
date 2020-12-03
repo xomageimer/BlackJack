@@ -251,16 +251,17 @@ void Controller::SimpleDealer::MakeBet(std::string json_str) {
 
     if (response["command"] == "OK" && response.size() > 1) {
         if ((response["data"]["bet"] >= MIN) && (response["data"]["bet"] <= MAX) &&
-                (getPlayer().first->GetPlayerCost() >= response["data"]["bet"])) {
+            (getPlayer().first->GetPlayerCost() >= response["data"]["bet"])) {
             getPlayer().second = response["data"]["bet"];
 
             if (++cursor == m_players.size())
                 set_current(states::ROUND_SERVANT);
-        }
-        else {
-            if (cur_state == states::BET_SERVANT)
+            else
                 Process();
+
         }
+    } else if (response["command"] != "OK" && cur_state == states::BET_SERVANT) {
+        Process();
     }
 }
 

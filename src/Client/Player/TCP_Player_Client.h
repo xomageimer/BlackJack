@@ -8,7 +8,7 @@
 #include <boost/asio.hpp>
 
 #include "Actors/IPlayer.h"
-#include "View/OutputManager.h"
+#include "Client/View/OutputManager.h"
 
 #define DEFAULT {               \
     throw std::logic_error(""); \

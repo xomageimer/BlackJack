@@ -21,6 +21,8 @@ void TCP_Bot_Client::Request(std::string str) {
                         m_bank = player["bank"];
                     }
                 }
+                m_hand.Clear();
+                dealer_hand.Clear();
                 json j;
                 j["command"] = "OK";
                 write(j.dump());
@@ -107,6 +109,9 @@ void TCP_Bot_Client::Move() {
     } else if (m_hand.total() <= 17) {
         command = "HIT";
     }
+    if (command == "DOUBLEDOWN" && m_hand.GetSize() != 2) {
+        command = "HIT";
+    }
     auto request = commands.find(command);
     if (request != commands.end()) {
         json j;
@@ -136,13 +141,14 @@ void TCP_Bot_Client::Move() {
 
 void TCP_Bot_Client::Bet() {
     int bet = MIN;
-    if (my_banks.empty()){
-        bet = MAX / 2;
+    if (my_banks.size() <= 1){
+        bet = MIN * 2;
     } else if (*(--(--my_banks.end())) > my_banks.back()) {
         bet = *(--(--my_banks.end())) - my_banks.back() * 2;
     } else if (*(--(--my_banks.end())) <= my_banks.back()) {
         bet = *(--(--my_banks.end())) - my_banks.back();
-    } else if (m_bank < bet) {
+    }
+    if (m_bank < bet) {
         bet = MIN;
     }
     json j;

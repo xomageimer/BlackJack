@@ -120,7 +120,8 @@ void DealerHandlers::PlayingHandler::serveYourself(Controller::IDealer * dealer)
 
         size_t p = 0;
         for (auto & [player, bet] : dealer->m_players){
-            if (dealer->insurances.at(player)){
+            auto it = dealer->insurances.find(player);
+            if (it != dealer->insurances.end() && it->second){
                 player->GetRoundResult(0);
                 CURRENT_DEALER->GetRoundResult(0);
             } else {

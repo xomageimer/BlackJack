@@ -10,6 +10,7 @@ set (BOOST_ROOT "C:/Users/xomaq/Desktop/boost_1_71_0/boost_1_71_0")
 set (BOOST_LIBRARYDIR "C:/Users/xomaq/Desktop/boost_1_71_0/boost_1_71_0")
 
 set (Client BlackJack_Client)
+set (ClientBot BlackJack_Client_Bot)
 set (Server BlackJack_Server)
 
 find_package(Boost 1.71.0 REQUIRED)
@@ -34,7 +35,7 @@ if (Boost_FOUND)
             )
 
     add_executable(${Client}
-            src/Client/main.cpp
+            src/Client/Player/main.cpp
 
             src/Model/Actors/IPlayer.cpp
 
@@ -42,11 +43,24 @@ if (Boost_FOUND)
 
             src/Client/View/OutputManager.cpp
 
-            src/Client/TCP_Player_Client.cpp src/Client/TCP_Bot_Client.cpp src/Client/TCP_Bot_Client.h)
+            src/Client/Player/TCP_Player_Client.cpp)
+
+    add_executable(${ClientBot}
+            src/Client/Bot/main.cpp
+
+            src/Model/Actors/IPlayer.cpp
+
+            src/Model/Cards/CardStack.cpp
+
+            src/Client/View/OutputManager.cpp
+
+            src/Client/Bot/TCP_Bot_Client.cpp src/Client/Bot/TCP_Bot_Client.h )
 
     target_include_directories(${Server} PRIVATE src src/Model src/Server/Engine)
 
     target_include_directories(${Client} PRIVATE src src/Model src/Client/View)
+
+    target_include_directories(${ClientBot} PRIVATE src src/Model src/Client/View)
 
     target_link_libraries(${Server}
             ${Boost_LIBRARIES}
@@ -55,10 +69,15 @@ if (Boost_FOUND)
     target_link_libraries(${Client}
             ${Boost_LIBRARIES}
             )
+
+    target_link_libraries(${ClientBot}
+            ${Boost_LIBRARIES}
+            )
 endif()
 if (WIN32)
     target_link_libraries(${Server} wsock32 ws2_32)
     target_link_libraries(${Client} wsock32 ws2_32)
+    target_link_libraries(${ClientBot} wsock32 ws2_32)
 endif()
 
 #add_executable(tests test/simple_tests.cpp test/gamelogic.cpp
@@ -84,11 +103,12 @@ add_subdirectory("contrib/json")
 
 target_link_libraries(${Server} nlohmann_json)
 target_link_libraries(${Client} nlohmann_json)
+target_link_libraries(${ClientBot} nlohmann_json)
 
 #target_link_libraries(tests PRIVATE gtest gtest_main gmock)
 #target_include_directories(tests PRIVATE src src/Model src/Client/View src/Game_Server/Engine)
 
-set_target_properties(${Server} ${Client} PROPERTIES
+set_target_properties(${Server} ${Client} ${ClientBot} PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
         COMPILE_OPTIONS "-Wall;-Wextra;-Wpedantic;"
@@ -96,6 +116,7 @@ set_target_properties(${Server} ${Client} PROPERTIES
 
 set_target_properties(${Server} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
 set_target_properties(${Client} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
+set_target_properties(${ClientBot} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
 
 install(TARGETS ${Server} RUNTIME DESTINATION bin)
 

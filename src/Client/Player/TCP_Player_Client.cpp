@@ -17,6 +17,7 @@ void TCP_Player_Client::Request(std::string str) {
                         m_bank = player["bank"];
                     }
                 }
+                m_hand.Clear();
                 json j;
                 j["command"] = "OK";
                 write(j.dump());
