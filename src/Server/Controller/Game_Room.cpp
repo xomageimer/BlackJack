@@ -15,7 +15,7 @@ bool Game_Room::SubscribePlayer(std::string player_nickname, std::shared_ptr<Act
     answ["data"] = {{"Bank", 1000}, {"id", std::to_string(id)}, {"name", player_nickname}};
     deliver(answ.dump(), id);
 
-    if (queue.size() >= 1) {
+    if (queue.size() >= 2) {
         dealer->RestartDealer();
     }
 

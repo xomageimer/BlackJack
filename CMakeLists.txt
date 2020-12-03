@@ -42,7 +42,7 @@ if (Boost_FOUND)
 
             src/Client/View/OutputManager.cpp
 
-            src/Client/TCP_Player_Client.cpp)
+            src/Client/TCP_Player_Client.cpp src/Client/TCP_Bot_Client.cpp src/Client/TCP_Bot_Client.h)
 
     target_include_directories(${Server} PRIVATE src src/Model src/Server/Engine)
 
