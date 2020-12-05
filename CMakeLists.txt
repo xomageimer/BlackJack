@@ -15,6 +15,11 @@ set (Server BlackJack_Server)
 
 find_package(Boost 1.71.0 REQUIRED)
 
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+
 if (Boost_FOUND)
     INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
     ADD_DEFINITIONS( "-DHAS_BOOST" )
@@ -43,7 +48,16 @@ if (Boost_FOUND)
 
             src/Client/View/OutputManager.cpp
 
-            src/Client/Player/TCP_Player_Client.cpp)
+            src/Client/View/Graphic/Texture2D.cpp
+            src/Client/View/Graphic/Sprite.cpp
+            src/Client/View/Graphic/SpriteAnimator.cpp
+            src/Client/View/Graphic/VertexBuffer.cpp
+            src/Client/View/Graphic/VertexArray.cpp
+            src/Client/View/Graphic/IndexBuffer.cpp
+            src/Client/View/Graphic/Shader.cpp
+
+            src/Client/Player/TCP_Player_Client.cpp
+            )
 
     add_executable(${ClientBot}
             src/Client/Bot/main.cpp
@@ -80,24 +94,41 @@ if (WIN32)
     target_link_libraries(${ClientBot} wsock32 ws2_32)
 endif()
 
-#add_executable(tests test/simple_tests.cpp test/gamelogic.cpp
-#
-#        src/Game_Server/Controller/Dealer.cpp
-#        src/Game_Server/Controller/IHandler.cpp
-#
-#        src/Model/Actors/IPlayer.cpp
-#        src/Model/Cards/CardStack.cpp
-#        src/Model/Actors/Game_Server.cpp
-#
-#        src/Client/View/OutputManager.cpp
-#
-#        src/Game_Server/Engine/BlackJack.cpp
-#        )
+add_subdirectory(contrib/glfw)
+target_link_libraries(${Client} glfw)
 
-#add_subdirectory(
-#        "contrib/gtest"
-#        "googletest"
-#)
+add_subdirectory(contrib/glm)
+target_link_libraries(${Client} glm)
+
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/res)
+include_directories("glfw_repo/include")
+include_directories("dependencies/glad/include")
+include_directories("dependencies")
+
+if (WIN32)
+    target_link_libraries(${Client} OpenGL::GL -lopengl32)
+elseif(UNIX)
+    target_link_libraries(${Client} ${OPENGL_INCLUDE_DIRS})
+    target_link_libraries(${Client} glfw)
+else()
+    message( FATAL_ERROR "could not determine the OS" )
+endif()
+
+target_link_libraries(${Client} ${SOURCE_FILES})
+target_include_directories(${Client} PUBLIC dependencies)
+
+find_package(OpenGL REQUIRED)
+
+add_executable(tests test/simple_tests.cpp
+        src/Model/Cards/CardStack.cpp
+        )
+
+add_subdirectory(
+        "contrib/gtest"
+        "googletest"
+)
 
 add_subdirectory("contrib/json")
 
@@ -105,8 +136,8 @@ target_link_libraries(${Server} nlohmann_json)
 target_link_libraries(${Client} nlohmann_json)
 target_link_libraries(${ClientBot} nlohmann_json)
 
-#target_link_libraries(tests PRIVATE gtest gtest_main gmock)
-#target_include_directories(tests PRIVATE src src/Model src/Client/View src/Game_Server/Engine)
+target_link_libraries(tests PRIVATE gtest gtest_main gmock)
+target_include_directories(tests PRIVATE src src/Model)
 
 set_target_properties(${Server} ${Client} ${ClientBot} PROPERTIES
         CXX_STANDARD 17
@@ -131,7 +162,7 @@ set(CPACK_PACKAGE_CONTACT xomageimer@gmail.com)
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 include(CPack)
-#include(CTest)
-#
-#enable_testing()
-#add_test(test tests)
+include(CTest)
+
+enable_testing()
+add_test(test tests)

@@ -3,7 +3,7 @@
 #include <sstream>
 #include <fstream>
 
-#include "BlackJack.h"
+#include "Cards/CardStack.h"
 
 using namespace std;
 
@@ -62,7 +62,7 @@ TEST (cards, Operation_1){
     GameCard::Cards card (GameCard::Cards::CardPrice::ACE, GameCard::Cards::CardSuit::CLUBS, false);
 
     hand1.SetNewCard(GameCard::Cards(GameCard::Cards::CardPrice::ACE, GameCard::Cards::CardSuit::CLUBS, false));
-    hand2.SetNewCard(GameCard::Cards(GameCard::Cards::CardPrice::TWO, GameCard::Cards::CardSuit::HEARTS, false));
+    hand2.SetNewCard(GameCard::Cards(GameCard::Cards::CardPrice::_2, GameCard::Cards::CardSuit::HEARTS, false));
 
     answer << ((hand1 > hand2) ? "true" : "false");
 
@@ -79,7 +79,7 @@ TEST (cards, Operation_2){
     GameCard::Hand hand2;
 
     hand1.SetNewCard(GameCard::Cards(GameCard::Cards::CardPrice::ACE, GameCard::Cards::CardSuit::CLUBS, false));
-    hand2.SetNewCard(GameCard::Cards(GameCard::Cards::CardPrice::TWO, GameCard::Cards::CardSuit::HEARTS, false));
+    hand2.SetNewCard(GameCard::Cards(GameCard::Cards::CardPrice::_2, GameCard::Cards::CardSuit::HEARTS, false));
 
     answer << ((hand1 < hand2) ? "true" : "false");
 
@@ -96,8 +96,8 @@ TEST (cards, Operation_3){
     GameCard::Hand hand2;
 
     hand1.SetNewCard(GameCard::Cards(GameCard::Cards::CardPrice::ACE, GameCard::Cards::CardSuit::CLUBS, false));
-    hand2.SetNewCard(GameCard::Cards(GameCard::Cards::CardPrice::TWO, GameCard::Cards::CardSuit::HEARTS, false));
-    hand2.SetNewCard(GameCard::Cards(GameCard::Cards::CardPrice::NINE, GameCard::Cards::CardSuit::DIAMONDS, false));
+    hand2.SetNewCard(GameCard::Cards(GameCard::Cards::CardPrice::_2, GameCard::Cards::CardSuit::HEARTS, false));
+    hand2.SetNewCard(GameCard::Cards(GameCard::Cards::CardPrice::_9, GameCard::Cards::CardSuit::DIAMONDS, false));
 
     answer << ((hand1 == hand2) ? "true" : "false");
 
