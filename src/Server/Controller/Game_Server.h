@@ -78,7 +78,6 @@ private:
          {
              if (!ec)
              {
-                 //std::cerr << "from queue: " << write_msgs_.front() << std::endl;
                  write_msgs_.pop_front();
                  if (!write_msgs_.empty())
                  {

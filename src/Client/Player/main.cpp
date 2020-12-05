@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
         boost::asio::io_service io_service;
 
         tcp::resolver resolver(io_service);
-        auto endpoint_iterator = resolver.resolve({ "5.35.108.1", "8005" });
+        auto endpoint_iterator = resolver.resolve({ argv[1], argv[2]});
 
         std::shared_ptr<OutputManager> manager = std::make_shared<OutputManager>();
         manager->subscribe("Logger", std::make_shared<ConsoleLogger>(std::cout));

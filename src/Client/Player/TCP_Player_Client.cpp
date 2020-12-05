@@ -6,7 +6,7 @@ using json = nlohmann::json;
 using p_EVENT = Event::PlayerRequests;
 
 void TCP_Player_Client::Request(std::string str) {
-    if(!str.empty()) {
+    if(!str.empty() && !nickname.empty()) {
         try {
             json request = json::parse(str);
 
@@ -17,7 +17,6 @@ void TCP_Player_Client::Request(std::string str) {
                         m_bank = player["bank"];
                     }
                 }
-                m_hand.Clear();
                 json j;
                 j["command"] = "OK";
                 write(j.dump());
@@ -28,14 +27,7 @@ void TCP_Player_Client::Request(std::string str) {
                 om->notify_Insurance(request);
                 cur_state = states::DEAL;
             } else if (request["command"] == "PlayerChanged") {
-                if (!request["data"]["isDealer"]) {
-                    if (stoi(request["data"]["id"].get<std::string>()) == my_id) {
-                        for (auto &hand : request["data"]["hand"]) {
-                            SetCard(GameCard::FromStr(hand["value"].get<std::string>(), hand["suit"].get<std::string>(),
-                                                      !hand["isOpen"].get<bool>()));
-                        }
-                    }
-                }
+                Collect(request["data"]);
                 om->notify_PlayerChanged(request);
                 json j;
                 j["command"] = "OK";
@@ -187,4 +179,16 @@ void TCP_Player_Client::SetName() {
     j["data"]["name"] = command;
     nickname = command;
     write(j.dump());
+}
+
+void TCP_Player_Client::Collect(const json &request) {
+    m_hand.Clear();
+    if (!request["isDealer"]) {
+        if (stoi(request["id"].get<std::string>()) == my_id) {
+            for (auto &hand : request["hand"]) {
+                SetCard(GameCard::FromStr(hand["value"].get<std::string>(), hand["suit"].get<std::string>(),
+                                          !hand["isOpen"].get<bool>()));
+            }
+        }
+    }
 }

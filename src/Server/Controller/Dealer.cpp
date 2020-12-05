@@ -44,30 +44,10 @@ void Controller::IDealer::SetRoom(Game_Room * room) {
     my_room = room;
 }
 
-void Controller::IDealer::RefreshPlayer(std::shared_ptr<Actors::IPlayer> pl) {
-    auto it = std::find_if(m_players.begin(), m_players.end(), [&pl](auto player) {
-        return player.first == pl;
-    });
-
-    if (it != m_players.end()){
-        m_players.erase(it);
-        if (cursor >= m_players.size()){
-            if (cur_state == states::MOVE_SERVANT)
-                set_current(states::ROUND_SERVANT);
-            else if (cur_state == states::BET_SERVANT)
-                set_current(states::MOVE_SERVANT);
-            else if (cur_state == states::DEAL_SERVANT){
-                CheckBJ();
-            }
-        } else
-            Process();
-    }
-}
-
 void Controller::IDealer::RestartDealer() {
     m_players.clear();
     my_room->NewRound();
-    if (m_players.size() > 0) {
+    if (!m_players.empty()) {
         set_current(states::BET_SERVANT);
     }
 }
@@ -144,6 +124,12 @@ void Controller::IDealer::CheckBJ() {
         cursor = 0;
         set_current(states::MOVE_SERVANT);
     }
+}
+
+bool Controller::IDealer::FindPlayer(std::shared_ptr<Actors::IPlayer> pl) {
+    return std::find_if(m_players.begin(), m_players.end(), [&pl] (auto player){
+        return player.first == pl;
+    }) != m_players.end();
 }
 
 void Controller::SimpleDealer::ServeBet() {
@@ -231,18 +217,22 @@ int Controller::SimpleDealer::GetPlayerCost() const {
 }
 
 void Controller::SimpleDealer::Maker(std::string json) {
-    switch (cur_state) {
-        case IDealer::states::BET_SERVANT:
-            MakeBet(json);
-            break;
-        case IDealer::states::MOVE_SERVANT:
-            MakeMove(json);
-            break;
-        case IDealer::states::DEAL_SERVANT:
-            MakeDeal(json);
-            break;
-        default:
-            break;
+    try {
+        switch (cur_state) {
+            case IDealer::states::BET_SERVANT:
+                MakeBet(json);
+                break;
+            case IDealer::states::MOVE_SERVANT:
+                MakeMove(json);
+                break;
+            case IDealer::states::DEAL_SERVANT:
+                MakeDeal(json);
+                break;
+            default:
+                break;
+        }
+    } catch (...){
+        std::cerr << "some wrong message, next try!" << std::endl;
     }
 }
 

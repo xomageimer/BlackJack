@@ -113,6 +113,8 @@ protected:
     };
     states cur_state = states::NOTHING;
 
+    void Collect(const json & vec);
+
 public:
     explicit TCP_Player_Client(int bank, boost::asio::io_service& io_service,
                                tcp::resolver::iterator endpoint_iterator) : player_client(io_service, endpoint_iterator), m_bank(bank) {}
@@ -131,7 +133,6 @@ public:
                                                          boost::asio::buffers_begin(read_msg_.data()) + bytes_transferred
                                                          - std::string("\r\n\r\n").size()};
                       read_msg_.consume(bytes_transferred);
-                     // std::cerr << "-----------\n" << str << "\n------------" << std::endl;
                       Request(str);
                       do_read_body();
                   }

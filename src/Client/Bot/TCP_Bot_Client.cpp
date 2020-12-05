@@ -1,17 +1,14 @@
 #include "TCP_Bot_Client.h"
 
-#include "Actors/Events.h"
-
 #define MAX 100
 #define MIN 10
-const size_t MAX_CARD = 208;
 
 using json = nlohmann::json;
 
 using p_EVENT = Event::PlayerRequests;
 
 void TCP_Bot_Client::Request(std::string str) {
-    if(!str.empty()) {
+    if(!str.empty() && !nickname.empty()) {
         json request = json::parse(str);
 
         if (request["command"] == "PlayerList") {
@@ -43,7 +40,6 @@ void TCP_Bot_Client::Request(std::string str) {
         } else if (request["command"] == "OK" && request.size() > 1){
             my_id = std::stoi(request["data"]["id"].get<std::string>());
             m_bank = request["data"]["Bank"];
-            my_banks.push_back(m_bank);
         } else if (request["command"] == "Shuffle"){
             lefts_cards.clear();
             std::cerr << "Shuffle" << std::endl;
@@ -86,19 +82,10 @@ void TCP_Bot_Client::Move() {
     auto branch = (is_ace) ? tactic_with_ace.find(dealer_hand.total()) : tactic.find(dealer_hand.total());
     auto comm = branch->second.find(m_hand.total());
     std::string command = "STAND";
-    if (comm != branch->second.end()){
+    if (comm != branch->second.end())
         command = comm->second;
-    } else if (m_hand.total() <= 17) {
+    if (command == "DOUBLEDOWN" && (m_hand.GetSize() != 2 || m_bank <= MAX)) {
         command = "HIT";
-    }
-    if (command == "DOUBLEDOWN" && m_hand.GetSize() != 2 && m_bank >= (*(--(--my_banks.end())) - my_banks.back() * 2) && m_hand.total() <= 17) {
-        command = "HIT";
-    } else {
-        command = "STAND";
-    }
-
-    if (Mathematical_Expectation()){
-        command = (m_hand.GetSize() == 2) ? "DOUBLEDOWN" : "HIT";
     }
 
     auto request = commands.find(command);
@@ -130,12 +117,17 @@ void TCP_Bot_Client::Move() {
 
 void TCP_Bot_Client::Bet() {
     int bet = MIN;
-    if (my_banks.size() <= 1){
-        bet = MIN;
-    } else if (*(--(--my_banks.end())) > my_banks.back()) {
-        bet = *(--(--my_banks.end())) - my_banks.back() * 2;
-    } else if (*(--(--my_banks.end())) <= my_banks.back()) {
-        bet = *(--(--my_banks.end())) - my_banks.back();
+    if (lefts_cards.size() > 10) {
+        auto koef = Mathematical_Expectation();
+            if (koef <= 0) {
+                bet = MIN;
+            } else if (koef >= 3) {
+                bet = 2 * MIN;
+            } else if (koef >= 7) {
+                bet = MAX / 2;
+            } else if (koef >= 10) {
+                bet = MAX;
+            }
     }
     if (m_bank < bet) {
         bet = MIN;
@@ -239,22 +231,11 @@ void TCP_Bot_Client::UpdateLeftCards() {
     round_cards.clear();
 }
 
-bool TCP_Bot_Client::Mathematical_Expectation() const {
-    auto tmpe = this->lefts_cards;
-    std::map<GameCard::Cards::CardPrice, double> mat;
-    for (auto & it : lefts_cards){
-        mat[it.first] = static_cast<double>(16 - it.second) / static_cast<double>(MAX_CARD - lefts_cards.size());
+int TCP_Bot_Client::Mathematical_Expectation() const {
+    int hi_lo = 0;
+    auto tmp = lefts_cards;
+    for (auto & card : lefts_cards) {
+        hi_lo += TorpSys.at(card.first);
     }
-    int plus = 0;
-    int minus = 0;
-    for (auto & card : mat) {
-        GameCard::Hand tmp_hand = m_hand;
-        tmp_hand.SetNewCard(GameCard::Cards(card.first, GameCard::Cards::CardSuit::DIAMONDS, false));
-        if (tmp_hand.total() <= BLACKJACK && tmp_hand.total() > 15) {
-            plus += 1;
-        } else {
-            minus += 1;
-        }
-    }
-    return (plus > minus);
+    return hi_lo;
 }

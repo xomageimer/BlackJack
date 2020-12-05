@@ -9,13 +9,12 @@ protected:
     GameCard::Hand m_hand;
     GameCard::Hand dealer_hand;
     std::map<GameCard::Cards, int> round_cards;
-    std::vector<int> my_banks;
 
     bool is_ace = false;
 
     std::map<GameCard::Cards::CardPrice, int> lefts_cards;
 
-    inline static std::map<int, std::map<int, std::string>> tactic {
+    inline const static std::map<int, std::map<int, std::string>> tactic {
             { 2, { {4, "HIT"}, {5, "HIT"}, {6, "HIT"}, {7, "HIT"}, {8, "HIT"}, {9, "HIT"}, {10, "DOUBLEDOWN"}, {11, "DOUBLEDOWN"}, {12, "HIT"}, {13, "STAND"}, {14, "STAND"}, {15, "STAND"}, {16, "STAND"}, {17, "STAND"} } },
             {3, { {4, "HIT"}, {5, "HIT"}, {6, "HIT"}, {7, "HIT"}, {8, "HIT"}, {9, "DOUBLEDOWN"}, {10, "DOUBLEDOWN"}, {11, "DOUBLEDOWN"}, {12, "HIT"}, {13, "STAND"}, {14, "STAND"}, {15, "STAND"}, {16, "STAND"}, {17, "STAND"} } },
             {4, { {4, "HIT"}, {5, "HIT"}, {6, "HIT"}, {7, "HIT"}, {8, "HIT"}, {9, "DOUBLEDOWN"}, {10, "DOUBLEDOWN"}, {11, "DOUBLEDOWN"}, {12, "STAND"}, {13, "STAND"}, {14, "STAND"}, {15, "STAND"}, {16, "STAND"}, {17, "STAND"} } },
@@ -28,7 +27,7 @@ protected:
             {11, { {4, "HIT"}, {5, "HIT"}, {6, "HIT"}, {7, "HIT"}, {8, "HIT"}, {9, "HIT"}, {10, "HIT"}, {11, "HIT"}, {12, "HIT"}, {13, "HIT"}, {14, "HIT"}, {15, "HIT"}, {16, "HIT"}, {17, "STAND"}  } },
     };
 
-    inline static std::map<int, std::map<int, std::string>> tactic_with_ace {
+    inline const static std::map<int, std::map<int, std::string>> tactic_with_ace {
             { 2, { {19, "STAND"}, {20, "STAND"}, {18, "STAND"}, {17, "HIT"}, {16, "HIT"}, {15, "HIT"}, {14, "HIT"}, {13, "HIT"} } },
             { 3, { {19, "STAND"}, {20, "STAND"}, {18, "DOUBLEDOWN"}, {17, "DOUBLEDOWN"}, {16, "HIT"}, {15, "HIT"}, {14, "HIT"}, {13, "HIT"}  } },
             { 4, {  {19, "STAND"}, {20, "STAND"}, {18, "DOUBLEDOWN"}, {17, "DOUBLEDOWN"}, {16, "DOUBLEDOWN"}, {15, "DOUBLEDOWN"}, {14, "HIT"}, {13, "HIT"}  } },
@@ -39,6 +38,22 @@ protected:
             { 9, { {19, "STAND"}, {20, "STAND"}, {18, "HIT"}, {17, "HIT"}, {16, "HIT"}, {15, "HIT"}, {14, "HIT"}, {13, "HIT"}  } },
             {10, {  {19, "STAND"}, {20, "STAND"}, {18, "HIT"}, {17, "HIT"}, {16, "HIT"}, {15, "HIT"}, {14, "HIT"}, {13, "HIT"}   } },
             {11, {  {19, "STAND"}, {20, "STAND"}, {18, "HIT"}, {17, "HIT"}, {16, "HIT"}, {15, "HIT"}, {14, "HIT"}, {13, "HIT"}   } }
+    };
+
+    inline const static std::map<GameCard::Cards::CardPrice, int> TorpSys {
+            {GameCard::Cards::CardPrice::_2, 5},
+            {GameCard::Cards::CardPrice::_3, 6},
+            {GameCard::Cards::CardPrice::_4, 8},
+            {GameCard::Cards::CardPrice::_5, 11},
+            {GameCard::Cards::CardPrice::_6, 6},
+            {GameCard::Cards::CardPrice::_7, 4},
+            {GameCard::Cards::CardPrice::_8, 0},
+            {GameCard::Cards::CardPrice::_9, -3},
+            {GameCard::Cards::CardPrice::_10, -7},
+            {GameCard::Cards::CardPrice::QUEEN, -7},
+            {GameCard::Cards::CardPrice::JACK, -7},
+            {GameCard::Cards::CardPrice::KING, -7},
+            {GameCard::Cards::CardPrice::ACE, -9}
     };
 
     std::shared_ptr<OutputManager> om;
@@ -56,7 +71,7 @@ protected:
 
     void Collect(const json & vec);
     void UpdateLeftCards();
-    bool Mathematical_Expectation() const;
+    [[nodiscard]] int Mathematical_Expectation() const;
 
 public:
     explicit TCP_Bot_Client(int bank, boost::asio::io_service& io_service,

@@ -29,10 +29,10 @@ namespace Controller {
     public:
         enum class states : int {
             BET_SERVANT,
-            MOVE_SERVANT,
             ROUND_SERVANT,
-            PLAYOUT_SERVANT,
+            MOVE_SERVANT,
             YOURSELF_SERVANT,
+            PLAYOUT_SERVANT,
             DEAL_SERVANT
         };
     protected:
@@ -66,7 +66,6 @@ namespace Controller {
         virtual void Notify_about_player(int num);
 
         virtual void SetPlayer(std::shared_ptr<Actors::IPlayer>);
-        virtual void RefreshPlayer(std::shared_ptr<Actors::IPlayer>);
 
         virtual void RestartDealer();
 
@@ -81,6 +80,8 @@ namespace Controller {
         virtual void MakeBet(std::string json) = 0;
         virtual void MakeMove(std::string json) = 0;
         virtual void MakeDeal(std::string json) = 0;
+
+        bool FindPlayer(std::shared_ptr<Actors::IPlayer>);
 
         virtual void Process() = 0;
         virtual void Maker(std::string json) = 0;

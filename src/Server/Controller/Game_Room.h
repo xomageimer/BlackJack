@@ -60,7 +60,7 @@ struct Game_Room {
 private:
     std::shared_ptr<Controller::IDealer> dealer;
 
-    std::map<std::string, std::shared_ptr<Actors::IPlayer>> players;
+    std::map<int, std::shared_ptr<Actors::IPlayer>> players;
     std::vector<std::string> queue {};
     std::vector<int> vacancy;
 
@@ -68,7 +68,7 @@ private:
 public:
 
     bool SubscribePlayer(std::string player_nickname, std::shared_ptr<Actors::IPlayer> new_player, int id);
-    bool UnSubscribePlayer(const std::string &player_nickname);
+    bool UnSubscribePlayer(int player_id);
 
     void NewRound();
 
@@ -80,43 +80,34 @@ public:
     {
         if (queue.size() <= MAX_PLAYER_COUNT) {
             if (!vacancy.empty()) {
+                std::cerr << "NEW PLAYER " << vacancy.back() << std::endl;
                 participant->set_id(vacancy.back());
                 participants_.emplace(vacancy.back(), participant);
                 vacancy.pop_back();
             } else {
-                std::cerr << "new player " << count << std::endl;
+                std::cerr << "NEW PLAYER " << count << std::endl;
                 participant->set_id(count);
                 participants_.emplace(count++, participant);
             }
-//            for (auto msg: recent_msgs_)
-//                participant->deliver(msg);
         }
     }
 
     void leave( player_participant_ptr participant)
     {
         if (!queue.empty()) {
-            UnSubscribePlayer(participant->get_name());
+            UnSubscribePlayer(participant->get_id());
             participants_.erase(participant->get_id());
         }
     }
 
     void deliver(const std::string& msg, int num)
     {
-//        recent_msgs_.push_back(msg);
-//        while (recent_msgs_.size() > max_recent_msgs)
-//            recent_msgs_.pop_front();
-
         std::cerr << "SEND TO " << num << ": " << msg << std::endl << std::endl;
         participants_[num]->deliver(msg + "\r\n\r\n");
     }
 
     void deliver(const std::string& msg)
     {
-//        recent_msgs_.push_back(msg);
-//        while (recent_msgs_.size() > max_recent_msgs)
-//            recent_msgs_.pop_front();
-
         std::cerr << "SEND TO ALL: " << msg << std::endl << std::endl;
         for (auto participant: participants_)
           participant.second->deliver(msg + "\r\n\r\n");
