@@ -54,6 +54,7 @@ public:
 protected:
     void do_connect(tcp::resolver::iterator endpoint_iterator)
     {
+        using namespace std::chrono_literals;
         boost::asio::async_connect(socket_, endpoint_iterator,
                [this](boost::system::error_code ec, tcp::resolver::iterator)
                {
@@ -61,6 +62,7 @@ protected:
                    {
                        do_read_body();
                    }
+                   std::this_thread::sleep_for(3s);
                });
     }
 

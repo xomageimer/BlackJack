@@ -166,9 +166,12 @@ namespace GameCard {
         CardSuit suit;
         mutable bool is_secret;
 
+        friend bool operator<(const Cards&, const Cards&);
+
         explicit operator std::string() const;
     };
 
+    bool operator<(const Cards&, const Cards&);
 
     Cards FromStr(std::string price, std::string suit, bool is_open);
 }

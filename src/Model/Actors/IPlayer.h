@@ -27,6 +27,9 @@ namespace Actors {
         virtual void SetName(const std::string &  name);
         virtual const std::string & GetName() const;
 
+        void setId(int id){
+            my_id =id;
+        }
         virtual int GetId() const;
 
         virtual void Move() = 0;

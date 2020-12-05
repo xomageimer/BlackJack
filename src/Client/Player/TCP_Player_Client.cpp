@@ -13,7 +13,7 @@ void TCP_Player_Client::Request(std::string str) {
             if (request["command"] == "PlayerList") {
                 om->notify_PlayerList(request);
                 for (auto & player : request["data"]["Players"]){
-                    if (player["id"] == my_id){
+                    if (stoi(player["id"].get<std::string>()) == my_id){
                         m_bank = player["bank"];
                     }
                 }
@@ -29,9 +29,9 @@ void TCP_Player_Client::Request(std::string str) {
                 cur_state = states::DEAL;
             } else if (request["command"] == "PlayerChanged") {
                 if (!request["data"]["isDealer"]) {
-                    if (request["data"]["id"].get<int>() == my_id) {
+                    if (stoi(request["data"]["id"].get<std::string>()) == my_id) {
                         for (auto &hand : request["data"]["hand"]) {
-                            SetCard(GameCard::FromStr(hand["rank"].get<std::string>(), hand["suit"].get<std::string>(),
+                            SetCard(GameCard::FromStr(hand["value"].get<std::string>(), hand["suit"].get<std::string>(),
                                                       !hand["isOpen"].get<bool>()));
                         }
                     }

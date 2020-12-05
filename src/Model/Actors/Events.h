@@ -21,16 +21,9 @@ public:
         BANK
     } Request;
     enum class DealerResponse : int {
-        WARN,
-        DOUBLEDOWN,
         MAKEBET,
         GIVECARD,
         SWAPPLAYER,
-        STATE,
-        WIN,
-        LOSE,
-        DRAW,
-        RESTART,
         YES
     } Response;
 

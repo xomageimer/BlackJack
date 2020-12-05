@@ -76,7 +76,7 @@ void Controller::IDealer::Notify_about_player(int num) {
     json event;
     event["command"] = "PlayerChanged";
 
-    event["data"]["id"] = num;
+    event["data"]["id"] = std::to_string(m_players.at(num).first->GetId());
     event["data"]["isDealer"] = false;
     for (size_t i = 0; i < m_players.at(num).first->ShowHand().GetSize(); i++) {
         std::string cardN = "card" + std::to_string(i);
@@ -84,9 +84,9 @@ void Controller::IDealer::Notify_about_player(int num) {
         json card_val;
         card_val["isOpen"] = !m_players.at(num).first->ShowHand().LookAtCards()[i].is_secret;
         if (GameCard::Cards::m_value.find(cur_card.price) != GameCard::Cards::m_value.end()) {
-            card_val["rank"] = GameCard::Cards::m_value.at(cur_card.price);
+            card_val["value"] = GameCard::Cards::m_value.at(cur_card.price);
         } else {
-            card_val["rank"] = std::to_string(static_cast<int>(cur_card.price));
+            card_val["value"] = std::to_string(static_cast<int>(cur_card.price));
         }
         card_val["suit"] = GameCard::Cards::m_suit.at(cur_card.suit);
         event["data"]["hand"].push_back(card_val);
@@ -112,9 +112,9 @@ void Controller::IDealer::Notify_about_dealer() {
         card_val["isOpen"] = !getDealerPlayer()->ShowHand().LookAtCards()[i].is_secret;
         if (card_val["isOpen"]) {
             if (GameCard::Cards::m_value.find(cur_card.price) != GameCard::Cards::m_value.end()) {
-                card_val["rank"] = GameCard::Cards::m_value.at(cur_card.price);
+                card_val["value"] = GameCard::Cards::m_value.at(cur_card.price);
             } else {
-                card_val["rank"] = std::to_string(static_cast<int>(cur_card.price));
+                card_val["value"] = std::to_string(static_cast<int>(cur_card.price));
             }
             card_val["suit"] = GameCard::Cards::m_suit.at(cur_card.suit);
         }

@@ -1,15 +1,15 @@
 #ifndef BLACKJACK_TCP_BOT_CLIENT_H
 #define BLACKJACK_TCP_BOT_CLIENT_H
 
+#include <set>
 #include "Client/Player/TCP_Player_Client.h"
 
 struct TCP_Bot_Client : public player_client, public Actors::IPlayer {
 protected:
     GameCard::Hand m_hand;
     GameCard::Hand dealer_hand;
-    GameCard::Hand leave_cards;
+    std::map<GameCard::Cards, int> round_cards;
     std::vector<int> my_banks;
-    int m_bank;
 
     bool is_ace = false;
 
@@ -43,6 +43,8 @@ protected:
 
     std::shared_ptr<OutputManager> om;
 
+    int m_bank;
+
     enum class states : int {
         BET,
         MOVE,
@@ -50,6 +52,11 @@ protected:
         NOTHING
     };
     states cur_state = states::NOTHING;
+
+
+    void Collect(const json & vec);
+    void UpdateLeftCards();
+    bool Mathematical_Expectation() const;
 
 public:
     explicit TCP_Bot_Client(int bank, boost::asio::io_service& io_service,

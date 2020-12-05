@@ -250,3 +250,7 @@ nlohmann::json GameCard::Cards::Serialize() const{
 
     return j;
 }
+
+bool GameCard::operator<(const GameCard::Cards & c1, const GameCard::Cards & c2) {
+    return c1.price < c2.price;
+}

@@ -5,8 +5,7 @@
 
 int main(int argc, char* argv[])
 {
-    try
-    {
+
         if (argc != 4)
         {
             std::cerr << "Usage: chat_client <host> <port> <bot_name>\n";
@@ -39,11 +38,7 @@ int main(int argc, char* argv[])
 
         c.close();
         t.join();
-    }
-    catch (std::exception& e)
-    {
-        std::cerr << "Exception: " << e.what() << "\n";
-    }
+
 
     return 0;
 }

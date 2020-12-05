@@ -76,8 +76,6 @@ public:
 
     void SetDealer(std::shared_ptr<Controller::IDealer> dealer);
 
-    // TODO ГДЕ-ТО ТУТ ЗАПРОС НА АВТОРИЗАЦИЮ
-
     void join( player_participant_ptr participant)
     {
         if (queue.size() <= MAX_PLAYER_COUNT) {
@@ -125,7 +123,7 @@ public:
     }
 
 private:
-    std::unordered_map<int, player_participant_ptr> participants_;
+    std::map<int, player_participant_ptr> participants_;
     enum { max_recent_msgs = 100 };
     json_message_queue recent_msgs_;
 
