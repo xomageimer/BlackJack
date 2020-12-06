@@ -102,6 +102,7 @@ struct TCP_Player_Client : public Actors::IPlayer, public player_client {
 protected:
     GameCard::Hand m_hand;
     int m_bank;
+    bool authorize = false;
 
     std::shared_ptr<OutputManager> om;
 
@@ -150,6 +151,10 @@ public:
     void Process();
 
     void SetName();
+
+    inline bool Is_Authorize() const{
+        return authorize;
+    }
 
     void Move() override;
     void Bet() override;

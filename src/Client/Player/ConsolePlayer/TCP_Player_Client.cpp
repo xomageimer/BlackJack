@@ -178,6 +178,7 @@ void TCP_Player_Client::SetName() {
     std::cin >> command;
     j["data"]["name"] = command;
     nickname = command;
+    authorize = true;
     write(j.dump());
 }
 

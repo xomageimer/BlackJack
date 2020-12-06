@@ -1,17 +1,25 @@
 #undef BOOST_ASIO_ENABLE_HANDLER_TRACKING
 
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include "stb_image.h"
+
+#include "graphic_config.h"
 #include "OutputManager.h"
-#include "Client/Player/TCP_Player_Client.h"
+#include "TCP_Player_Client.h"
 
 int main(int argc, char* argv[])
 {
     try
     {
-//        if (argc != 3)
-//        {
-//            std::cerr << "Usage: chat_client <host> <port>\n";
-//            return 1;
-//        }
+        if (argc != 3)
+        {
+            std::cerr << "Usage: chat_client <host> <port>\n";
+            return 1;
+        }
 
         boost::asio::io_service io_service;
 
@@ -26,19 +34,20 @@ int main(int argc, char* argv[])
 
         std::thread t([&io_service](){ io_service.run(); });
 
-//        std::string line;
-//        for (std::string line; std::getline(std::cin, line);)
-//        {
+        auto window = Graphic_Interface::CreateAndSafeWindow(960, 600, "BLACK JACK");
 
-        c.SetName();
+        while(!glfwWindowShouldClose(window))
+        {
+            Graphic_Interface::processInput(window);
 
-        while (true) {
-            c.Process();
+            if (c.Is_Authorize())
+                c.Process();
+            else
+                c.SetName();
+
+            c.close();
+            t.join();
         }
-//        }
-
-        c.close();
-        t.join();
     }
     catch (std::exception& e)
     {

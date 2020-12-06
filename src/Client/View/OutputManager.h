@@ -49,18 +49,6 @@ public:
     void destroy();
 };
 
-// TODO продумать как переделать ивенты, чтобы не нужно было парсить строки и можно было получать информацию о картах
-struct AI_view{
-private:
-    std::vector<GameCard::Hand *> all_hands;
-    const GameCard::Hand * dealer_hand;
-public:
-    AI_view() = default;
-    void add_dealer_hand(const GameCard::Hand * hnd){
-        dealer_hand = hnd;
-    }
-};
-
 struct ILogger {
 protected:
     std::vector<std::string> buffer;

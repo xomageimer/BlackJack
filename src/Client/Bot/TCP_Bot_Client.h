@@ -2,7 +2,7 @@
 #define BLACKJACK_TCP_BOT_CLIENT_H
 
 #include <set>
-#include "Client/Player/TCP_Player_Client.h"
+#include "Client/Player/GraphicPlayer/TCP_Player_Client.h"
 
 struct TCP_Bot_Client : public player_client, public Actors::IPlayer {
 protected:
