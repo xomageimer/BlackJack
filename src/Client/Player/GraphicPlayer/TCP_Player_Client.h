@@ -102,7 +102,7 @@ protected:
 };
 
 
-struct TCP_Player_Client : public Actors::IPlayer, public player_client, public Net_Player{
+struct TCP_Player_Client : public player_client, public Actors::IPlayer,  public Net_Player{
 protected:
     GameCard::Hand m_hand;
     int m_bank;
@@ -114,6 +114,7 @@ protected:
         BET,
         MOVE,
         DEAL,
+
         NOTHING
     };
     states cur_state = states::NOTHING;
@@ -122,7 +123,7 @@ protected:
 
 public:
     explicit TCP_Player_Client(int bank, boost::asio::io_service& io_service,
-                               tcp::resolver::iterator endpoint_iterator) : player_client(io_service, endpoint_iterator), m_bank(bank), Net_Player(glm::vec2{0.f, 0.f}, glm::vec2{0.f, 0.f}) {}
+                               tcp::resolver::iterator endpoint_iterator) : player_client(io_service, std::move(endpoint_iterator)), Net_Player(glm::vec2{0.f, 0.f}, glm::vec2{0.f, 0.f}), m_bank(bank) {}
 
     void do_read_body() override
     {
@@ -154,7 +155,7 @@ public:
 
     void Process();
 
-    void SetName();
+    void SetName(const std::string & name) override;
 
     inline bool Is_Authorize() const{
         return authorize;

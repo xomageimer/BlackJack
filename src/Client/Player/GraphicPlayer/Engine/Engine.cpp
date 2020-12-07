@@ -69,6 +69,42 @@ void Engine::ConfigSpriteTable(const std::string &sprite_name) {
     this->Table->SetSprite(std::make_shared<Graphic::SpriteAnimator>(pool_sprites.find(sprite_name)->second, std::vector<std::vector<float>>{{0.999f, 0.999f, 0.999f, 0.011f, 0.011f, 0.011f, 0.011f, 0.999f}}));
 }
 
+
+void Engine::SetButton(glm::vec2 position, glm::vec2 size) {
+    this->butt_ok = std::make_shared<Button>(position, size);
+    this->butt_stand = std::make_shared<Button>(position, size);
+    this->butt_double = std::make_shared<Button>(position, size);
+    this->butt_10 = std::make_shared<Button>(position, size);
+    this->butt_50 = std::make_shared<Button>(position, size);
+    this->butt_100 = std::make_shared<Button>(position, size);
+}
+
+void Engine::ConfigSpriteButton(const butt_type &b, const std::string &sprite_name) {
+    switch(b) {
+        case butt_type::OK :
+            this->butt_ok->SetSprite(std::make_shared<Graphic::SpriteAnimator>(pool_sprites.find(sprite_name)->second, std::vector<std::vector<float>>{{0.999f, 0.999f, 0.999f, 0.011f, 0.011f, 0.011f, 0.011f, 0.999f}}));
+            break;
+        case butt_type::STAND :
+            this->butt_stand->SetSprite(std::make_shared<Graphic::SpriteAnimator>(pool_sprites.find(sprite_name)->second, std::vector<std::vector<float>>{{0.999f, 0.999f, 0.999f, 0.011f, 0.011f, 0.011f, 0.011f, 0.999f}}));
+            break;
+        case butt_type::DOUBLE :
+            this->butt_double->SetSprite(std::make_shared<Graphic::SpriteAnimator>(pool_sprites.find(sprite_name)->second, std::vector<std::vector<float>>{{0.999f, 0.999f, 0.999f, 0.011f, 0.011f, 0.011f, 0.011f, 0.999f}}));
+            break;
+        case butt_type::_10 :
+            this->butt_10->SetSprite(std::make_shared<Graphic::SpriteAnimator>(pool_sprites.find(sprite_name)->second, std::vector<std::vector<float>>{{0.999f, 0.999f, 0.999f, 0.011f, 0.011f, 0.011f, 0.011f, 0.999f}}));
+            break;
+        case butt_type::_50 :
+            this->butt_50->SetSprite(std::make_shared<Graphic::SpriteAnimator>(pool_sprites.find(sprite_name)->second, std::vector<std::vector<float>>{{0.999f, 0.999f, 0.999f, 0.011f, 0.011f, 0.011f, 0.011f, 0.999f}}));
+            break;
+        case butt_type::_100 :
+            this->butt_100->SetSprite(std::make_shared<Graphic::SpriteAnimator>(pool_sprites.find(sprite_name)->second, std::vector<std::vector<float>>{{0.999f, 0.999f, 0.999f, 0.011f, 0.011f, 0.011f, 0.011f, 0.999f}}));
+            break;
+        default:
+            throw std::logic_error("BUTTON NOT FOUND!");
+            break;
+    }
+}
+
 void Engine::SetStack(glm::vec2 position, glm::vec2 size) {
     this->Card_Spawner = std::make_shared<struct Stack>(position, size);
     for (auto & i : Cards){

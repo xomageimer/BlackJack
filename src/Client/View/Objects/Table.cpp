@@ -36,6 +36,6 @@ void Table::SetAnimator(GameCard::Cards::CardPrice v, GameCard::Cards::CardSuit 
             0, 1, 3,
             1, 2, 3
     };
-    it.first->second.at(s)->GetSprite()->Init(vertices, sizeof(vertices), GL_DYNAMIC_DRAW, indices, sizeof(indices), GL_DYNAMIC_DRAW);
+    it.first->second.at(s)->GetSprite()->Init(vertices, sizeof(vertices), GL_STATIC_DRAW, indices, sizeof(indices), GL_STATIC_DRAW);
 }
 

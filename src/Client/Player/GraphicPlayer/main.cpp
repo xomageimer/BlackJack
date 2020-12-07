@@ -31,12 +31,14 @@ int main(int argc, char* argv[])
         std::shared_ptr<OutputManager> manager = std::make_shared<OutputManager>();
         manager->subscribe("Logger", std::make_shared<ConsoleLogger>(std::cout));
 
-        TCP_Player_Client c(1'000, io_service, endpoint_iterator);
-        c.SetManager(manager);
+        std::shared_ptr<TCP_Player_Client> c = std::make_shared<TCP_Player_Client>(1'000, io_service, endpoint_iterator);
+        c->SetManager(manager);
 
         std::thread t([&io_service](){ io_service.run(); });
 
         auto window = Graphic_Interface::CreateAndSafeWindow(960, 600, "BLACK JACK");
+
+        Graphic_Interface::Preparation(window, c);
 
         while(!glfwWindowShouldClose(window))
         {

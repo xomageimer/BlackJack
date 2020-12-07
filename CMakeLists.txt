@@ -72,13 +72,16 @@ if (Boost_FOUND)
             src/Client/View/Objects/Table.cpp
             src/Client/View/Objects/Card.cpp
             src/Client/View/Objects/Stack.cpp
-            src/Client/Player/GraphicPlayer/graphic_config.cpp
+            src/Client/View/Objects/Net_Player.cpp
+            src/Client/View/Objects/Button.cpp
+            src/Client/View/Objects/Chips.cpp
             src/Client/View/Objects/IGameObject.cpp
+
             src/Client/Player/GraphicPlayer/Engine/Engine.cpp
             src/Client/Player/GraphicPlayer/Engine/Camera.cpp
 
-            src/Client/Player/GraphicPlayer/graphic_config.h
-            src/Client/View/Objects/Net_Player.cpp src/Client/View/Objects/Net_Player.h src/Client/View/Objects/Button.cpp src/Client/View/Objects/Button.h)
+            src/Client/Player/GraphicPlayer/graphic_config.cpp
+            )
 
     add_executable(${ClientBot}
             src/Client/Bot/main.cpp

@@ -16,6 +16,15 @@
 #include "Objects/Card.h"
 #include "Objects/Stack.h"
 
+enum class butt_type{
+    OK,
+    STAND,
+    DOUBLE,
+    _10,
+    _50,
+    _100
+};
+
 struct Engine {
 public:
     static Engine& Editor();
@@ -48,6 +57,9 @@ public:
     void SetTable(glm::vec2 position, glm::vec2 size);
     void ConfigSpriteTable(const std::string & sprite_name);
 
+    void SetButton(glm::vec2 position, glm::vec2 size);
+    void ConfigSpriteButton(const butt_type & b, const std::string & sprite_name);
+
     void SetStack(glm::vec2 position, glm::vec2 size); // TODO тут же и задать спавн карт
     void ConfigSpriteStack(const std::string & sprite_name);
 
@@ -79,6 +91,14 @@ private:
     std::shared_ptr<Table> Table;
 
     std::vector<std::shared_ptr<Card>> Cards;
+
+    std::shared_ptr<Button> butt_ok;
+    std::shared_ptr<Button> butt_stand;
+    std::shared_ptr<Button> butt_double;
+
+    std::shared_ptr<Button> butt_10;
+    std::shared_ptr<Button> butt_50;
+    std::shared_ptr<Button> butt_100;
 
     std::map<std::string, std::shared_ptr<Graphic::Sprite>> pool_sprites;
     std::map<std::string, std::vector<std::shared_ptr<Graphic::Sprite>>> pool_pack_sprites;

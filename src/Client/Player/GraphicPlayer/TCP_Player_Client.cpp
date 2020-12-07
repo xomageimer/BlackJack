@@ -170,13 +170,11 @@ void TCP_Player_Client::Process() {
     }
 }
 
-void TCP_Player_Client::SetName() {
-    std::string command;
+void TCP_Player_Client::SetName(const std::string & name) {
     json j;
     j["command"] = "Authorize";
-    std::cin >> command;
-    j["data"]["name"] = command;
-    nickname = command;
+    j["data"]["name"] = name;
+    nickname = name;
     authorize = true;
     write(j.dump());
 }
