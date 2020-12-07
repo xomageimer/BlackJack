@@ -1,3 +1,6 @@
+
+#include <Client/Player/GraphicPlayer/TCP_Player_Client.h>
+
 #include "TCP_Player_Client.h"
 
 

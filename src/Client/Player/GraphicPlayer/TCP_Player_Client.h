@@ -10,6 +10,9 @@
 #include "Actors/IPlayer.h"
 #include "Client/View/OutputManager.h"
 
+#include "Graphic/SpriteAnimator.h"
+#include "Objects/Net_Player.h"
+
 #define DEFAULT {               \
     throw std::logic_error(""); \
 }                               \
@@ -98,7 +101,7 @@ protected:
 };
 
 
-struct TCP_Player_Client : public Actors::IPlayer, public player_client {
+struct TCP_Player_Client : public Actors::IPlayer, public player_client, public Net_Player{
 protected:
     GameCard::Hand m_hand;
     int m_bank;
@@ -118,7 +121,7 @@ protected:
 
 public:
     explicit TCP_Player_Client(int bank, boost::asio::io_service& io_service,
-                               tcp::resolver::iterator endpoint_iterator) : player_client(io_service, endpoint_iterator), m_bank(bank) {}
+                               tcp::resolver::iterator endpoint_iterator) : player_client(io_service, endpoint_iterator), m_bank(bank), Net_Player(glm::vec2{0.f, 0.f}, glm::vec2{0.f, 0.f}) {}
 
     void do_read_body() override
     {
@@ -168,6 +171,9 @@ public:
 
     [[nodiscard]] const GameCard::Hand &ShowHand() const override;
     [[nodiscard]] int GetPlayerCost() const override;
+
+private:
+
 };
 
 

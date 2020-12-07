@@ -14,7 +14,7 @@
 
 struct IGameObject {
 public:
-    IGameObject(glm::vec2 position, glm::vec2 size, float rotation, float layer);
+    IGameObject(glm::vec2 position, glm::vec2 size);
 
     virtual ~IGameObject() = default;
 
@@ -48,8 +48,6 @@ protected:
 
     glm::vec2 m_position;
     glm::vec2 m_size;
-    float m_rotation;
-    float m_layer;
 
     glm::vec2 m_direction{};
     glm::vec3 m_up{0.f, 0.f, 1.f};

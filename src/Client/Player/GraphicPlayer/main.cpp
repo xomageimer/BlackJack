@@ -40,14 +40,16 @@ int main(int argc, char* argv[])
         {
             Graphic_Interface::processInput(window);
 
+            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+
             if (c.Is_Authorize())
                 c.Process();
             else
                 c.SetName();
 
-            c.close();
-            t.join();
         }
+        t.join();
     }
     catch (std::exception& e)
     {

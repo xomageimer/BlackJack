@@ -78,7 +78,7 @@ if (Boost_FOUND)
             src/Client/Player/GraphicPlayer/Engine/Camera.cpp
 
             src/Client/Player/GraphicPlayer/graphic_config.h
-            src/Client/View/Objects/Net_Player.cpp src/Client/View/Objects/Net_Player.h)
+            src/Client/View/Objects/Net_Player.cpp src/Client/View/Objects/Net_Player.h src/Client/View/Objects/Button.cpp src/Client/View/Objects/Button.h)
 
     add_executable(${ClientBot}
             src/Client/Bot/main.cpp

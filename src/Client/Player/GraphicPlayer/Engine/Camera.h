@@ -2,7 +2,7 @@
 #define BLACKJACK_CAMERA_H
 
 
-class Camera {
+struct Camera {
 
 };
 

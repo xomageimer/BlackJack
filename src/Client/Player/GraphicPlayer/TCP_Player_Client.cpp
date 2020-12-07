@@ -1,6 +1,5 @@
 #include "TCP_Player_Client.h"
 
-
 using json = nlohmann::json;
 
 using p_EVENT = Event::PlayerRequests;

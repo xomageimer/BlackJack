@@ -37,7 +37,7 @@ private:
     std::shared_ptr<TCP_Player_Client> player_controller = nullptr;
 
     std::vector<std::shared_ptr<Net_Player>> Other_players;
-    std::vector<std::shared_ptr<Card>> Cards;
+
     std::shared_ptr<Stack> Card_Spawner;
     std::shared_ptr<Table> Table;
 

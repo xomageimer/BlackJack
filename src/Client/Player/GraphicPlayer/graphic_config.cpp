@@ -42,6 +42,10 @@ void Graphic_Interface::framebuffer_size_callback(GLFWwindow * window, int width
 }
 
 void Graphic_Interface::processInput(GLFWwindow *window) {
-    if(glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
-        Engine::Editor().GetPlayerController()->keyboard_controller(window, deltaTime, lastFrame);
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        Engine::Editor().GetPlayerController()->close();
+}
+
+void Graphic_Interface::mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+
 }
