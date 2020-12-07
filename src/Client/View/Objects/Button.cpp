@@ -37,4 +37,10 @@ void Button::SetAnimator(GameCard::Cards::CardPrice v, GameCard::Cards::CardSuit
     it.first->second.at(s)->GetSprite()->Init(vertices, sizeof(vertices), GL_DYNAMIC_DRAW, indices, sizeof(indices), GL_DYNAMIC_DRAW);
 }
 
+bool Button::intersection(double x, double y) {
+    if (std::abs(x - m_position.x) <= m_size.x && std::abs(y - m_position.y) <= m_size.y) {
+        return true;
+    }
+    return false;
+}
 

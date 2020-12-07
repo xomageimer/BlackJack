@@ -27,6 +27,7 @@ GLFWwindow* Graphic_Interface::CreateAndSafeWindow(const size_t WIDTH, const siz
     }
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -47,5 +48,5 @@ void Graphic_Interface::processInput(GLFWwindow *window) {
 }
 
 void Graphic_Interface::mouse_callback(GLFWwindow *window, double xpos, double ypos) {
-
+    Engine::Editor().GetPlayerController()->mouse_controller(window, xpos, ypos);
 }

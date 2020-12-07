@@ -21,6 +21,8 @@ public:
 
     void Render() override;
 
+    bool intersection(double x, double y);
+
 private:
     void SetAnimator(VAL card_price, SUIT card_suit, std::shared_ptr<Graphic::SpriteAnimator>) override;
 

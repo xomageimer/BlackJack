@@ -192,3 +192,16 @@ void TCP_Player_Client::Collect(const json &request) {
         }
     }
 }
+
+void TCP_Player_Client::mouse_controller(GLFWwindow *window, double xpos, double ypos) {
+    glm::vec3 pos_2D {xpos, ypos, 0.f};
+
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.f));
+
+    glm::mat4 projection = glm::frustum(-1.0f, 1.0f, -1.f, 1.f, 0.1f, 100.f);
+
+    glm::vec3 proje_vect = glm::unProject(pos_2D, model, projection, glm::vec4(0.f, 0.f, 800.f, 600.f));
+
+    mouse_position.x = proje_vect.x;
+    mouse_position.y = (-1) * proje_vect.y;
+}

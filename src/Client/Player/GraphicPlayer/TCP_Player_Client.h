@@ -12,6 +12,7 @@
 
 #include "Graphic/SpriteAnimator.h"
 #include "Objects/Net_Player.h"
+#include "Objects/Button.h"
 
 #define DEFAULT {               \
     throw std::logic_error(""); \
@@ -172,8 +173,11 @@ public:
     [[nodiscard]] const GameCard::Hand &ShowHand() const override;
     [[nodiscard]] int GetPlayerCost() const override;
 
+    void mouse_controller(GLFWwindow* window, double xpos, double ypos);
 private:
+    std::vector<Button> buttons;
 
+    glm::vec2 mouse_position;
 };
 
 
