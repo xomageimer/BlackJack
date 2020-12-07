@@ -40,6 +40,11 @@ int main(int argc, char* argv[])
 
         Graphic_Interface::Preparation(window, c);
 
+        auto clock = std::chrono::steady_clock::now();
+        std::chrono::milliseconds frameTimeMin(30);
+        float last_sec_ = 0.0f;
+        size_t frames_ = 0;
+
         while(!glfwWindowShouldClose(window))
         {
             Graphic_Interface::processInput(window);
@@ -47,7 +52,24 @@ int main(int argc, char* argv[])
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            Engine::Editor().Run();
+            //Engine::Editor().Run();
+            Engine::Editor().Render();
+
+            glfwSwapBuffers(window);
+            glfwPollEvents();
+
+            auto now = std::chrono::steady_clock::now();
+            auto frameTime = now - clock;
+            clock = now;
+            std::this_thread::sleep_for(frameTimeMin - frameTime);
+
+//            auto x = (float)glfwGetTime();
+//            frames_++;
+//            if (x - last_sec_ >= 1.0f){
+//                std::cout << frames_ << std::endl;
+//                last_sec_ = x;
+//                frames_ = 0;
+//            }
         }
 
         t.join();

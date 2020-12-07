@@ -3,11 +3,12 @@
 void Engine::Render() {
     m_shader->use();
     Table->Render();
-    Card_Spawner->Render();
     m_cam->Render();
-    player_controller->Render();
-    for (auto i : Other_players)
-        i->Render();
+   // Card_Spawner->Render();
+  //  m_cam->Render();
+   // player_controller->Render();
+  //  for (auto i : Other_players)
+ //       i->Render();
 }
 
 Engine &Engine::Editor() {
@@ -19,7 +20,7 @@ void Engine::Run() {
     if (player_controller->Is_Authorize())
         player_controller->Process();
     else
-        player_controller->SetName();
+        throw std::logic_error("YOU HAVEN'T NAME!");
 }
 
 void Engine::ConfigPlayer(const std::string &sprite_name) {

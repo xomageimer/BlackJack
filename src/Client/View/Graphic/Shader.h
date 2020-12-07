@@ -34,7 +34,7 @@ constexpr void CallIfCallable(F&& func, S&& ...args){
     } else {
         return;
     }
-};
+}
 
 struct Shader {
 public:

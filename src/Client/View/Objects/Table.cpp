@@ -25,7 +25,7 @@ void Table::Render() {
 
 void Table::SetAnimator(GameCard::Cards::CardPrice v, GameCard::Cards::CardSuit s,
                         std::shared_ptr<Graphic::SpriteAnimator> anim) {
-    auto it = this->m_representative.emplace(std::piecewise_construct, std::forward_as_tuple(v), std::forward_as_tuple(std::pair{s, anim}));
+    auto it = this->m_representative[v].emplace(std::piecewise_construct, std::forward_as_tuple(s), std::forward_as_tuple(anim));
     float vertices[] = {
             1.f, 1.f, 0.f,
             1.f, -1.f, 0.f,
@@ -36,6 +36,6 @@ void Table::SetAnimator(GameCard::Cards::CardPrice v, GameCard::Cards::CardSuit 
             0, 1, 3,
             1, 2, 3
     };
-    it.first->second.at(s)->GetSprite()->Init(vertices, sizeof(vertices), GL_STATIC_DRAW, indices, sizeof(indices), GL_STATIC_DRAW);
+    it.first->second->GetSprite()->Init(vertices, sizeof(vertices), GL_STATIC_DRAW, indices, sizeof(indices), GL_STATIC_DRAW);
 }
 

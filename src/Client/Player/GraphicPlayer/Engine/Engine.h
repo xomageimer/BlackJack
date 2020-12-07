@@ -4,6 +4,7 @@
 #include <memory>
 #include <map>
 #include <string>
+#include <utility>
 
 #include "Graphic/Sprite.h"
 #include "Graphic/Shader.h"
@@ -40,6 +41,7 @@ public:
     }
     inline void SetPlayer(std::shared_ptr<TCP_Player_Client> player, glm::vec2 position, glm::vec2 size){
         player_controller.reset();
+        player_controller = std::move(player);
         player_controller->SetPosition(position);
         player_controller->SetSize(size);
     };

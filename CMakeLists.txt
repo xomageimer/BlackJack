@@ -69,6 +69,9 @@ if (Boost_FOUND)
             src/Client/View/Graphic/IndexBuffer.cpp
             src/Client/View/Graphic/Shader.cpp
 
+            dependencies/glad/src/glad.c
+            src/Client/View/stb_image.cpp
+
             src/Client/View/Objects/Table.cpp
             src/Client/View/Objects/Card.cpp
             src/Client/View/Objects/Stack.cpp
@@ -92,7 +95,7 @@ if (Boost_FOUND)
 
             src/Client/View/OutputManager.cpp
 
-            src/Client/Bot/TCP_Bot_Client.cpp src/Client/Bot/TCP_Bot_Client.h )
+            src/Client/Bot/TCP_Bot_Client.cpp src/Client/Bot/TCP_Bot_Client.h src/Client/View/stb_image.cpp)
 
     target_include_directories(${Server} PRIVATE src src/Model src/Server/Engine)
 
@@ -148,7 +151,7 @@ else()
 endif()
 
 target_link_libraries(${Client} ${SOURCE_FILES})
-target_include_directories(${Client} PUBLIC dependencies)
+target_include_directories(${Client} PRIVATE dependencies)
 
 find_package(OpenGL REQUIRED)
 

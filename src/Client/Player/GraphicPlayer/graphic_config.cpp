@@ -30,22 +30,22 @@ GLFWwindow* Graphic_Interface::CreateAndSafeWindow(const size_t WIDTH, const siz
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
 
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     return window;
 }
 
-void Graphic_Interface::framebuffer_size_callback(GLFWwindow * window, int width, int height)
+void Graphic_Interface::framebuffer_size_callback([[maybe_unused]]GLFWwindow * window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
 void Graphic_Interface::processInput(GLFWwindow *window) {
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         Engine::Editor().GetPlayerController()->close();
+        glfwSetWindowShouldClose(window, true);
+    }
 }
 
 void Graphic_Interface::mouse_callback(GLFWwindow *window, double xpos, double ypos) {
@@ -99,4 +99,8 @@ void Graphic_Interface::Preparation(GLFWwindow *window, std::shared_ptr<TCP_Play
     Engine::Editor().SetSprite("Stand", "Stand_Texture");
     Engine::Editor().SetSprite("Double", "Double_Texture");
 
+    Engine::Editor().SetTable({0.f, 0.f}, {1.f, 1.f});
+    Engine::Editor().ConfigSpriteTable("Stack");
+    //Engine::Editor().ConfigCards();
+   // Engine::Editor().SetCardVelocity(0.5f);
 }

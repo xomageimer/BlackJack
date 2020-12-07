@@ -21,7 +21,7 @@ public:
 
 private:
     glm::vec3 CameraPos = {0.f, 0.f, 3.f};
-    glm::vec3 CameraFront = glm::vec3(0.0f, 0.0f, -1.0f);;
+    glm::vec3 CameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 
     std::shared_ptr<Shader> m_shader;
 };
