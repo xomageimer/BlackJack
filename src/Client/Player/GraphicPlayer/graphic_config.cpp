@@ -101,6 +101,9 @@ void Graphic_Interface::Preparation(GLFWwindow *window, std::shared_ptr<TCP_Play
 
     Engine::Editor().SetTable({0.f, 0.f}, {1.f, 1.f});
     Engine::Editor().ConfigSpriteTable("Table");
+
+
+    Engine::Editor().ConfigCards(GameCard::Cards::CardPrice::_2, );
     //Engine::Editor().ConfigCards();
    // Engine::Editor().SetCardVelocity(0.5f);
 }

@@ -47,8 +47,12 @@ public:
     };
     void ConfigPlayer(const std::string & sprite_name);
 
+    void SetPlayerCard(VAL value, SUIT suit);
+    void SetCard(VAL value, SUIT suit, size_t player_number);
+
     void ConfigCard(std::shared_ptr<Card> p, VAL value, SUIT suit, const std::string & sprite_name, const std::vector<std::vector<float>> & sprite_frames);
-    void ConfigCards(VAL value, SUIT suit, const std::string & sprite_name, glm::vec2 left_bottom,
+    void ConfigCards(VAL value, SUIT suit, const std::string & sprite_name,
+                     glm::vec2 left_bottom,
                      glm::vec2 right_top,
                      float x,
                      float y,

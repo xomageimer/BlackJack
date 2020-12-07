@@ -29,6 +29,8 @@ void Net_Player::SetSprite(std::shared_ptr<Graphic::SpriteAnimator> anim) {
 
 void Net_Player::Set_Card_Sprite(std::shared_ptr<Card> new_card) {
     cards.emplace_back(std::move(new_card));
+    cards.back()->GetSize() = card_size;
+    cards.back()->GetCurrentPosition() = card_pose;
     cards.back()->SetPlayerTarget(m_position);
 }
 

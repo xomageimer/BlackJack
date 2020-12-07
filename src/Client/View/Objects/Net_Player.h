@@ -28,6 +28,9 @@ protected:
     static inline const VAL m_val = VAL::STOPPER;
     static inline const SUIT m_suit = SUIT::STOPPER;
 
+    glm::vec2 card_size = {0.1f, 0.1f};
+    glm::vec2 card_pose;
+
     std::vector<std::shared_ptr<Card>> cards;
 };
 

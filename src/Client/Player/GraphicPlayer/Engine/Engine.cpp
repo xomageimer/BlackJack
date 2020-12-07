@@ -39,7 +39,8 @@ void Engine::ConfigCard(std::shared_ptr<Card> _card, GameCard::Cards::CardPrice 
     }
 }
 
-void Engine::ConfigCards(GameCard::Cards::CardPrice value, GameCard::Cards::CardSuit suit, const std::string &sprite_name,
+void Engine::ConfigCards(GameCard::Cards::CardPrice value, GameCard::Cards::CardSuit suit,
+                         const std::string &sprite_name,
                          glm::vec2 left_bottom,
                          glm::vec2 right_top,
                          float x,
@@ -142,4 +143,16 @@ void Engine::SetTexture(const std::string &name, const std::filesystem::path & p
 void Engine::SetShader(const std::filesystem::path &vertex_shader, const std::filesystem::path &fragment_shader) {
     m_shader = std::make_shared<Shader>(vertex_shader, fragment_shader);
     m_cam = std::make_shared<Camera>(m_shader);
+}
+
+void Engine::SetPlayerCard(GameCard::Cards::CardPrice value, GameCard::Cards::CardSuit suit) {
+    auto card = std::make_shared<Card>(glm::vec2{0.f, 0.f}, glm::vec2{0.f, 0.f});
+    card->SetCards_Val_Suit(value, suit);
+    player_controller->Set_Card_Sprite(card);
+}
+
+void Engine::SetCard(GameCard::Cards::CardPrice value, GameCard::Cards::CardSuit suit, size_t player_number) {
+    auto card = std::make_shared<Card>(glm::vec2{0.f, 0.f}, glm::vec2{0.f, 0.f});
+    card->SetCards_Val_Suit(value, suit);
+    Other_players[player_number]->Set_Card_Sprite(card);
 }
