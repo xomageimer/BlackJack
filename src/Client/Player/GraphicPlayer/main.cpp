@@ -11,6 +11,8 @@
 #include "OutputManager.h"
 #include "TCP_Player_Client.h"
 
+#include "Engine/Engine.h"
+
 int main(int argc, char* argv[])
 {
     try
@@ -43,12 +45,9 @@ int main(int argc, char* argv[])
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            if (c.Is_Authorize())
-                c.Process();
-            else
-                c.SetName();
-
+            Engine::Editor().Run();
         }
+
         t.join();
     }
     catch (std::exception& e)

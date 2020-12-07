@@ -58,3 +58,7 @@ void Net_Player::UpdateSprite(std::shared_ptr<Graphic::Sprite> sprite) {
     sprite->GetSize() = m_size;
 }
 
+void Net_Player::SetSize(glm::vec2 new_size) {
+    m_size = new_size;
+}
+

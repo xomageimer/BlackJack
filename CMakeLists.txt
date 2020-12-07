@@ -128,9 +128,9 @@ target_link_libraries(${Client} glfw)
 add_subdirectory(contrib/glm)
 target_link_libraries(${Client} glm)
 
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/shaders)
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/res)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/res)
 include_directories("glfw_repo/include")
 include_directories("dependencies/glad/include")
 include_directories("dependencies")
@@ -173,6 +173,13 @@ set_target_properties(${Server} ${Client} ${ClientBot} ${Client_Console} PROPERT
         CXX_STANDARD_REQUIRED ON
         COMPILE_OPTIONS "-Wall;-Wextra;-Wpedantic;"
         )
+
+add_custom_command(TARGET ${Client} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/res $<TARGET_FILE_DIR:${Client}>/res)
+add_custom_command(TARGET ${Client} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/shaders $<TARGET_FILE_DIR:${Client}>/shaders)
 
 set_target_properties(${Server} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
 set_target_properties(${Client_Console} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)

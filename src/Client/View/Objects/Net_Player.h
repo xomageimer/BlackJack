@@ -19,6 +19,7 @@ struct Net_Player : public IGameObject {
     void UpdateSprite(std::shared_ptr<Graphic::Sprite> sprite);
 
     void SetPosition(glm::vec2 new_pose);
+    void SetSize(glm::vec2 new_size);
 protected:
     GameCard::Hand m_hand; // TODO для сравнения с картами из PlayerChanged
 

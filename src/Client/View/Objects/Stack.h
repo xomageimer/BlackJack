@@ -3,7 +3,9 @@
 
 #include "Objects/Table.h"
 
-struct Stack : public Table {};
+struct Stack : public Table {
+    Stack(glm::vec2 position, glm::vec2 size) : Table(position, size) {}
+};
 
 
 #endif //BLACKJACK_STACK_H

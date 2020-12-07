@@ -129,10 +129,10 @@ namespace GameCard {
         };
 
         enum class CardSuit : int {
-            SPADES = 0,
+            DIAMONDS = 0,
             CLUBS,
-            DIAMONDS,
             HEARTS,
+            SPADES,
 
             STOPPER
         };
