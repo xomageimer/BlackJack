@@ -70,7 +70,7 @@ namespace Graphic {
     private:
         glm::vec2 m_center {0.f, 0.f};
         glm::vec2 m_size {1.0f, 1.0f};
-        float m_rotation = 90.f;
+        float m_rotation = 0.f;
         float m_layer = 0.0f;
 
         std::shared_ptr<Texture2D> m_texture;

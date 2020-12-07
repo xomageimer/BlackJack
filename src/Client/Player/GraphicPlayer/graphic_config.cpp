@@ -100,7 +100,7 @@ void Graphic_Interface::Preparation(GLFWwindow *window, std::shared_ptr<TCP_Play
     Engine::Editor().SetSprite("Double", "Double_Texture");
 
     Engine::Editor().SetTable({0.f, 0.f}, {1.f, 1.f});
-    Engine::Editor().ConfigSpriteTable("Stack");
+    Engine::Editor().ConfigSpriteTable("Table");
     //Engine::Editor().ConfigCards();
    // Engine::Editor().SetCardVelocity(0.5f);
 }
