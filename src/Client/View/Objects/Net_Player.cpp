@@ -28,7 +28,7 @@ void Net_Player::SetSprite(std::shared_ptr<Graphic::SpriteAnimator> anim) {
 }
 
 void Net_Player::Set_Card_Sprite(std::shared_ptr<Card> new_card) {
-    cards.emplace_back(std::move(new_card));
+    cards.emplace_back(new_card);
     cards.back()->GetSize() = card_size;
     cards.back()->GetCurrentPosition() = card_pose;
     cards.back()->SetPlayerTarget(m_position);
@@ -47,12 +47,12 @@ void Net_Player::Clear() {
 }
 
 void Net_Player::Render() {
-    for (auto & card : cards) {
-        card->Render();
-    }
     auto it = m_representative.at(m_val).at(m_suit);
     UpdateSprite(it->GetSprite());
     it->AnimationUpdate();
+    for (auto & card : cards) {
+        card->Render();
+    }
 }
 
 void Net_Player::UpdateSprite(std::shared_ptr<Graphic::Sprite> sprite) {

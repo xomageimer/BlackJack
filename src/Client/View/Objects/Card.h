@@ -15,9 +15,10 @@ public:
         current_target = &targ;
     };
 
-    void SetCards_Val_Suit(VAL value, SUIT suit);
+    void SetSprite(std::shared_ptr<Graphic::SpriteAnimator> anim);
 
-    void SetAnimator(VAL card_price, SUIT card_suit, std::shared_ptr<Graphic::SpriteAnimator>) override;
+    void SetCards_Val_Suit(std::vector<float> & v);
+
     void UpdateSprite(std::shared_ptr<Graphic::Sprite> sprite);
 
     void SetSpawn(glm::vec2 spawn);
@@ -25,13 +26,15 @@ public:
     void Update();
     void Render() override;
 private:
+    void SetAnimator(VAL card_price, SUIT card_suit, std::shared_ptr<Graphic::SpriteAnimator>) override;
+
     glm::vec2 my_spawn{};
 
     float m_deltaTime;
     float m_lastFrame = 0.f;
 
-    VAL m_value = VAL::ACE;
-    SUIT m_suit = SUIT::DIAMONDS;
+    static inline const VAL m_value = VAL::STOPPER;
+    static inline const SUIT m_suit = SUIT::STOPPER;
 
     const glm::vec2 * current_target{};
 };

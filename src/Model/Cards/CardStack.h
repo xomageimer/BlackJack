@@ -171,6 +171,9 @@ namespace GameCard {
         explicit operator std::string() const;
     };
 
+    Cards::CardPrice& operator++(GameCard::Cards::CardPrice & cp);
+    Cards::CardSuit& operator++(GameCard::Cards::CardSuit & cp);
+
     bool operator<(const Cards&, const Cards&);
 
     Cards FromStr(std::string price, std::string suit, bool is_open);

@@ -39,15 +39,15 @@ void GameCard::CardStack::GenNewStacks() {
     // std::cout << "m_CardShoe: " << m_CardShoe << "\n";
 }
 
-GameCard::Cards::CardPrice& operator++(GameCard::Cards::CardPrice & cp){
-    using Cards = GameCard::Cards::CardPrice;
-    return (cp == Cards::KING) ? cp = Cards::STOPPER : cp = static_cast<Cards>(static_cast<int>(cp) + 1);
-}
-
-GameCard::Cards::CardSuit& operator++(GameCard::Cards::CardSuit & cp){
-    using Cards = GameCard::Cards::CardSuit;
-    return (cp == Cards::HEARTS) ? cp = Cards::STOPPER : cp = static_cast<Cards>(static_cast<int>(cp) + 1);
-}
+//GameCard::Cards::CardPrice& operator++(GameCard::Cards::CardPrice & cp){
+//    using Cards = GameCard::Cards::CardPrice;
+//    return (cp == Cards::KING) ? cp = Cards::STOPPER : cp = static_cast<Cards>(static_cast<int>(cp) + 1);
+//}
+//
+//GameCard::Cards::CardSuit& operator++(GameCard::Cards::CardSuit & cp){
+//    using Cards = GameCard::Cards::CardSuit;
+//    return (cp == Cards::HEARTS) ? cp = Cards::STOPPER : cp = static_cast<Cards>(static_cast<int>(cp) + 1);
+//}
 
 void GameCard::GenerateCardPack(GameCard::CardStack & cs) {
     for (auto i = GameCard::Cards::CardSuit::SPADES; i != GameCard::Cards::CardSuit::STOPPER; ++i){
@@ -253,4 +253,14 @@ nlohmann::json GameCard::Cards::Serialize() const{
 
 bool GameCard::operator<(const GameCard::Cards & c1, const GameCard::Cards & c2) {
     return c1.price < c2.price;
+}
+
+GameCard::Cards::CardPrice &GameCard::operator++(GameCard::Cards::CardPrice &cp) {
+    using Cards = GameCard::Cards::CardPrice;
+    return (cp == Cards::KING) ? cp = Cards::STOPPER : cp = static_cast<Cards>(static_cast<int>(cp) + 1);
+}
+
+GameCard::Cards::CardSuit &GameCard::operator++(GameCard::Cards::CardSuit &cp) {
+    using Cards = GameCard::Cards::CardSuit;
+    return (cp == Cards::HEARTS) ? cp = Cards::STOPPER : cp = static_cast<Cards>(static_cast<int>(cp) + 1);
 }

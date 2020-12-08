@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "Client/Player/GraphicPlayer/Engine/Engine.h"
+#include "Cards/CardStack.h"
 
 GLFWwindow* Graphic_Interface::CreateAndSafeWindow(const size_t WIDTH, const size_t HEIGHT, std::string PROJECT_NAME) {
     glfwInit();
@@ -66,7 +67,7 @@ void Graphic_Interface::Preparation(GLFWwindow *window, std::shared_ptr<TCP_Play
 
     player->SetName(name);
 
-    Engine::Editor().SetPlayer(std::move(player), {0.f, 0.f}, {0.13f, 0.2f});
+    Engine::Editor().SetPlayer(std::move(player), {0.f, 0.f}, {0.13f, 0.1f});
 
     auto Resource_Path = (std::filesystem::current_path())/"res";
     auto Shaders_Path = (std::filesystem::current_path())/"shaders";
@@ -99,11 +100,32 @@ void Graphic_Interface::Preparation(GLFWwindow *window, std::shared_ptr<TCP_Play
     Engine::Editor().SetSprite("Stand", "Stand_Texture");
     Engine::Editor().SetSprite("Double", "Double_Texture");
 
+
     Engine::Editor().SetTable({0.f, 0.f}, {1.f, 1.f});
     Engine::Editor().ConfigSpriteTable("Table");
 
+    Engine::Editor().ConfigPlayer("Current_Player");
 
-    Engine::Editor().ConfigCards(GameCard::Cards::CardPrice::_2, );
+    Engine::Editor().CreateCards({0.1f, 0.5f}, 1, "Card");
+
+    // Нельзя брать уже использующиеся спрайты
+    auto suit = SUIT::DIAMONDS;
+    Engine::Editor().ConfigCards(VAL::ACE, suit, {0., 0.76}, {0.065, 1.}, 0.25, 0.1665, 0, 1, 12);
+    suit = SUIT::CLUBS;
+    Engine::Editor().ConfigCards(VAL::ACE, suit, {0.02, 0.9}, {0.24, 0.99}, 0.25, 0.1665, 1, 2, 12);
+    suit = SUIT::HEARTS;
+    Engine::Editor().ConfigCards(VAL::ACE, suit, {0.02, 0.9}, {0.24, 0.99}, 0.25, 0.1665, 2, 3, 12);
+    suit = SUIT::SPADES;
+    Engine::Editor().ConfigCards(VAL::ACE, suit, {0.02, 0.9}, {0.24, 0.99}, 0.25, 0.1665, 3, 4, 12);
+
+    Engine::Editor().SetCardVelocity(0.3f);
+
+    Engine::Editor().SetStack({0.8f, 0.6f}, {0.1f, 0.2f});
+    Engine::Editor().ConfigSpriteStack("Stack");
+
+    Engine::Editor().SetPlayerCard(VAL::_2, SUIT::DIAMONDS);
+//
+    //Engine::Editor().ConfigCards(GameCard::Cards::CardPrice::_2, );
     //Engine::Editor().ConfigCards();
    // Engine::Editor().SetCardVelocity(0.5f);
 }

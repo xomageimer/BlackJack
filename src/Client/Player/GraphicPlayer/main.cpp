@@ -42,8 +42,8 @@ int main(int argc, char* argv[])
 
         auto clock = std::chrono::steady_clock::now();
         std::chrono::milliseconds frameTimeMin(30);
-        float last_sec_ = 0.0f;
-        size_t frames_ = 0;
+//        float last_sec_ = 0.0f;
+//        size_t frames_ = 0;
 
         while(!glfwWindowShouldClose(window))
         {
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            //Engine::Editor().Run();
+            Engine::Editor().Run();
             Engine::Editor().Render();
 
             glfwSwapBuffers(window);

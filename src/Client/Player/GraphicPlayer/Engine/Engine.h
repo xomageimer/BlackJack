@@ -50,12 +50,14 @@ public:
     void SetPlayerCard(VAL value, SUIT suit);
     void SetCard(VAL value, SUIT suit, size_t player_number);
 
-    void ConfigCard(std::shared_ptr<Card> p, VAL value, SUIT suit, const std::string & sprite_name, const std::vector<std::vector<float>> & sprite_frames);
-    void ConfigCards(VAL value, SUIT suit, const std::string & sprite_name,
+    void ClearRound();
+    void CreateCards(glm::vec2 size, size_t numbers, const std::string &);
+    void ConfigCards(VAL value, SUIT suit,
                      glm::vec2 left_bottom,
                      glm::vec2 right_top,
                      float x,
                      float y,
+                     size_t vert_from,
                      size_t vertical,
                      size_t horizontal);
     void SetCardVelocity(float new_velocity);
@@ -83,7 +85,6 @@ public:
                     bool flip_vertically = true);
 
     void SetShader(const std::filesystem::path & vertex_shader, const std::filesystem::path & fragment_shader);
-
 private:
     Engine() = default;
 
@@ -97,6 +98,7 @@ private:
     std::shared_ptr<Table> Table;
 
     std::vector<std::shared_ptr<Card>> Cards;
+    size_t current_card = 0;
 
     std::shared_ptr<Button> butt_ok;
     std::shared_ptr<Button> butt_stand;
@@ -109,6 +111,8 @@ private:
     std::map<std::string, std::shared_ptr<Graphic::Sprite>> pool_sprites;
     std::map<std::string, std::vector<std::shared_ptr<Graphic::Sprite>>> pool_pack_sprites;
     std::map<std::string, std::shared_ptr<Graphic::Texture2D>> pool_textures;
+
+    std::map<SUIT, std::map<VAL, std::vector<float>>> card_sprites;
 
     std::shared_ptr<Camera> m_cam;
 };

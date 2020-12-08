@@ -35,15 +35,18 @@ void Card::Update() {
 void Card::Render() {
     auto it = m_representative.at(m_value).at(m_suit);
     UpdateSprite(it->GetSprite());
-    it->AnimationUpdate();
+    it->GetSprite()->draw();
 }
 
-void Card::SetCards_Val_Suit(GameCard::Cards::CardPrice value, GameCard::Cards::CardSuit suit) {
-    m_value = value;
-    m_suit = suit;
+void Card::SetCards_Val_Suit(std::vector<float> & v) {
+    GetAnimator(m_value, m_suit)->GetSprite()->SetSpriteSheet(v);
 }
 
 void Card::UpdateSprite(std::shared_ptr<Graphic::Sprite> sprite) {
     sprite->GetCenter() = m_position;
     sprite->GetSize() = m_size;
+}
+
+void Card::SetSprite(std::shared_ptr<Graphic::SpriteAnimator> anim) {
+    this->SetAnimator(m_value, m_suit, anim);
 }

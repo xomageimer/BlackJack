@@ -3,12 +3,11 @@
 void Engine::Render() {
     m_shader->use();
     Table->Render();
+    Card_Spawner->Render();
     m_cam->Render();
-   // Card_Spawner->Render();
-  //  m_cam->Render();
-   // player_controller->Render();
-  //  for (auto i : Other_players)
- //       i->Render();
+    player_controller->Render();
+    for (auto i : Other_players)
+        i->Render();
 }
 
 Engine &Engine::Editor() {
@@ -24,36 +23,28 @@ void Engine::Run() {
 }
 
 void Engine::ConfigPlayer(const std::string &sprite_name) {
-    auto it = pool_sprites.find(sprite_name);
-    player_controller->SetSprite(std::make_shared<Graphic::SpriteAnimator>(it->second, std::vector<std::vector<float>>{{0.999f, 0.999f, 0.999f, 0.011f, 0.011f, 0.011f, 0.011f, 0.999f}}));
-}
-
-void Engine::ConfigCard(std::shared_ptr<Card> _card, GameCard::Cards::CardPrice value, GameCard::Cards::CardSuit suit, const std::string &sprite_name,
-                   const std::vector<std::vector<float>> &sprite_frames) {
-    auto it = pool_sprites.find(sprite_name);
-    if (it != pool_sprites.end()) {
-        _card->SetAnimator(value, suit, std::make_shared<Graphic::SpriteAnimator>(it->second, sprite_frames));
-    }
-    else {
-        throw std::logic_error("SPRITE DOESN'T FOUND!");
-    }
+    player_controller->SetSprite(std::make_shared<Graphic::SpriteAnimator>(pool_sprites.find(sprite_name)->second, std::vector<std::vector<float>>{{0.999f, 0.999f, 0.999f, 0.011f, 0.011f, 0.011f, 0.011f, 0.999f}}));
 }
 
 void Engine::ConfigCards(GameCard::Cards::CardPrice value, GameCard::Cards::CardSuit suit,
-                         const std::string &sprite_name,
                          glm::vec2 left_bottom,
                          glm::vec2 right_top,
                          float x,
                          float y,
+                         size_t vert_from,
                          size_t vertical,
                          size_t horizontal) {
-    auto it = pool_pack_sprites.find(sprite_name);
-    size_t j = 0;
-    if (it == pool_pack_sprites.end()) return;
-    for (auto & i : Cards){
-        i->SetAnimator(value, suit, std::make_shared<Graphic::SpriteAnimator>(it->second[j++], std::vector<std::vector<float>>{}));
-        i->GetAnimator(value, suit)->SetSheetAtlas(left_bottom, right_top, x, y, vertical, horizontal);
-        i->GetAnimator(value, suit)->SetSpeed(0.07f);
+    for (size_t i = vert_from; i < vertical; i++){
+        auto vert_bottom_y = left_bottom.y - y * i;
+        auto vert_top_y = right_top.y - y * i;
+        for (size_t j = 0; j < horizontal; j++){
+            card_sprites[suit][++value] =
+                    std::vector<float>{right_top.x + x * j,   vert_top_y,
+                                       right_top.x + x * j,   vert_bottom_y,
+                                       left_bottom.x + x * j,  vert_bottom_y,
+                                       left_bottom.x + x * j, vert_top_y}
+                                       ;
+        }
     }
 }
 
@@ -146,13 +137,34 @@ void Engine::SetShader(const std::filesystem::path &vertex_shader, const std::fi
 }
 
 void Engine::SetPlayerCard(GameCard::Cards::CardPrice value, GameCard::Cards::CardSuit suit) {
-    auto card = std::make_shared<Card>(glm::vec2{0.f, 0.f}, glm::vec2{0.f, 0.f});
-    card->SetCards_Val_Suit(value, suit);
+    auto card = Cards[current_card++];
+    card->SetCards_Val_Suit(card_sprites[suit][value]);
+    card->SetPlayerTarget(player_controller->GetCurrentPosition());
     player_controller->Set_Card_Sprite(card);
 }
 
 void Engine::SetCard(GameCard::Cards::CardPrice value, GameCard::Cards::CardSuit suit, size_t player_number) {
-    auto card = std::make_shared<Card>(glm::vec2{0.f, 0.f}, glm::vec2{0.f, 0.f});
-    card->SetCards_Val_Suit(value, suit);
+    auto card= Cards[current_card++];
+    card->SetCards_Val_Suit(card_sprites[suit][value]);
+    card->SetPlayerTarget(Other_players[player_number]->GetCurrentPosition());
     Other_players[player_number]->Set_Card_Sprite(card);
+}
+
+void Engine::CreateCards(glm::vec2 size, size_t numbers, const std::string & sprite_name) {
+    auto it = pool_pack_sprites.find(sprite_name);
+    size_t j = 0;
+    if (it == pool_pack_sprites.end()) return;
+    Cards.reserve(numbers);
+    for(size_t i = 0; i < numbers; i++){
+        Cards.emplace_back(std::make_shared<Card>(glm::vec2{0.f, 0.f}, size));
+        Cards.back()->SetSprite(std::make_shared<Graphic::SpriteAnimator>(it->second[j++], std::vector<std::vector<float>>{{0.999f, 0.999f, 0.999f, 0.011f, 0.011f, 0.011f, 0.011f, 0.999f}}));
+    }
+}
+
+void Engine::ClearRound() {
+    player_controller->Clear();
+    for (auto & i : Other_players){
+        i->Clear();
+    }
+    current_card = 0;
 }

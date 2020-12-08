@@ -37,6 +37,8 @@ void Graphic::Sprite::SetSpriteSheet(const std::vector<float> & vec) {
 
 void Graphic::Sprite::draw() {
 
+    auto sh = this->m_shader;
+
     this->m_shader->use();
     this->m_shader->glUniform("texture_", 0);
     this->m_texture->bind();
